@@ -37,6 +37,14 @@ Database Categories
     - employee id
     - time in
     - time out
+    
+- tutor registry
+    - employee id
+    - name
+    - email
+    - phone
+    - expertise
+    
 
 
 Query Examples
