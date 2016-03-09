@@ -9,6 +9,8 @@ import os
 # - search to see if user is already signed in
 # - validate file
 # - figure out whether or not to load whole file into memory (iteration?)
+# - make separate timesheet class that is responsible for writing
+#   and formatting the json
 
 class Entry():
     """Contains all data for a single entry"""
@@ -34,6 +36,7 @@ class Entry():
         
     def make_dict(self):
         self.data = defaultdict()
+        self.data['Index'] = self.index
         self.data['Date'] = self.date
         self.data['Student ID'] = self.user_id
         self.data['In'] = self.time_in
@@ -44,6 +47,8 @@ class Entry():
             print("{}: {}".format(key, entry.data[key]))
 
     def save_entry(self, timesheet_file='./timesheet.json'):
+        self.new_index(timesheet_file)
+        self.make_dict()
         with open(timesheet_file, 'a') as f:
             entry = "{}\n".format(
                 json.dumps(self.data, indent=4, sort_keys=True))
@@ -51,13 +56,19 @@ class Entry():
 
     def load_entry(self, timesheet_file='./timesheet.json'):
         with open(timesheet_file, 'r') as f:
-            self.data = json.loads(f.read())
-
+            self.data = json.load(f)
+            
+    def new_index(self, timesheet_file='./timesheet.json'):
+        if os.stat(timesheet_file).st_size == 0:
+            self.index = 0
+        else:
+            with open(timesheet_file, 'r') as f:
+                entries = json.load(f)
+                biggest = entries["Index"]
+                self.index = biggest + 1
 
 def main():
     x = Entry("2016-02-17", "889870966", "10:45", "13:30")
-    x.print_entry()
-    x.make_dict()
     x.print_entry()
     x.save_entry()
 
