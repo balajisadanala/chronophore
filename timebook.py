@@ -57,6 +57,8 @@ class Entry():
 def main():
     x = Entry("2016-02-17", "889870966", "10:45", "13:30")
     x.print_entry()
+    x.make_dict()
+    x.print_entry()
     x.save_entry()
 
 if __name__ == '__main__':
