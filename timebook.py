@@ -1,11 +1,14 @@
+from collections import defaultdict
 import json
+import os
 
 # TODO:
 # - format json output with nested keys
 # - input validation
 # - auto-completion
 # - search to see if user is already signed in
-
+# - validate file
+# - figure out whether or not to load whole file into memory (iteration?)
 
 class Entry():
     """Contains all data for a single entry"""
@@ -26,11 +29,15 @@ class Entry():
             self.time_out = ""
         else:
             self.time_out = time_out
-
-        self.data = {'Date' : self.date,
-                     'Student ID' : self.user_id,
-                     'In' : self.time_in,
-                     'Out' : self.time_out}
+        self.index = 0
+        self.data = {}
+        
+    def make_dict(self):
+        self.data = defaultdict()
+        self.data['Date'] = self.date
+        self.data['Student ID'] = self.user_id
+        self.data['In'] = self.time_in
+        self.data['Out'] = self.time_out
 
     def print_entry(entry):
         for key in entry.data.keys():
