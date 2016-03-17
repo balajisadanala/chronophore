@@ -1,4 +1,3 @@
-from collections import defaultdict
 import json
 import os
 
@@ -33,10 +32,8 @@ class Entry():
             self.time_out = time_out
         self.index = 0
         self.data = {}
-        
-    def make_dict(self):
-        self.data = defaultdict()
-        self.data['Index'] = self.index
+
+    def _make_dict(self):
         self.data['Date'] = self.date
         self.data['Student ID'] = self.user_id
         self.data['In'] = self.time_in
@@ -67,10 +64,40 @@ class Entry():
                 biggest = entries["Index"]
                 self.index = biggest + 1
 
+class Timesheet():
+    def __init__(self):
+        self.sheet = {}
+
+    def add_entry(self, entry):
+        index = self._make_index()
+        entry_data = self._make_dict(entry)
+        self.sheet[index]= entry_data
+
+    def _make_dict(self, entry):
+        data = {}
+        data['Date'] = entry.date
+        data['Student ID'] = entry.user_id
+        data['In'] = entry.time_in
+        data['Out'] = entry.time_out
+
+        return data
+
+    def _make_index(self):
+        if len(self.sheet.keys()) == 0:
+            index = 0
+
+        else:
+            biggest = max(key for key in self.sheet.keys())
+            index = int(biggest) + 1
+
+        return str(index)
+
+
 def main():
     x = Entry("2016-02-17", "889870966", "10:45", "13:30")
-    x.print_entry()
-    x.save_entry()
+    t = Timesheet()
+    t.add_entry(x)
+    print(json.dumps(t.sheet))
 
 if __name__ == '__main__':
     main()
