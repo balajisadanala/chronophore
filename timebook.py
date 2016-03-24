@@ -2,13 +2,15 @@ import json
 import os
 
 # TODO:
-# - [ ] format json output with nested keys
+# - [ ] use uuid for index generation
+# - [ ] timesheet search method
+# - [x] format json output with nested keys
 # - [ ] input validation
 # - [ ] auto-completion
 # - [ ] search to see if user is already signed in
 # - [ ] validate file
 # - [ ] figure out whether or not to load whole file into memory (iteration?)
-# - [ ] make separate timesheet class that is responsible for writing
+# - [x] make separate timesheet class that is responsible for writing
 #       and formatting the json
 
 
@@ -70,6 +72,9 @@ class Timesheet():
         entry_data = self._make_dict(entry)
         self.sheet[index] = entry_data
 
+    def remove_entry(self, index):
+        del self.sheet[str(index)]
+
     def load_sheet(self, timesheet_file='./timesheet.json'):
         with open(timesheet_file, 'r') as f:
             self.sheet = json.load(f)
@@ -87,6 +92,7 @@ def main():
     t.add_entry(x)
     t.add_entry(x)
     t.add_entry(x)
+    t.remove_entry(3)
     t.save_sheet()
 
 if __name__ == '__main__':
