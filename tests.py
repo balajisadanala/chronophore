@@ -3,7 +3,37 @@ import timebook
 import unittest
 
 
+#class EntryTest(unittest.TestCase):
+    #def test_validate_entry(self):
+
+
 class TimesheetTest(unittest.TestCase):
+    test_file = "./test.json"
+    example_file = "./example.json"
+    example_sheet = {
+                        "2": {
+                            "Date": "2016-02-17",
+                            "In": "12:45",
+                            "Index": 2,
+                            "Out": "16:44",
+                            "Student ID": "889249566"
+                        },
+                        "1": {
+                            "Date": "2016-02-17",
+                            "In": "10:50",
+                            "Index": 1,
+                            "Out": "15:35",
+                            "Student ID": "885894966"
+                        },
+                        "0": {
+                            "Date": "2016-02-17",
+                            "In": "10:45",
+                            "Index": 0,
+                            "Out": "13:30",
+                            "Student ID": "889870966"
+                        }
+                    }
+
     def test_add_first_entry(self):
         """Add an entry to an empty timesheet"""
         t = timebook.Timesheet()
@@ -13,9 +43,11 @@ class TimesheetTest(unittest.TestCase):
                                 'Date': '2016-02-17',
                                 'Student ID': '889870966',
                                 'Out': '13:30'}}
-        self.assertEqual(expected_sheet,t.sheet)
+        self.assertEqual(expected_sheet, t.sheet)
 
-    def test_add_new_entry(self):
+    def test_add_additional_entry(self):
+        """Add an entry to a timesheet that already has one. Make sure
+        a new index is made."""
         t = timebook.Timesheet()
         e = timebook.Entry("2016-02-17", "889870966", "10:45", "13:30")
         f = timebook.Entry("2016-02-18", "889374992", "13:20", "15:30")
@@ -25,41 +57,31 @@ class TimesheetTest(unittest.TestCase):
                         'Date': '2016-02-18',
                         'Student ID': '889374992',
                         'Out': '15:30'}
-        self.assertEqual(newest_entry,t.sheet['1'])
-    #def test_load_sheet(self):
+        self.assertEqual(newest_entry, t.sheet['1'])
 
-    #def test_save_sheet(self):
+    def test_load_sheet(self):
+        """Load a sheet from a file"""
+        t = timebook.Timesheet()
+        t.load_sheet(timesheet_file=self.example_file)
+        result = t.sheet
+        expected_sheet = self.example_sheet
+        self.assertEqual(result, expected_sheet)
 
-
-class EntryTest(unittest.TestCase):
-    test_file = "./test.json"
-    example_file = "./example.json"
-
-    def setUp(self):
-        open(self.test_file, 'a')
-
-    #todo: make this fail if individual member variables aren't set
-    def test_load_entry(self):
-        """Create an empty entry, then load values from a file"""
-        entry = timebook.Entry()
-        entry.load_entry(timesheet_file=self.example_file)
-        result = entry.data
-        expected_entry = {'In': '10:45',
-                          'Date': '2016-02-17',
-                          'Student ID': '889870966',
-                          'Out': '13:30'}
-        self.assertEqual(result, expected_entry)
-    
-    def test_new_index_for_empty_file(self):
-        """Index of current entry will be zero if the file is empty"""
-        entry = timebook.Entry("2016-02-17", "889870966", "10:45", "13:30")
-        entry.new_index(self.test_file)
-        result = entry.index
-        expected = 0
-        self.assertEqual(result, expected)
-        
-    def tearDown(self):
+    def test_save_sheet(self):
+        """Save a sheet to a file"""
+        self.maxDiff = None
+        t = timebook.Timesheet()
+        t.sheet = self.example_sheet
+        t.save_sheet(timesheet_file=self.test_file)
+        with open(self.test_file, 'r') as f:
+            result = f.read()
+        with open(self.example_file, 'r') as e:
+            expected_file = e.read()
+        self.assertEqual(result, expected_file)
         os.remove(self.test_file)
+
+    #def test_remove_entry(self):
+
 
 if __name__ == '__main__':
     unittest.main(warnings='ignore')

@@ -8,3 +8,4 @@ To Do
 - [ ] package to be a portable windows executable
 - [ ] improve security (encrypt/decrypt database, securely handle passwords...)
 - [ ] generate reports from data, e.g. "total time person x has been signed in"
+- [ ] come up with a name no one else is using
