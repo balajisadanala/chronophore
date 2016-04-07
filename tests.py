@@ -4,6 +4,8 @@ import unittest
 
 
 #class EntryTest(unittest.TestCase):
+    #def test_create_empty_entry(self):
+    #def test_create_entry(self):
     #def test_validate_entry(self):
 
 
@@ -23,7 +25,7 @@ class TimesheetTest(unittest.TestCase):
                                  },
                                  "1": {
                                      "Date": "2016-02-17",
-                                     "In": "10:50",
+                                     "In": "10:45",
                                      "Index": 1,
                                      "Out": "15:35",
                                      "Student ID": "885894966"
@@ -87,10 +89,18 @@ class TimesheetTest(unittest.TestCase):
             result = f.read()
         with open(self.example_file, 'r') as e:
             expected_file = e.read()
-        self.assertEqual(result, expected_file)
+        # NOTE: Watch out for trailing newline after editing file 
+        self.assertMultiLineEqual(result, expected_file)
         os.remove(self.test_file)
 
-    #def test_remove_entry(self):
+    def test_find_entry(self):
+        """Find all entries that contain a piece of data"""
+        t = timebook.Timesheet()
+        self.t.sheet = self.example_sheet
+        entries = self.t.find_entry("10:45")
+        expected_entries = ['0', '1']
+        self.assertEqual(entries, expected_entries)
+
 
 
 if __name__ == '__main__':

@@ -3,7 +3,7 @@ import os
 
 # TODO:
 # - [ ] use uuid for index generation
-# - [ ] timesheet search method
+# - [x] timesheet search method
 # - [x] format json output with nested keys
 # - [ ] input validation
 # - [ ] auto-completion
@@ -35,6 +35,7 @@ class Entry():
             self.time_out = time_out
         self.index = 0
         self.data = {}
+        self._make_dict()
 
     def _make_dict(self):
         self.data['Date'] = self.date
@@ -48,6 +49,7 @@ class Entry():
 
 
 class Timesheet():
+    """Contains multiple entries"""
     def __init__(self):
         self.sheet = {}
 
@@ -82,6 +84,10 @@ class Timesheet():
     def save_sheet(self, timesheet_file='./timesheet.json'):
         with open(timesheet_file, 'w') as f:
             json.dump(self.sheet, f, indent=4, sort_keys=True)
+
+    def find_entry(self, search_term):
+        entries = [k for k, v in self.sheet.items() if search_term in str(v.items())]
+        return sorted(entries)
 
 
 def main():
