@@ -1,8 +1,10 @@
 import json
 import os
+import uuid
 
 # TODO:
-# - [ ] use uuid for index generation
+# - [x] use uuid for index generation
+# - [ ] use datetime objects for dates and times
 # - [x] timesheet search method
 # - [x] format json output with nested keys
 # - [ ] input validation
@@ -62,12 +64,7 @@ class Timesheet():
         return data
 
     def _make_index(self):
-        if len(self.sheet.keys()) == 0:
-            index = 0
-        else:
-            biggest = max(key for key in self.sheet.keys())
-            index = int(biggest) + 1
-        return str(index)
+        return str(uuid.uuid4())
 
     def add_entry(self, entry):
         index = self._make_index()
@@ -75,6 +72,7 @@ class Timesheet():
         self.sheet[index] = entry_data
 
     def remove_entry(self, index):
+        # NOTE: make this take a list of entries?
         del self.sheet[str(index)]
 
     def load_sheet(self, timesheet_file='./timesheet.json'):
@@ -98,8 +96,8 @@ def main():
     t.add_entry(x)
     t.add_entry(x)
     t.add_entry(x)
-    t.remove_entry(3)
     t.save_sheet()
+    print(t.find_entry("10:45"))
 
 if __name__ == '__main__':
     main()

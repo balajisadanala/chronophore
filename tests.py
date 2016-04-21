@@ -1,6 +1,7 @@
 import os
 import timebook
 import unittest
+import unittest.mock
 
 
 #class EntryTest(unittest.TestCase):
@@ -16,61 +17,51 @@ class TimesheetTest(unittest.TestCase):
     def setUp(self):
         self.t = timebook.Timesheet()
         self.example_sheet = {
-                                 "2": {
-                                     "Date": "2016-02-17",
-                                     "In": "12:45",
-                                     "Index": 2,
-                                     "Out": "16:44",
-                                     "Student ID": "889249566"
-                                 },
-                                 "1": {
-                                     "Date": "2016-02-17",
-                                     "In": "10:45",
-                                     "Index": 1,
-                                     "Out": "15:35",
-                                     "Student ID": "885894966"
-                                 },
-                                 "0": {
-                                     "Date": "2016-02-17",
-                                     "In": "10:45",
-                                     "Index": 0,
-                                     "Out": "13:30",
-                                     "Student ID": "889870966"
-                                 }
-                             }
+            "1f4f10a4-b0c6-43bf-94f4-9ce6e3e204d2": {
+                "Date": "2016-02-17",
+                "In": "10:45",
+                "Out": "13:30",
+                "Student ID": "889870966",
+            },
+            "2ed2be60-693a-44fe-adc1-2803a674ec9b": {
+                "Date": "2016-02-17",
+                "In": "10:45",
+                "Out": "15:35",
+                "Student ID": "885894966",
+            },
+            "7b4ae0fc-3801-4412-998f-ace14829d150": {
+                "Date": "2016-02-17",
+                "In": "12:45",
+                "Out": "16:44",
+                "Student ID": "889249566",
+            },
+        }
 
-
-    def test_add_first_entry(self):
+    @unittest.mock.patch(
+        'timebook.Timesheet._make_index',
+        return_value='3b27d0f8-3801-4319-398f-ace18829d150'
+    )
+    def test_add_entry(self, make_index):
         """Add an entry to an empty timesheet"""
         e = timebook.Entry("2016-02-17", "889870966", "10:45", "13:30")
         self.t.add_entry(e)
-        expected_sheet = {'0': {'In': '10:45',
-                                'Date': '2016-02-17',
-                                'Student ID': '889870966',
-                                'Out': '13:30'}}
+        expected_sheet = {
+            "3b27d0f8-3801-4319-398f-ace18829d150": {
+                "In": "10:45",
+                "Date": "2016-02-17",
+                "Student ID": "889870966",
+                "Out": "13:30",
+            },
+        }
         self.assertEqual(expected_sheet, self.t.sheet)
-
-    def test_add_additional_entry(self):
-        """Add an entry to a timesheet that already has one. Make sure
-        a new index is made."""
-        t = timebook.Timesheet()
-        e = timebook.Entry("2016-02-17", "889870966", "10:45", "13:30")
-        f = timebook.Entry("2016-02-18", "889374992", "13:20", "15:30")
-        self.t.add_entry(e)
-        self.t.add_entry(f)
-        newest_entry = {'In': '13:20',
-                        'Date': '2016-02-18',
-                        'Student ID': '889374992',
-                        'Out': '15:30'}
-        self.assertEqual(newest_entry, self.t.sheet['1'])
 
     def test_remove_entry(self):
         """Remove an entry from a timesheet with multiple entries"""
         t = timebook.Timesheet()
         # dicts are mutable; passed by reference unless explicitly copied:
         self.t.sheet = dict(self.example_sheet)
-        self.t.remove_entry(1)
-        self.assertFalse('1' in self.t.sheet)
+        self.t.remove_entry("1f4f10a4-b0c6-43bf-94f4-9ce6e3e204d2")
+        self.assertFalse("1f4f10a4-b0c6-43bf-94f4-9ce6e3e204d2" in self.t.sheet)
 
     def test_load_sheet(self):
         """Load a sheet from a file"""
@@ -98,7 +89,10 @@ class TimesheetTest(unittest.TestCase):
         t = timebook.Timesheet()
         self.t.sheet = self.example_sheet
         entries = self.t.find_entry("10:45")
-        expected_entries = ['0', '1']
+        expected_entries = [
+            "1f4f10a4-b0c6-43bf-94f4-9ce6e3e204d2",
+            "2ed2be60-693a-44fe-adc1-2803a674ec9b"
+        ]
         self.assertEqual(entries, expected_entries)
 
 
