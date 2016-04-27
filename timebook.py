@@ -45,8 +45,8 @@ class Entry():
         self.data['In'] = self.time_in
         self.data['Out'] = self.time_out
 
-    def print_entry(entry):
-        for key in entry.data.keys():
+    def print_entry(self):
+        for key in self.data.keys():
             print("{}: {}".format(key, entry.data[key]))
 
 
@@ -72,7 +72,6 @@ class Timesheet():
         self.sheet[index] = entry_data
 
     def remove_entry(self, index):
-        # NOTE: make this take a list of entries?
         del self.sheet[str(index)]
 
     def load_sheet(self, timesheet_file='./timesheet.json'):
@@ -84,7 +83,13 @@ class Timesheet():
             json.dump(self.sheet, f, indent=4, sort_keys=True)
 
     def find_entry(self, search_term):
-        entries = [k for k, v in self.sheet.items() if search_term in str(v.items())]
+        entries = [
+            k for k, v in self.sheet.items() if search_term in str(v.items())
+        ]
+        return sorted(entries)
+
+    def list_signed_in(self):
+        entries = [k for k, v in self.sheet.items() if v['Out'] == ""]
         return sorted(entries)
 
 
@@ -98,6 +103,7 @@ def main():
     t.add_entry(x)
     t.save_sheet()
     print(t.find_entry("10:45"))
+
 
 if __name__ == '__main__':
     main()

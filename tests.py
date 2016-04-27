@@ -26,7 +26,7 @@ class TimesheetTest(unittest.TestCase):
             "2ed2be60-693a-44fe-adc1-2803a674ec9b": {
                 "Date": "2016-02-17",
                 "In": "10:45",
-                "Out": "15:35",
+                "Out": "",
                 "Student ID": "885894966",
             },
             "7b4ae0fc-3801-4412-998f-ace14829d150": {
@@ -57,7 +57,6 @@ class TimesheetTest(unittest.TestCase):
 
     def test_remove_entry(self):
         """Remove an entry from a timesheet with multiple entries"""
-        t = timebook.Timesheet()
         # dicts are mutable; passed by reference unless explicitly copied:
         self.t.sheet = dict(self.example_sheet)
         self.t.remove_entry("1f4f10a4-b0c6-43bf-94f4-9ce6e3e204d2")
@@ -65,7 +64,6 @@ class TimesheetTest(unittest.TestCase):
 
     def test_load_sheet(self):
         """Load a sheet from a file"""
-        t = timebook.Timesheet()
         self.t.load_sheet(timesheet_file=self.example_file)
         result = self.t.sheet
         expected_sheet = self.example_sheet
@@ -73,7 +71,6 @@ class TimesheetTest(unittest.TestCase):
 
     def test_save_sheet(self):
         """Save a sheet to a file"""
-        t = timebook.Timesheet()
         self.t.sheet = self.example_sheet
         self.t.save_sheet(timesheet_file=self.test_file)
         with open(self.test_file, 'r') as f:
@@ -86,7 +83,6 @@ class TimesheetTest(unittest.TestCase):
 
     def test_find_entry(self):
         """Find all entries that contain a piece of data"""
-        t = timebook.Timesheet()
         self.t.sheet = self.example_sheet
         entries = self.t.find_entry("10:45")
         expected_entries = [
@@ -95,6 +91,14 @@ class TimesheetTest(unittest.TestCase):
         ]
         self.assertEqual(entries, expected_entries)
 
+    def test_signed_in(self):
+        """Find all entries of people that are currently signed in
+        (there is a time_in value, but not a time_out value
+        """
+        self.t.sheet = self.example_sheet
+        entries = self.t.list_signed_in()
+        expected_entries = ["2ed2be60-693a-44fe-adc1-2803a674ec9b"]
+        self.assertEqual(entries, expected_entries)
 
 
 if __name__ == '__main__':
