@@ -4,12 +4,14 @@ import uuid
 
 # TODO:
 # - [x] use uuid for index generation
+# - [ ] use time based uuid
+# - [ ] use sorted dicts
 # - [ ] use datetime objects for dates and times
 # - [x] timesheet search method
 # - [x] format json output with nested keys
 # - [ ] input validation
 # - [ ] auto-completion
-# - [ ] search to see if user is already signed in
+# - [x] search to see if user is already signed in
 # - [ ] validate file
 # - [ ] figure out whether or not to load whole file into memory (iteration?)
 # - [x] make separate timesheet class that is responsible for writing
@@ -35,25 +37,13 @@ class Entry():
             self.time_out = ""
         else:
             self.time_out = time_out
-        self.index = 0
-        self.data = {}
-        self._make_dict()
-
-    def _make_dict(self):
-        self.data['Date'] = self.date
-        self.data['Student ID'] = self.user_id
-        self.data['In'] = self.time_in
-        self.data['Out'] = self.time_out
-
-    def print_entry(self):
-        for key in self.data.keys():
-            print("{}: {}".format(key, entry.data[key]))
 
 
 class Timesheet():
     """Contains multiple entries"""
     def __init__(self):
         self.sheet = {}
+        self.signedin = []
 
     def _make_dict(self, entry):
         data = {}
@@ -66,8 +56,9 @@ class Timesheet():
     def _make_index(self):
         return str(uuid.uuid4())
 
-    def add_entry(self, entry):
-        index = self._make_index()
+    def add_entry(self, entry, index=None):
+        if index == None:
+            index = self._make_index()
         entry_data = self._make_dict(entry)
         self.sheet[index] = entry_data
 
@@ -88,12 +79,12 @@ class Timesheet():
         ]
         return sorted(entries)
 
-    def list_signed_in(self):
-        entries = [k for k, v in self.sheet.items() if v['Out'] == ""]
-        return sorted(entries)
+    def _update_signed_in(self):
+        self.signedin = [k for k, v in self.sheet.items() if v['Out'] == ""]
 
 
 def main():
+    signin("889870966")
     x = Entry("2016-02-17", "889870966", "10:45", "13:30")
     t = Timesheet()
     t.add_entry(x)

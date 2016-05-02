@@ -1,4 +1,5 @@
 *.json
 *.swp
 *.vim
+reference/
 __pycache__/

@@ -42,7 +42,7 @@ class TimesheetTest(unittest.TestCase):
         return_value='3b27d0f8-3801-4319-398f-ace18829d150'
     )
     def test_add_entry(self, make_index):
-        """Add an entry to an empty timesheet"""
+        """Add an entry to an empty timesheet."""
         e = timebook.Entry("2016-02-17", "889870966", "10:45", "13:30")
         self.t.add_entry(e)
         expected_sheet = {
@@ -56,21 +56,21 @@ class TimesheetTest(unittest.TestCase):
         self.assertEqual(expected_sheet, self.t.sheet)
 
     def test_remove_entry(self):
-        """Remove an entry from a timesheet with multiple entries"""
+        """Remove an entry from a timesheet with multiple entries."""
         # dicts are mutable; passed by reference unless explicitly copied:
         self.t.sheet = dict(self.example_sheet)
         self.t.remove_entry("1f4f10a4-b0c6-43bf-94f4-9ce6e3e204d2")
         self.assertFalse("1f4f10a4-b0c6-43bf-94f4-9ce6e3e204d2" in self.t.sheet)
 
     def test_load_sheet(self):
-        """Load a sheet from a file"""
+        """Load a sheet from a file."""
         self.t.load_sheet(timesheet_file=self.example_file)
         result = self.t.sheet
         expected_sheet = self.example_sheet
         self.assertEqual(result, expected_sheet)
 
     def test_save_sheet(self):
-        """Save a sheet to a file"""
+        """Save a sheet to a file."""
         self.t.sheet = self.example_sheet
         self.t.save_sheet(timesheet_file=self.test_file)
         with open(self.test_file, 'r') as f:
@@ -82,7 +82,7 @@ class TimesheetTest(unittest.TestCase):
         os.remove(self.test_file)
 
     def test_find_entry(self):
-        """Find all entries that contain a piece of data"""
+        """Find all entries that contain a piece of data."""
         self.t.sheet = self.example_sheet
         entries = self.t.find_entry("10:45")
         expected_entries = [
@@ -91,14 +91,39 @@ class TimesheetTest(unittest.TestCase):
         ]
         self.assertEqual(entries, expected_entries)
 
-    def test_signed_in(self):
+    def test_find_signed_in(self):
         """Find all entries of people that are currently signed in
-        (there is a time_in value, but not a time_out value
+        (there is a time_in value, but not a time_out value).
         """
         self.t.sheet = self.example_sheet
-        entries = self.t.list_signed_in()
+        self.t._update_signed_in()
         expected_entries = ["2ed2be60-693a-44fe-adc1-2803a674ec9b"]
-        self.assertEqual(entries, expected_entries)
+        self.assertEqual(self.t.signedin, expected_entries)
+        
+    @unittest.mock.patch(
+        'timebook.Timesheet._make_index',
+        return_value='3b27d0f8-3801-4319-398f-ace18829d150'
+    )
+    def test_sign_in(self, make_index):
+        """User signs in, and they are added to the list of currently
+        signed in users.
+        """
+        e = timebook.Entry("2016-02-17", "889870966", "10:45")
+        self.t.add_entry(e)
+        self.t._update_signed_in()
+        self.assertIn("3b27d0f8-3801-4319-398f-ace18829d150", self.t.signedin)
+        
+    def test_sign_out(self):
+        """User signs out, and they are removed from the list of currently
+        signed in users.
+        """
+        self.t.sheet = dict(self.example_sheet)
+        e = timebook.Entry("2016-02-17", "889870966", "10:45", "13:30")
+        index = "2ed2be60-693a-44fe-adc1-2803a674ec9b"
+        self.t.add_entry(e, index)
+        self.t._update_signed_in()
+        self.assertNotIn(index, self.t.signedin)
+
 
 
 if __name__ == '__main__':
