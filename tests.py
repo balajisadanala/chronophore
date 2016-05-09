@@ -2,12 +2,28 @@ import os
 import timebook
 import unittest
 import unittest.mock
+from datetime import datetime
 
 
-#class EntryTest(unittest.TestCase):
-    #def test_create_empty_entry(self):
-    #def test_create_entry(self):
-    #def test_validate_entry(self):
+class EntryTest(unittest.TestCase):
+    @unittest.mock.patch(
+        'timebook.Entry._get_current_datetime',
+        return_value = datetime(2016, 5, 9, 15, 43, 41, 433749)
+    )
+    def test_create_entry(self, get_current_datetime):
+        e = timebook.Entry(user_id="882369423")
+        self.assertEqual(e.date, "2016-05-09")
+        self.assertEqual(e.time_in, "15:43:41")
+        self.assertEqual(e.time_out, "")
+
+    @unittest.mock.patch(
+        'timebook.Entry._get_current_datetime',
+        return_value = datetime(2016, 5, 9, 17, 30, 17, 433749)
+    )
+    def test_sign_out(self, get_current_datetime):
+        e = timebook.Entry(user_id="882369423")
+        e.sign_out()
+        self.assertEqual(e.time_out, "17:30:17")
 
 
 class TimesheetTest(unittest.TestCase):
@@ -123,7 +139,6 @@ class TimesheetTest(unittest.TestCase):
         self.t.add_entry(e, index)
         self.t._update_signed_in()
         self.assertNotIn(index, self.t.signedin)
-
 
 
 if __name__ == '__main__':

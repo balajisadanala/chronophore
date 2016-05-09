@@ -1,28 +1,22 @@
 import json
 import os
 import uuid
+from datetime import datetime, timedelta
 
 # TODO:
-# - [x] use uuid for index generation
-# - [ ] use time based uuid
-# - [ ] use sorted dicts
-# - [ ] use datetime objects for dates and times
-# - [x] timesheet search method
-# - [x] format json output with nested keys
-# - [ ] input validation
+# - [ ] user-facing command line interface
+# - [ ] exceptions/validation
+# - [ ] command line mvp
+# - [ ] load timesheet file partially into memory if possible
 # - [ ] auto-completion
-# - [x] search to see if user is already signed in
-# - [ ] validate file
-# - [ ] figure out whether or not to load whole file into memory (iteration?)
-# - [x] make separate timesheet class that is responsible for writing
-#       and formatting the json
 
 
 class Entry():
     """Contains all data for a single entry"""
     def __init__(self, date=None, user_id=None, time_in=None, time_out=None):
+        now = self._get_current_datetime()
         if date is None:
-            self.date = ""
+            self.date = datetime.strftime(now, "%Y-%m-%d") 
         else:
             self.date = date
         if user_id is None:
@@ -30,7 +24,7 @@ class Entry():
         else:
             self.user_id = user_id
         if time_in is None:
-            self.time_in = ""
+            self.time_in = datetime.strftime(now, "%H:%M:%S") 
         else:
             self.time_in = time_in
         if time_out is None:
@@ -38,6 +32,14 @@ class Entry():
         else:
             self.time_out = time_out
 
+    def _get_current_datetime(self):
+        """Serves as a mockable reference to datetime.today()"""
+        return datetime.today()
+
+    def sign_out(self):
+        now = self._get_current_datetime()
+        self.time_out = datetime.strftime(now, "%H:%M:%S")
+        
 
 class Timesheet():
     """Contains multiple entries"""
@@ -56,6 +58,15 @@ class Timesheet():
     def _make_index(self):
         return str(uuid.uuid4())
 
+    def _update_signed_in(self):
+        self.signedin = [k for k, v in self.sheet.items() if v['Out'] == ""]
+
+    def find_entry(self, search_term):
+        entries = [
+            k for k, v in self.sheet.items() if search_term in str(v.items())
+        ]
+        return sorted(entries)
+
     def add_entry(self, entry, index=None):
         if index == None:
             index = self._make_index()
@@ -73,18 +84,8 @@ class Timesheet():
         with open(timesheet_file, 'w') as f:
             json.dump(self.sheet, f, indent=4, sort_keys=True)
 
-    def find_entry(self, search_term):
-        entries = [
-            k for k, v in self.sheet.items() if search_term in str(v.items())
-        ]
-        return sorted(entries)
-
-    def _update_signed_in(self):
-        self.signedin = [k for k, v in self.sheet.items() if v['Out'] == ""]
-
 
 def main():
-    signin("889870966")
     x = Entry("2016-02-17", "889870966", "10:45", "13:30")
     t = Timesheet()
     t.add_entry(x)
