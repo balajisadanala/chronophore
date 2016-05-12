@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 # - [ ] user-facing command line interface
 # - [ ] exceptions/validation
 # - [ ] protect agains accidental file overwrite
+# - [ ] logging
 # - [ ] command line mvp
 # - [ ] load timesheet file partially into memory if possible
 # - [ ] auto-completion
@@ -14,8 +15,17 @@ from datetime import datetime, timedelta
 
 class Entry():
     """Contains all data for a single entry"""
+
     def __init__(self, user_id=None, date=None, time_in=None,
                  time_out=None, index=None):
+        """Parameters have different default behaviors, and can all be
+        overwritten.
+
+        Default Behaviors:
+            date, time_in: assigned the current date/time
+            user_id, time_out: left as empty strings
+            index: assigned a uuid
+        """
         now = self._get_current_datetime()
         if date is None:
             self.date = datetime.strftime(now, "%Y-%m-%d")
@@ -39,6 +49,7 @@ class Entry():
             self.index = index
 
     def __repr__(self):
+        """Return the entry as it will appear in the json file."""
         data = {}
         data['Date'] = self.date
         data['Student ID'] = self.user_id
@@ -49,42 +60,34 @@ class Entry():
         return json.dumps(entry, indent=4, sort_keys=True)
 
     def _get_current_datetime(self):
-        """Serves as a mockable reference to datetime.today()"""
+        """Serves as a mockable reference to datetime.today(). Mocking is used
+        in the unit tests.
+        """
         return datetime.today()
 
     def _make_index(self):
+        """Generate a UUID version 4 (basically random)"""
         return str(uuid.uuid4())
 
     def sign_out(self):
+        """Get the time the user signed out"""
         now = self._get_current_datetime()
         self.time_out = datetime.strftime(now, "%H:%M:%S")
 
 
 class Timesheet():
     """Contains multiple entries"""
+
     def __init__(self):
         self.sheet = {}
         self.signedin = []
 
-    def _make_dict(self, entry):
-        data = {}
-        data['Date'] = entry.date
-        data['Student ID'] = entry.user_id
-        data['In'] = entry.time_in
-        data['Out'] = entry.time_out
-        return data
-
     def _update_signed_in(self):
+        """Update the list of all entries that haven't been signed out."""
         self.signedin = [k for k, v in self.sheet.items() if v['Out'] == ""]
 
-    def find_entry(self, search_term):
-        # NOTE(amin): use a tuple instead of a list here?
-        entries = [
-            k for k, v in self.sheet.items() if search_term in str(v.items())
-        ]
-        return sorted(entries)
-
     def load_entry(self, index):
+        """Load an entry into its own object."""
         entry = Entry(
                     self.sheet[index]['Student ID'],
                     self.sheet[index]['Date'],
@@ -95,24 +98,47 @@ class Timesheet():
         return entry
 
     def save_entry(self, entry, index=None):
+        """Format an entry as a dictionary and add it to the timesheet
+        with its index as the key.
+        """
         if index is None:
             index = entry.index
         else:
             index = index
-        entry_data = self._make_dict(entry)
+
+        entry_data = {}
+        entry_data['Date'] = entry.date
+        entry_data['Student ID'] = entry.user_id
+        entry_data['In'] = entry.time_in
+        entry_data['Out'] = entry.time_out
+
         self.sheet[index] = entry_data
         self._update_signed_in()
 
     def remove_entry(self, index):
+        """Delete a single entry from the timesheet."""
         del self.sheet[str(index)]
         self._update_signed_in()
 
+    def search_entries(self, search_term):
+        """Look through the values of all entries.
+        Return a list of the indices of all entries that have a value matching
+        the search term.
+        """
+        # NOTE(amin): use a tuple instead of a list here?
+        entries = [
+            k for k, v in self.sheet.items() if search_term in str(v.items())
+        ]
+        return sorted(entries)
+
     def load_sheet(self, timesheet_file='./timesheet.json'):
+        """Read the timesheet from a json file."""
         with open(timesheet_file, 'r') as f:
             self.sheet = json.load(f)
         self._update_signed_in()
 
     def save_sheet(self, timesheet_file='./timesheet.json'):
+        """Write the timesheet to json file."""
         with open(timesheet_file, 'w') as f:
             json.dump(self.sheet, f, indent=4, sort_keys=True)
 

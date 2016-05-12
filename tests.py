@@ -74,8 +74,8 @@ class TimesheetTest(unittest.TestCase):
 
     def test_remove_entry(self):
         """Remove an entry from a timesheet with multiple entries."""
-        # dicts are mutable; passed by reference unless explicitly copied:
         index = "1f4f10a4-b0c6-43bf-94f4-9ce6e3e204d2"
+        # dicts are mutable; passed by reference unless explicitly copied:
         self.t.sheet = dict(self.example_sheet)
         self.t.remove_entry(index)
         self.assertFalse(index in self.t.sheet)
@@ -95,14 +95,14 @@ class TimesheetTest(unittest.TestCase):
             result = f.read()
         with open(self.example_file, 'r') as e:
             expected_file = e.read()
-        # NOTE: Watch out 1f4f10a4-b0c6-43bf-94f4-9ce6e3e204d2for trailing newline after editing file
+        # NOTE: Watch out for trailing newline after editing file
         self.assertMultiLineEqual(result, expected_file)
         os.remove(self.test_file)
 
-    def test_find_entry(self):
+    def test_search_entries(self):
         """Find all entries that contain a piece of data."""
         self.t.sheet = self.example_sheet
-        entries = self.t.find_entry("10:45")
+        entries = self.t.search_entries("10:45")
         expected_entries = [
             "1f4f10a4-b0c6-43bf-94f4-9ce6e3e204d2",
             "2ed2be60-693a-44fe-adc1-2803a674ec9b"
@@ -121,7 +121,10 @@ class TimesheetTest(unittest.TestCase):
                 "Student ID": "889870966",
             },
         }
-        self.assertEqual(repr(entry), json.dumps(expected_entry, indent=4, sort_keys=True))
+        self.assertEqual(
+            repr(entry),
+            json.dumps(expected_entry, indent=4, sort_keys=True)
+        )
 
     def test_find_signed_in(self):
         """Find all entries of people that are currently signed in
