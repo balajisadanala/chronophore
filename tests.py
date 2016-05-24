@@ -6,6 +6,49 @@ import unittest.mock
 from datetime import datetime
 
 
+class InterfaceTest(unittest.TestCase):
+    def setUp(self):
+        self.t = timebook.Timesheet()
+        self.example_sheet = {
+            "1f4f10a4-b0c6-43bf-94f4-9ce6e3e204d2": {
+                "Date": "2016-02-17",
+                "In": "10:45",
+                "Out": "13:30",
+                "Student ID": "889870966",
+            },
+            "2ed2be60-693a-44fe-adc1-2803a674ec9b": {
+                "Date": "2016-02-17",
+                "In": "10:45",
+                "Out": "",
+                "Student ID": "885894966",
+            },
+            "7b4ae0fc-3801-4412-998f-ace14829d150": {
+                "Date": "2016-02-17",
+                "In": "12:45",
+                "Out": "16:44",
+                "Student ID": "889249566",
+            },
+        }
+        self.t.sheet = self.example_sheet
+        self.t._update_signed_in()
+    
+    @unittest.mock.patch(
+        'timebook.Entry._make_index',
+        return_value='3b27d0f8-3801-4319-398f-ace18829d150'
+    )
+    def test_sign_in(self, make_index):
+        timebook.sign(self.t, "889870966")
+        self.assertEqual(
+            self.t.sheet['3b27d0f8-3801-4319-398f-ace18829d150']['Student ID'],
+            "889870966")
+
+    def test_sign_out(self):
+        timebook.sign(self.t, "885894966")
+        self.assertNotIn(
+            "2ed2be60-693a-44fe-adc1-2803a674ec9b",
+            self.t.signedin)
+
+
 class EntryTest(unittest.TestCase):
     @unittest.mock.patch(
         'timebook.Entry._get_current_datetime',
@@ -145,7 +188,6 @@ class TimesheetTest(unittest.TestCase):
         """
         e = timebook.Entry("889870966", "2016-02-17", "10:45")
         self.t.save_entry(e)
-        self.t._update_signed_in()
         self.assertIn("3b27d0f8-3801-4319-398f-ace18829d150", self.t.signedin)
 
     def test_sign_out(self):
@@ -156,7 +198,6 @@ class TimesheetTest(unittest.TestCase):
         e = timebook.Entry("889870966", "2016-02-17", "10:45", "13:30")
         index = "2ed2be60-693a-44fe-adc1-2803a674ec9b"
         self.t.save_entry(e, index)
-        self.t._update_signed_in()
         self.assertNotIn(index, self.t.signedin)
 
 

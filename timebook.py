@@ -16,6 +16,9 @@ from datetime import datetime, timedelta
 class Entry():
     """Contains all data for a single entry"""
 
+    # NOTE(amin): Use __slots__ here if this ever get's to a scale where memory
+    # needs to be saved (thousands of instances).
+
     def __init__(self, user_id=None, date=None, time_in=None,
                  time_out=None, index=None):
         """Parameters have different default behaviors, and can all be
@@ -48,6 +51,7 @@ class Entry():
         else:
             self.index = index
 
+    # TODO(amin): update use this as __str__() and make a new __repr()__
     def __repr__(self):
         """Return the entry as it will appear in the json file."""
         data = {}
@@ -78,12 +82,15 @@ class Entry():
 class Timesheet():
     """Contains multiple entries"""
 
+    # TODO(amin): add __repr()__ and __str()__
+
     def __init__(self):
         self.sheet = {}
         self.signedin = []
 
     def _update_signed_in(self):
         """Update the list of all entries that haven't been signed out."""
+        # TODO(amin): throw an exception if a duplicate is assigned
         self.signedin = [k for k, v in self.sheet.items() if v['Out'] == ""]
 
     def load_entry(self, index):
@@ -143,21 +150,29 @@ class Timesheet():
             json.dump(self.sheet, f, indent=4, sort_keys=True)
 
 
+def sign(timesheet, user_id):
+    try:
+        [entry] = [i for i in timesheet.signedin if
+                   timesheet.sheet[i]['Student ID'] == user_id] or [None]
+    except ValueError as e:
+        # TODO(amin): decide how to catch this
+        print(e)
+        raise SystemExit
+    else:
+        if not entry:
+            timesheet.save_entry(Entry(user_id))
+        else:
+            e = timesheet.load_entry(entry)
+            e.sign_out()
+            timesheet.save_entry(e)
+
+
 def main():
     t = Timesheet()
-    x = Entry("889870966")
-    y = Entry("883830333")
-    t.save_entry(x)
-    entries = t.find_entry("889870966")
-    for index in entries:
-        print(index)
-        e = t.load_entry(index)
-        print(e.index)
-        print(e.user_id)
-        print(e.date)
-        print(e.time_in)
-        print(e.time_out)
-    t.save_entry(y)
+    for uid in range(50):
+        sign(t, uid)
+    for uid in range(50):
+        sign(t, uid)
     t.save_sheet()
 
 
