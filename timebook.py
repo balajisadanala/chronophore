@@ -3,15 +3,6 @@ import os
 import uuid
 from datetime import datetime, timedelta
 
-# TODO:
-# - [ ] user-facing command line interface
-# - [ ] exceptions/validation
-# - [ ] protect agains accidental file overwrite
-# - [ ] logging
-# - [ ] command line mvp
-# - [ ] load timesheet file partially into memory if possible
-# - [ ] auto-completion
-
 
 class Entry():
     """Contains all data for a single entry"""

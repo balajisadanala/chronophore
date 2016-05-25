@@ -3,3 +3,4 @@
 *.vim
 reference/
 __pycache__/
+test_utils.py
