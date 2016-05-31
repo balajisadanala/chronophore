@@ -7,9 +7,6 @@ from datetime import datetime, timedelta
 class Entry():
     """Contains all data for a single entry"""
 
-    # NOTE(amin): Use __slots__ here if this ever get's to a scale where memory
-    # needs to be saved (thousands of instances).
-
     def __init__(self, user_id=None, date=None, time_in=None,
                  time_out=None, index=None):
         """Parameters have different default behaviors, and can all be
@@ -42,21 +39,33 @@ class Entry():
         else:
             self.index = index
 
-    # TODO(amin): update use this as __str__() and make a new __repr()__
     def __repr__(self):
-        """Return the entry as it will appear in the json file."""
-        data = {}
-        data['Date'] = self.date
-        data['Student ID'] = self.user_id
-        data['In'] = self.time_in
-        data['Out'] = self.time_out
-        entry = {}
-        entry[self.index] = data
-        return json.dumps(entry, indent=4, sort_keys=True)
+        """Return an unambiguous representation of the entry."""
+        entry = ("timebook.Entry(user_id='{}', date='{}', time_in='{}', "
+                 "time_out='{}', index='{}')")
+        return entry.format(
+            self.user_id,
+            self.date,
+            self.time_in,
+            self.time_out,
+            self.index
+        )
+
+    def __eq__(self, other):
+        """'==' returns true if both objects are instances of Entry
+        and have identical attributes.
+        """
+        if isinstance(other, Entry):
+            return self.__dict__ == other.__dict__
+        return false
+
+    def __ne__(self, other):
+        """'!=' returns the opposite of '=='."""
+        return not self == other
 
     def _get_current_datetime(self):
-        """Serves as a mockable reference to datetime.today(). Mocking is used
-        in the unit tests.
+        """Serves as a mockable reference to datetime.today().
+        Mocking is used in the unit tests.
         """
         return datetime.today()
 
@@ -87,7 +96,7 @@ class Timesheet():
     def load_entry(self, index):
         """Load an entry into its own object."""
         entry = Entry(
-                    self.sheet[index]['Student ID'],
+                    self.sheet[index]['User ID'],
                     self.sheet[index]['Date'],
                     self.sheet[index]['In'],
                     self.sheet[index]['Out'],
@@ -106,7 +115,7 @@ class Timesheet():
 
         entry_data = {}
         entry_data['Date'] = entry.date
-        entry_data['Student ID'] = entry.user_id
+        entry_data['User ID'] = entry.user_id
         entry_data['In'] = entry.time_in
         entry_data['Out'] = entry.time_out
 
@@ -120,14 +129,13 @@ class Timesheet():
 
     def search_entries(self, search_term):
         """Look through the values of all entries.
-        Return a list of the indices of all entries that have a value matching
+        Return a set of the indices of all entries that have a value matching
         the search term.
         """
-        # NOTE(amin): use a tuple instead of a list here?
-        entries = [
+        entries = {
             k for k, v in self.sheet.items() if search_term in str(v.items())
-        ]
-        return sorted(entries)
+        }
+        return entries
 
     def load_sheet(self, timesheet_file='./timesheet.json'):
         """Read the timesheet from a json file."""
@@ -144,7 +152,7 @@ class Timesheet():
 def sign(timesheet, user_id):
     try:
         [entry] = [i for i in timesheet.signedin if
-                   timesheet.sheet[i]['Student ID'] == user_id] or [None]
+                   timesheet.sheet[i]['User ID'] == user_id] or [None]
     except ValueError as e:
         # TODO(amin): decide how to catch this
         print(e)
