@@ -20,9 +20,8 @@ class InterfaceTest(unittest.TestCase):
         self.t.save_entry(self.e)
 
     @unittest.mock.patch(
-        'timebook.Entry._make_index',
-        return_value='3b27d0f8-3801-4319-398f-ace18829d150'
-    )
+            'timebook.Entry._make_index',
+            return_value='3b27d0f8-3801-4319-398f-ace18829d150')
     def test_sign_in(self, make_index):
         """Sign in with a new ID."""
         timebook.sign(self.t, "882870l92")
@@ -39,9 +38,8 @@ class InterfaceTest(unittest.TestCase):
 
 class EntryTest(unittest.TestCase):
     @unittest.mock.patch(
-        'timebook.Entry._get_current_datetime',
-        return_value=datetime(2016, 5, 9, 15, 43, 41, 0)
-    )
+            'timebook.Entry._get_current_datetime',
+            return_value=datetime(2016, 5, 9, 15, 43, 41, 0))
     def test_create_entry(self, get_current_datetime):
         """Create an entry with an ID."""
         e = timebook.Entry(user_id="882369423")
@@ -49,6 +47,13 @@ class EntryTest(unittest.TestCase):
         self.assertEqual(e.time_in, "15:43:41")
         self.assertEqual(e.time_out, "")
         self.assertIsNotNone(e.index)
+
+    def test_repr(self):
+        """Test whether the repr of an Entry evaluates to an
+        equivalent Entry object.
+        """
+        e = timebook.Entry()
+        self.assertEqual(e, eval(repr(e)))
 
     def test_comparison(self):
         """Test whether '==' and '!=' work properly."""
@@ -73,17 +78,9 @@ class EntryTest(unittest.TestCase):
         self.assertFalse(entry != equal_entry)
         self.assertFalse(equal_entry != entry)
 
-    def test_repr(self):
-        """Test whether the repr of an Entry evaluates to an
-        equivalent Entry object.
-        """
-        e = timebook.Entry()
-        self.assertEqual(e, eval(repr(e)))
-
     @unittest.mock.patch(
             'timebook.Entry._get_current_datetime',
-            return_value=datetime(2016, 5, 9, 17, 30, 17, 0)
-    )
+            return_value=datetime(2016, 5, 9, 17, 30, 17, 0))
     def test_sign_out(self, get_current_datetime):
         """Create an entry, then sign out of it."""
         e = timebook.Entry(user_id="882369423")
@@ -119,10 +116,48 @@ class TimesheetTest(unittest.TestCase):
             },
         }
 
+    def test_find_signed_in(self):
+        """Find all entries of people that are currently signed in
+        (all entries that have a time_in value, but not a time_out value).
+        """
+        self.t.sheet = self.example_sheet
+        self.t._update_signed_in()
+        expected_entries = ["2ed2be60-693a-44fe-adc1-2803a674ec9b"]
+        self.assertEqual(self.t.signedin, expected_entries)
+
+    def test_add_signed_in(self):
+        """User signs in, and they are added to the list of currently
+        signed in users.
+        """
+        e = timebook.Entry("889870966", "2016-02-17", "10:45")
+        self.t.save_entry(e)
+        self.assertIn(e.index, self.t.signedin)
+
+    def test_remove_signed_in(self):
+        """User signs out, and they are removed from the list of currently
+        signed in users.
+        """
+        self.t.sheet = dict(self.example_sheet)
+        e = timebook.Entry("889870966", "2016-02-17", "10:45", "13:30")
+        self.t.save_entry(e)
+        self.assertNotIn(e.index, self.t.signedin)
+
+    def test_load_entry(self):
+        """Initialize an entry object with data from the timesheet."""
+        self.t.sheet = self.example_sheet
+        entry = self.t.load_entry("1f4f10a4-b0c6-43bf-94f4-9ce6e3e204d2")
+        expected_entry = timebook.Entry(
+            user_id="889870966",
+            date="2016-02-17",
+            time_in="10:45",
+            time_out="13:30",
+            index="1f4f10a4-b0c6-43bf-94f4-9ce6e3e204d2"
+        )
+        self.assertEqual(entry, expected_entry)
+
     @unittest.mock.patch(
-        'timebook.Entry._make_index',
-        return_value='3b27d0f8-3801-4319-398f-ace18829d150'
-    )
+            'timebook.Entry._make_index',
+            return_value='3b27d0f8-3801-4319-398f-ace18829d150')
     def test_save_entry(self, make_index):
         """Add an entry to an empty timesheet."""
         e = timebook.Entry("889870966", "2016-02-17", "10:45", "13:30")
@@ -145,6 +180,16 @@ class TimesheetTest(unittest.TestCase):
         self.t.remove_entry(index)
         self.assertFalse(index in self.t.sheet)
 
+    def test_search_entries(self):
+        """Find all entries that contain a matching piece of data."""
+        self.t.sheet = self.example_sheet
+        indices = self.t.search_entries("10:45")
+        expected_indices = {
+            "1f4f10a4-b0c6-43bf-94f4-9ce6e3e204d2",
+            "2ed2be60-693a-44fe-adc1-2803a674ec9b"
+        }
+        self.assertEqual(indices, expected_indices)
+
     def test_load_sheet(self):
         """Load a sheet from a file."""
         self.t.load_sheet(timesheet_file=self.example_file)
@@ -157,60 +202,6 @@ class TimesheetTest(unittest.TestCase):
         self.t.save_sheet(timesheet_file=self.test_file)
         self.assertTrue(filecmp.cmp(self.test_file, self.example_file))
         os.remove(self.test_file)
-
-    def test_search_entries(self):
-        """Find all entries that contain a matching piece of data."""
-        self.t.sheet = self.example_sheet
-        indices = self.t.search_entries("10:45")
-        expected_indices = {
-            "1f4f10a4-b0c6-43bf-94f4-9ce6e3e204d2",
-            "2ed2be60-693a-44fe-adc1-2803a674ec9b"
-        }
-        self.assertEqual(indices, expected_indices)
-
-    def test_load_entry(self):
-        """Initialize an entry object with data from the timesheet"""
-        self.t.sheet = self.example_sheet
-        entry = self.t.load_entry("1f4f10a4-b0c6-43bf-94f4-9ce6e3e204d2")
-        expected_entry = timebook.Entry(
-            user_id="889870966",
-            date="2016-02-17",
-            time_in="10:45",
-            time_out="13:30",
-            index="1f4f10a4-b0c6-43bf-94f4-9ce6e3e204d2"
-        )
-        self.assertEqual(entry, expected_entry)
-
-    def test_find_signed_in(self):
-        """Find all entries of people that are currently signed in
-        (there is a time_in value, but not a time_out value).
-        """
-        self.t.sheet = self.example_sheet
-        self.t._update_signed_in()
-        expected_entries = ["2ed2be60-693a-44fe-adc1-2803a674ec9b"]
-        self.assertEqual(self.t.signedin, expected_entries)
-
-    @unittest.mock.patch(
-        'timebook.Entry._make_index',
-        return_value='3b27d0f8-3801-4319-398f-ace18829d150'
-    )
-    def test_sign_in(self, make_index):
-        """User signs in, and they are added to the list of currently
-        signed in users.
-        """
-        e = timebook.Entry("889870966", "2016-02-17", "10:45")
-        self.t.save_entry(e)
-        self.assertIn("3b27d0f8-3801-4319-398f-ace18829d150", self.t.signedin)
-
-    def test_sign_out(self):
-        """User signs out, and they are removed from the list of currently
-        signed in users.
-        """
-        self.t.sheet = dict(self.example_sheet)
-        e = timebook.Entry("889870966", "2016-02-17", "10:45", "13:30")
-        index = "2ed2be60-693a-44fe-adc1-2803a674ec9b"
-        self.t.save_entry(e, index)
-        self.assertNotIn(index, self.t.signedin)
 
 
 if __name__ == '__main__':

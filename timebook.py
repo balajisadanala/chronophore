@@ -132,10 +132,10 @@ class Timesheet():
         Return a set of the indices of all entries that have a value matching
         the search term.
         """
-        entries = {
+        indices = {
             k for k, v in self.sheet.items() if search_term in str(v.items())
         }
-        return entries
+        return indices 
 
     def load_sheet(self, timesheet_file='./timesheet.json'):
         """Read the timesheet from a json file."""
