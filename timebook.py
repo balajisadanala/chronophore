@@ -87,6 +87,7 @@ class Timesheet():
     def __init__(self):
         self.sheet = {}
         self.signedin = []
+        self._update_signed_in()
 
     def _update_signed_in(self):
         """Update the list of all entries that haven't been signed out."""
@@ -135,7 +136,7 @@ class Timesheet():
         indices = {
             k for k, v in self.sheet.items() if search_term in str(v.items())
         }
-        return indices 
+        return indices
 
     def load_sheet(self, timesheet_file='./timesheet.json'):
         """Read the timesheet from a json file."""
@@ -168,10 +169,26 @@ def sign(timesheet, user_id):
 
 def main():
     t = Timesheet()
-    for uid in range(50):
-        sign(t, uid)
-    for uid in range(50):
-        sign(t, uid)
+    while True:
+        print("Timebook")
+        print("========")
+        print("1. Sign In or Out")
+        print("2. List Signed In")
+        print("q. Exit\n")
+        menu_choice = input("Enter a choice: ")
+        if menu_choice == '1':
+            user_id = input("Enter User ID: ")
+            sign(t, user_id)
+        elif menu_choice == '2':
+            print("Currently Signed In:")
+            for i in t.signedin:
+                print(t.sheet[i]['User ID'])
+        elif menu_choice == 'q':
+            break
+        else:
+            print("Invalid choice.")
+        print("\n")
+        t.save_sheet()
     t.save_sheet()
 
 

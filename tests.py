@@ -63,7 +63,7 @@ class EntryTest(unittest.TestCase):
             time_in="10:45",
             time_out="13:30",
             index="1f4f10a4-b0c6-43bf-94f4-9ce6e3e204d2"
-        ) 
+        )
 
         equal_entry = timebook.Entry(
             user_id="889870966",
@@ -71,7 +71,7 @@ class EntryTest(unittest.TestCase):
             time_in="10:45",
             time_out="13:30",
             index="1f4f10a4-b0c6-43bf-94f4-9ce6e3e204d2"
-        ) 
+        )
 
         self.assertTrue(entry == equal_entry)
         self.assertTrue(equal_entry == entry)

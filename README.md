@@ -18,7 +18,7 @@ To Do
     - [ ] validate json file
     - [ ] protect against accidental file overwrite
     - [ ] logging
-    - [ ] load timesheet file partially into memory if possible
+    - [ ] load timesheet file partially into memory if possible ([ijson](https://pypi.python.org/pypi/ijson/))
 - [ ] separate json database for user information
 - [ ] use configuration file(s)
 - [ ] simple gui frontend
