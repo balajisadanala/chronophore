@@ -82,8 +82,6 @@ class Entry():
 class Timesheet():
     """Contains multiple entries"""
 
-    # TODO(amin): add __repr()__ and __str()__
-
     def __init__(self):
         self.sheet = {}
         self.signedin = []
@@ -91,7 +89,13 @@ class Timesheet():
 
     def _update_signed_in(self):
         """Update the list of all entries that haven't been signed out."""
-        # TODO(amin): throw an exception if a duplicate is assigned
+        # NOTE(amin): This doesn't prevent or detect multiple entries
+        # with the same user signed in. This needs to be checked for
+        # elsewhere. It also scales inefficiently with the total size 
+        # of the sheet.
+
+        # TODO(amin): Make this add or remove an entry every time one is
+        # saved, rather than scanning the whole sheet every time.
         self.signedin = [k for k, v in self.sheet.items() if v['Out'] == ""]
 
     def load_entry(self, index):
@@ -155,7 +159,7 @@ def sign(timesheet, user_id):
         [entry] = [i for i in timesheet.signedin if
                    timesheet.sheet[i]['User ID'] == user_id] or [None]
     except ValueError as e:
-        # TODO(amin): decide how to catch this
+        # TODO(amin): catch and resolve this without exiting
         print(e)
         raise SystemExit
     else:

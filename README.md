@@ -13,14 +13,13 @@ To Do
     - [x] format json output with nested keys
     - [x] generate uuid indices for entries
     - [x] keep track of which users are signed in
-    - [ ] exception safety 
+    - [ ] logging
     - [ ] validate user input
     - [ ] validate json file
-    - [ ] protect against accidental file overwrite
-    - [ ] logging
     - [ ] load timesheet file partially into memory if possible ([ijson](https://pypi.python.org/pypi/ijson/))
-- [ ] separate json database for user information
+- [ ] automatically sign-out any signed in users at the end of the day
 - [ ] use configuration file(s)
+- [ ] make seperate json database for user information
 - [ ] simple gui frontend
     - [ ] auto-completion
 - [ ] access database over local wireless network
