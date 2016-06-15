@@ -13,7 +13,7 @@ To Do
     - [x] format json output with nested keys
     - [x] generate uuid indices for entries
     - [x] keep track of which users are signed in
-    - [ ] logging
+    - [x] logging
     - [ ] validate user input
     - [ ] validate json file
     - [ ] load timesheet file partially into memory if possible ([ijson](https://pypi.python.org/pypi/ijson/))
