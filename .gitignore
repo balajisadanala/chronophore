@@ -2,6 +2,6 @@
 *.log
 *.swp
 *.vim
-reference/
+.cache/
+.reference/
 __pycache__/
-test_utils.py

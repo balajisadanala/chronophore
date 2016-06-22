@@ -153,8 +153,9 @@ class Timesheet():
 
     def remove_entry(self, index):
         """Delete a single entry from the timesheet."""
+        removed_entry = self.load_entry(index)
         del self.sheet[str(index)]
-        log.debug("Entry removed: {}".format(load_entry(index)))
+        log.debug("Entry removed: {}".format(removed_entry))
         self._update_signed_in()
 
     def search_entries(self, search_term):
@@ -203,7 +204,6 @@ def main():
     log.debug("Program initialized")
 
     t = Timesheet()
-    t.load_sheet()
 
     while True:
         print("Timebook")

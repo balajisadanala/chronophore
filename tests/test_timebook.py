@@ -1,10 +1,11 @@
 import filecmp
 import json
 import os
-import timebook
+import sys
 import unittest
 import unittest.mock
 from datetime import datetime
+from timebook import timebook
 
 
 class InterfaceTest(unittest.TestCase):
@@ -20,7 +21,7 @@ class InterfaceTest(unittest.TestCase):
         self.t.save_entry(self.e)
 
     @unittest.mock.patch(
-            'timebook.Entry._make_index',
+            'timebook.timebook.Entry._make_index',
             return_value='3b27d0f8-3801-4319-398f-ace18829d150')
     def test_sign_in(self, make_index):
         """Sign in with a new ID."""
@@ -38,7 +39,7 @@ class InterfaceTest(unittest.TestCase):
 
 class EntryTest(unittest.TestCase):
     @unittest.mock.patch(
-            'timebook.Entry._get_current_datetime',
+            'timebook.timebook.Entry._get_current_datetime',
             return_value=datetime(2016, 5, 9, 15, 43, 41, 0))
     def test_create_entry(self, get_current_datetime):
         """Create an entry with an ID."""
@@ -79,7 +80,7 @@ class EntryTest(unittest.TestCase):
         self.assertFalse(equal_entry != entry)
 
     @unittest.mock.patch(
-            'timebook.Entry._get_current_datetime',
+            'timebook.timebook.Entry._get_current_datetime',
             return_value=datetime(2016, 5, 9, 17, 30, 17, 0))
     def test_sign_out(self, get_current_datetime):
         """Create an entry, then sign out of it."""
@@ -156,7 +157,7 @@ class TimesheetTest(unittest.TestCase):
         self.assertEqual(entry, expected_entry)
 
     @unittest.mock.patch(
-            'timebook.Entry._make_index',
+            'timebook.timebook.Entry._make_index',
             return_value='3b27d0f8-3801-4319-398f-ace18829d150')
     def test_save_entry(self, make_index):
         """Add an entry to an empty timesheet."""
