@@ -205,12 +205,13 @@ def main():
 
     t = Timesheet()
 
+    print("Timebook")
+    print("========")
+    print("1. Sign In or Out")
+    print("2. List Signed In")
+    print("q. Exit\n")
+
     while True:
-        print("Timebook")
-        print("========")
-        print("1. Sign In or Out")
-        print("2. List Signed In")
-        print("q. Exit\n")
         menu_choice = input("Enter a choice: ")
         if menu_choice == '1':
             user_id = input("Enter User ID: ")
@@ -223,7 +224,6 @@ def main():
             break
         else:
             print("Invalid choice.")
-        print("\n")
         t.save_sheet()
     t.save_sheet()
 
