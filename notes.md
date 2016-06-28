@@ -1,55 +1,66 @@
 Notes
 =====
 
+
 Requirements
 ------------
-- run on windows (.exe)
-- human readable database
-- store data on an external harddrive with built in wifi network
-- encrypt data file
-- gui
-- check student login against student registry, prompt for registration if entry not found
-    
-    
-Bonus
------
-- autofill
-- portable (no installation, no special dependencies)
-- try to detect when someone has forgotten to sign out
-- reports generated from data based on a query
-    
-
-Database Categories
--------------------
-- student time sheet
-    - date
-    - student id
-    - time in
-    - time out
-    
-- student registry
-    - student id
-    - name
-    - email
-    
-- tutor time sheet
-    - date
-    - employee id
-    - time in
-    - time out
-    
-- tutor registry
-    - employee id
-    - name
-    - email
-    - phone
-    - expertise
-    
+- Gui
+    - Panes
+        - Currently signed in
+        - Sign-in form
+        - Current tutors
+        - Admin
+- Run on windows (.exe)
+- Portable (no installation, no unincluded dependencies)
+- Human readable data files
+- Store data files in hierarchical folders: year, month
+- Check student login against student registry, prompt for registration if entry not found
+- Admin interface
+    - Generate report within date range
+    - Add/Remove/Flag students in student registry
+- Fail gracefully
+    - Auto save
+    - Detect corrupt files
+- Handle bad data
+    - Detect when someone has forgotten to sign out
+    - Omit bad entries in final report
+    - Flag bad entries in raw data
+    - Flag students that forget to sign out
+        - Display reminder for student next time they sign in
 
 
-Query Examples
---------------
-- Who is signed in right now?
-- Who has been signed in for more than 4 hours?
-- Who signed in for the first time today?
-- How many hours has employee x worked this week?
+Security
+--------
+- Store data on network enabled external hard drive
+- Encrypt data files
+- Admin interface is password protected 
+
+
+Database Fields 
+---------------
+- Student time sheet
+    - UUID
+        - Date
+        - Student id
+        - Time in
+        - Time out
+    
+- Student registry
+    - Student id
+        - Date joined STEM
+        - Date left STEM
+        - Education plan (bool)
+        - Email
+        - Forgot to sign in (bool)
+        - Major
+        - Name
+
+
+Report
+------
+- Portable, flexible format (csv?)
+- Omit bad entries (incomplete, no sign out time)
+- List of dates within range
+    - Date
+        - Total student hours per date
+        - Total bad entries per date

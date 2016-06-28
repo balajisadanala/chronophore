@@ -7,25 +7,30 @@ This project was started to help keep track of students signing in and out at a 
 
 To Do
 -----
-- [ ] come up with a name no one else is using
-- [ ] command line mvp
-    - [x] write to and read from a json file
-    - [x] format json output with nested keys
-    - [x] generate uuid indices for entries
-    - [x] keep track of which users are signed in
-    - [x] logging
-    - [ ] validate user input
-    - [ ] validate json file
-    - [ ] load timesheet file partially into memory if possible ([ijson](https://pypi.python.org/pypi/ijson/))
-- [ ] automatically sign-out any signed in users at the end of the day
-- [ ] use configuration file(s)
-- [ ] make seperate json database for user information
-- [ ] simple gui frontend
-    - [ ] auto-completion
-- [ ] access database over local wireless network
-    - [ ] improve security (encrypt/decrypt database, securely handle passwords...)
-- [ ] package to be a portable windows executable
-- [ ] generate reports from data, e.g. "total time person x has been signed in"
+- [ ] Command line mvp
+    - [x] Write to and read from a json file
+    - [x] Format json output with nested keys
+    - [x] Generate uuid indices for entries
+    - [x] Keep track of which users are signed in
+    - [x] Logging
+    - [ ] Student registry json file
+    - [ ] Validate user input
+        - [ ] Check whether student is registered 
+    - [ ] Organize data files in date-based hierarchy
+    - [ ] Startup tasks
+        - [ ] Load or create data file based on current date
+        - [ ] Check for bad entries from previous days
+        - [ ] Flag students that forgot to sign out
+- [ ] Separate thread to periodically auto save
+- [ ] Tkinter gui
+- [ ] Admin page
+    - [ ] Generate reports from data, e.g. "total time person x has been signed in"
+- [ ] Configuration file
+- [ ] Improve security
+    - [ ] Access database over local wireless network
+    - [ ] Encrypt/decrypt database
+- [ ] Package to be a portable windows executable
+- [ ] Come up with a name no one else is using
 
 
 Lessons Learned
