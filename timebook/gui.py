@@ -4,21 +4,23 @@ from tkinter import ttk, N, S, E, W
 
 t = timebook.Timesheet()
 
-test_list = ["Jon Snow", "Tyrion Lannister", "Sandor Clegane", "Syrio Forel"]
-
-def sign_in_out():
-    uid = ent_id.get()
-    timebook.sign(t, uid)
+def sign_in_out(*args):
+    user_id = ent_id.get()
+    timebook.sign(t, user_id)
     t.save_sheet()
+    signed_in.set('\n'.join(t.signed_in))
 
 # root window
 root = tkinter.Tk()
+root.title("STEM Sign In")
 content = ttk.Frame(root, padding=(5,5,10,10))
+
+signed_in = tkinter.StringVar(root)
 
 # widgets
 frm_signedin = ttk.Frame(content, borderwidth=5, relief="sunken", width=200, height=100)
 lbl_signedin = ttk.Label(content, text="Currently Signed In:")
-lbl_signedin_list = ttk.Label(frm_signedin, text=('\n'.join(test_list)))
+lbl_signedin_list = ttk.Label(frm_signedin, textvariable=signed_in)
 lbl_welcome = ttk.Label(content, text="Welcome to the STEM Learning Center!")
 lbl_id = ttk.Label(content, text="Enter Student ID")
 user_id = tkinter.StringVar()
@@ -47,5 +49,9 @@ content.rowconfigure(0, weight=0)
 content.rowconfigure(1, weight=3)
 content.rowconfigure(2, minsize=100, weight=1)
 content.rowconfigure(3, weight=3)
+
+ent_id.focus()
+
+root.bind('<Return>', sign_in_out)
 
 root.mainloop()
