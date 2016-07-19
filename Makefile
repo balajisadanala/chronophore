@@ -1,3 +1,6 @@
+run:
+	python -m timebook.timebook
+
 test:
 	py.test tests
 

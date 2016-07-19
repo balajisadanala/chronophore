@@ -34,7 +34,7 @@ class InterfaceTest(unittest.TestCase):
         """Sign out with an ID that's currently signed in."""
         timebook.sign(self.t, "885894966")
         self.assertIsNotNone(self.t.sheet[self.e.index])
-        self.assertNotIn(self.e.index, self.t.signedin)
+        self.assertNotIn(self.e.index, self.t.signed_in)
 
 
 class EntryTest(unittest.TestCase):
@@ -124,7 +124,7 @@ class TimesheetTest(unittest.TestCase):
         self.t.sheet = self.example_sheet
         self.t._update_signed_in()
         expected_entries = ["2ed2be60-693a-44fe-adc1-2803a674ec9b"]
-        self.assertEqual(self.t.signedin, expected_entries)
+        self.assertEqual(self.t.signed_in, expected_entries)
 
     def test_add_signed_in(self):
         """User signs in, and they are added to the list of currently
@@ -132,7 +132,7 @@ class TimesheetTest(unittest.TestCase):
         """
         e = timebook.Entry("889870966", "2016-02-17", "10:45")
         self.t.save_entry(e)
-        self.assertIn(e.index, self.t.signedin)
+        self.assertIn(e.index, self.t.signed_in)
 
     def test_remove_signed_in(self):
         """User signs out, and they are removed from the list of currently
@@ -141,7 +141,7 @@ class TimesheetTest(unittest.TestCase):
         self.t.sheet = dict(self.example_sheet)
         e = timebook.Entry("889870966", "2016-02-17", "10:45", "13:30")
         self.t.save_entry(e)
-        self.assertNotIn(e.index, self.t.signedin)
+        self.assertNotIn(e.index, self.t.signed_in)
 
     def test_load_entry(self):
         """Initialize an entry object with data from the timesheet."""

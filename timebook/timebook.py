@@ -3,6 +3,7 @@ import logging
 import os
 import uuid
 from datetime import datetime, timedelta
+from timebook import gui
 
 log = logging.getLogger(__name__)
 
@@ -106,7 +107,7 @@ class Timesheet():
 
     def __init__(self):
         self.sheet = {}
-        self.signedin = []
+        self.signed_in = []
         self._update_signed_in()
 
     def _update_signed_in(self):
@@ -118,8 +119,8 @@ class Timesheet():
 
         # TODO(amin): Make this add or remove an entry every time one is
         # saved, rather than scanning the whole sheet every time.
-        self.signedin = [k for k, v in self.sheet.items() if v['Out'] == ""]
-        log.debug("Signed in entries: {}".format(self.signedin))
+        self.signed_in = [k for k, v in self.sheet.items() if v['Out'] == ""]
+        log.debug("Signed in entries: {}".format(self.signed_in))
 
     def load_entry(self, index):
         """Load an entry into its own object."""
@@ -184,7 +185,7 @@ class Timesheet():
 
 def sign(timesheet, user_id):
     try:
-        [entry] = [i for i in timesheet.signedin if
+        [entry] = [i for i in timesheet.signed_in if
                    timesheet.sheet[i]['User ID'] == user_id] or [None]
     except ValueError as e:
         # TODO(amin): catch and resolve this without exiting
@@ -204,28 +205,7 @@ def main():
     log.debug("Program initialized")
 
     t = Timesheet()
-
-    print("Timebook")
-    print("========")
-    print("1. Sign In or Out")
-    print("2. List Signed In")
-    print("q. Exit\n")
-
-    while True:
-        menu_choice = input("Enter a choice: ")
-        if menu_choice == '1':
-            user_id = input("Enter User ID: ")
-            sign(t, user_id)
-        elif menu_choice == '2':
-            print("Currently Signed In:")
-            for i in t.signedin:
-                print(t.sheet[i]['User ID'])
-        elif menu_choice == 'q':
-            break
-        else:
-            print("Invalid choice.")
-        t.save_sheet()
-    t.save_sheet()
+    ui = gui.TimebookUI(t)
 
     log.debug("Program stopping")
 
