@@ -3,6 +3,7 @@ import logging
 import os
 import uuid
 from datetime import datetime, timedelta
+from timebook import gui
 
 log = logging.getLogger(__name__)
 
@@ -204,28 +205,7 @@ def main():
     log.debug("Program initialized")
 
     t = Timesheet()
-
-    print("Timebook")
-    print("========")
-    print("1. Sign In or Out")
-    print("2. List Signed In")
-    print("q. Exit\n")
-
-    while True:
-        menu_choice = input("Enter a choice: ")
-        if menu_choice == '1':
-            user_id = input("Enter User ID: ")
-            sign(t, user_id)
-        elif menu_choice == '2':
-            print("Currently Signed In:")
-            for i in t.signed_in:
-                print(t.sheet[i]['User ID'])
-        elif menu_choice == 'q':
-            break
-        else:
-            print("Invalid choice.")
-        t.save_sheet()
-    t.save_sheet()
+    ui = gui.TimebookUI(t)
 
     log.debug("Program stopping")
 

@@ -9,11 +9,12 @@ class TimebookUI():
             - List of currently signed in users
     """
 
-    def __init__(self, parent, timesheet):
+    def __init__(self, timesheet):
         self.t = timesheet
 
-        parent.title("STEM Sign In")
-        self.content = ttk.Frame(parent, padding=(5,5,10,10))
+        root = tkinter.Tk()
+        root.title("STEM Sign In")
+        self.content = ttk.Frame(root, padding=(5,5,10,10))
         self.signed_in = tkinter.StringVar()
 
         # widgets
@@ -40,8 +41,8 @@ class TimebookUI():
         self.btn_sign.grid(column=2, row=2, columnspan=1, sticky=(S))
 
         # resize weights
-        parent.columnconfigure(0, minsize=400, weight=1)
-        parent.rowconfigure(0, minsize=200, weight=1)
+        root.columnconfigure(0, minsize=400, weight=1)
+        root.rowconfigure(0, minsize=200, weight=1)
         self.content.columnconfigure(0, weight=1)
         self.content.columnconfigure(1, weight=3)
         self.content.columnconfigure(2, weight=3)
@@ -51,8 +52,10 @@ class TimebookUI():
         self.content.rowconfigure(2, minsize=100, weight=1)
         self.content.rowconfigure(3, weight=3)
 
-        parent.bind('<Return>', self.sign_in_out)
+        root.bind('<Return>', self.sign_in_out)
         self.ent_id.focus()
+
+        root.mainloop()
 
     def sign_in_out(self, *args):
         user_id = self.ent_id.get()
@@ -67,6 +70,4 @@ class TimebookUI():
 if __name__ == '__main__':
     # Usage example
     t = timebook.Timesheet()
-    root = tkinter.Tk()
-    ui = TimebookUI(root, t)
-    root.mainloop()
+    ui = TimebookUI(t)

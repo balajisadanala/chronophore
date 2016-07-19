@@ -7,22 +7,21 @@ This project was started to help keep track of students signing in and out at a 
 
 To Do
 -----
-- [ ] Command line mvp
-    - [x] Write to and read from a json file
-    - [x] Format json output with nested keys
-    - [x] Generate uuid indices for entries
-    - [x] Keep track of which users are signed in
-    - [x] Logging
-    - [ ] Student registry json file
-    - [ ] Validate user input
-        - [ ] Check whether student is registered 
-    - [ ] Organize data files in date-based hierarchy
-    - [ ] Startup tasks
-        - [ ] Load or create data file based on current date
-        - [ ] Check for bad entries from previous days
-        - [ ] Flag students that forgot to sign out
+- [x] Write to and read from a json file
+- [x] Format json output with nested keys
+- [x] Generate uuid indices for entries
+- [x] Keep track of which users are signed in
+- [x] Logging
+- [ ] Student registry json file
+- [ ] Validate user input
+    - [ ] Check whether student is registered 
+- [ ] Organize data files in date-based hierarchy
+- [ ] Startup tasks
+    - [ ] Load or create data file based on current date
+    - [ ] Check for bad entries from previous days
+    - [ ] Flag students that forgot to sign out
 - [ ] Separate thread to periodically auto save
-- [ ] Tkinter gui
+- [x] Tkinter gui
 - [ ] Admin page
     - [ ] Generate reports from data, e.g. "total time person x has been signed in"
 - [ ] Configuration file
