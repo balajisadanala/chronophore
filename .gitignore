@@ -3,5 +3,6 @@
 *.swp
 *.vim
 .cache/
+data/
 .reference/
 __pycache__/

@@ -1,6 +1,6 @@
 import filecmp
 import json
-import os
+import pathlib
 import sys
 import unittest
 import unittest.mock
@@ -90,11 +90,12 @@ class EntryTest(unittest.TestCase):
 
 
 class TimesheetTest(unittest.TestCase):
-    test_file = "./test.json"
-    example_file = "./example.json"
+    test_file = pathlib.Path('.', 'tests', 'test.json')
+    example_file = pathlib.Path('.', 'example.json')
 
     def setUp(self):
-        self.t = timebook.Timesheet()
+        self.maxDiff = None
+        self.t = timebook.Timesheet(self.test_file)
         # this matches the contents of the example_file
         self.example_sheet = {
             "1f4f10a4-b0c6-43bf-94f4-9ce6e3e204d2": {
@@ -193,16 +194,21 @@ class TimesheetTest(unittest.TestCase):
 
     def test_load_sheet(self):
         """Load a sheet from a file."""
-        self.t.load_sheet(timesheet_file=self.example_file)
+        self.t.load_sheet(data_file=self.example_file)
         loaded_sheet = self.t.sheet
         self.assertEqual(loaded_sheet, self.example_sheet)
 
     def test_save_sheet(self):
         """Save a sheet to a file."""
         self.t.sheet = dict(self.example_sheet)
-        self.t.save_sheet(timesheet_file=self.test_file)
-        self.assertTrue(filecmp.cmp(self.test_file, self.example_file))
-        os.remove(self.test_file)
+        self.t.save_sheet(data_file=self.test_file)
+        self.assertTrue(
+            filecmp.cmp(
+                str(self.test_file),
+                str(self.example_file)
+            )
+        )
+        self.test_file.unlink()
 
 
 if __name__ == '__main__':

@@ -17,7 +17,7 @@ To Do
     - [ ] Check whether student is registered 
 - [ ] Organize data files in date-based hierarchy
 - [ ] Startup tasks
-    - [ ] Load or create data file based on current date
+    - [x] Load or create data file based on current date
     - [ ] Check for bad entries from previous days
     - [ ] Flag students that forgot to sign out
 - [ ] Separate thread to periodically auto save

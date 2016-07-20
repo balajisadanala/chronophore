@@ -1,6 +1,6 @@
 import json
 import logging
-import os
+import pathlib
 import uuid
 from datetime import datetime, timedelta
 from timebook import gui
@@ -17,7 +17,9 @@ def setup_logger():
     ch = logging.StreamHandler()
     ch.setLevel(logging.WARNING)
 
-    formatter = logging.Formatter("{asctime} {levelname}: {message}", style='{')
+    formatter = logging.Formatter(
+        "{asctime} {levelname}: {message}", style='{'
+    )
     fh.setFormatter(formatter)
     ch.setFormatter(formatter)
 
@@ -105,16 +107,31 @@ class Entry():
 class Timesheet():
     """Contains multiple entries"""
 
-    def __init__(self):
+    def __init__(self, data_file=None):
         self.sheet = {}
         self.signed_in = []
+        data_dir = pathlib.Path('.', 'data')
+
+        if data_file is None:
+            today = datetime.strftime(datetime.today(), "%Y-%m-%d")
+            file_name = today + ".json"
+            self.data_file = data_dir.joinpath(file_name)
+        else:
+            self.data_file = data_file
+
+        if self.data_file.exists():
+            self.load_sheet()
+        elif not data_dir.exists():
+            # make the data folder
+            data_dir.mkdir(exist_ok=False, parents=True)
+
         self._update_signed_in()
 
     def _update_signed_in(self):
         """Update the list of all entries that haven't been signed out."""
         # NOTE(amin): This doesn't prevent or detect multiple entries
         # with the same user signed in. This needs to be checked for
-        # elsewhere. It also scales inefficiently with the total size 
+        # elsewhere. It also scales inefficiently with the total size
         # of the sheet.
 
         # TODO(amin): Make this add or remove an entry every time one is
@@ -169,18 +186,24 @@ class Timesheet():
         }
         return indices
 
-    def load_sheet(self, timesheet_file='./timesheet.json'):
+    def load_sheet(self, data_file=None):
         """Read the timesheet from a json file."""
-        with open(timesheet_file, 'r') as f:
+        if data_file is None:
+            data_file = self.data_file
+
+        with data_file.open('r') as f:
             self.sheet = json.load(f)
-        log.debug("Sheet loaded from {}".format(timesheet_file))
+        log.debug("Sheet loaded from {}".format(data_file.resolve()))
         self._update_signed_in()
 
-    def save_sheet(self, timesheet_file='./timesheet.json'):
+    def save_sheet(self, data_file=None):
         """Write the timesheet to json file."""
-        with open(timesheet_file, 'w') as f:
+        if data_file is None:
+            data_file = self.data_file
+
+        with data_file.open('w') as f:
             json.dump(self.sheet, f, indent=4, sort_keys=True)
-        log.debug("Sheet saved to {}".format(timesheet_file))
+        log.debug("Sheet saved to {}".format(data_file.resolve()))
 
 
 def sign(timesheet, user_id):
