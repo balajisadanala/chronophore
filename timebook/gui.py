@@ -1,5 +1,3 @@
-import threading
-import time
 import tkinter
 from timebook import timebook
 from tkinter import ttk, N, S, E, W
@@ -15,9 +13,9 @@ class TimebookUI():
     def __init__(self, timesheet):
         self.t = timesheet
 
-        root = tkinter.Tk()
-        root.title("STEM Sign In")
-        self.content = ttk.Frame(root, padding=(5, 5, 10, 10))
+        self.root = tkinter.Tk()
+        self.root.title("STEM Sign In")
+        self.content = ttk.Frame(self.root, padding=(5, 5, 10, 10))
 
         # variables
         self.signed_in = tkinter.StringVar()
@@ -72,8 +70,8 @@ class TimebookUI():
         self.btn_sign.grid(column=2, row=3, columnspan=1, sticky=(N))
 
         # resize weights
-        root.columnconfigure(0, minsize=400, weight=1)
-        root.rowconfigure(0, minsize=200, weight=1)
+        self.root.columnconfigure(0, minsize=400, weight=1)
+        self.root.rowconfigure(0, minsize=200, weight=1)
         self.content.columnconfigure(0, weight=1)
         self.content.columnconfigure(1, weight=3)
         self.content.columnconfigure(2, weight=3)
@@ -83,26 +81,22 @@ class TimebookUI():
         self.content.rowconfigure(2, minsize=100, weight=1)
         self.content.rowconfigure(3, weight=3)
 
-        root.bind('<Return>', self.sign_in_out)
-        root.bind('<KP_Enter>', self.sign_in_out)
+        self.root.bind('<Return>', self.sign_in_out)
+        self.root.bind('<KP_Enter>', self.sign_in_out)
         self.ent_id.focus()
 
         self.signed_in.set('\n'.join(sorted(
             [self.t.sheet[i]['User ID'] for i in self.t.signed_in])))
-        root.mainloop()
+        self.root.mainloop()
 
     def show_feedback(self, message, seconds):
-        """Use a thread to display a message in lbl_feedback that times out
-        after some number of seconds. 
+        """Display a message in lbl_feedback, which then times out
+        after some number of seconds. Use after() to schedule a callback
+        to hide the feedback message. This works better than using threads,
+        which can cause problems in Tk.
         """
-
-        def feedback_timeout(message, seconds):
-            self.feedback.set(message)
-            time.sleep(seconds)
-            self.feedback.set("")
-
-        t = threading.Thread(target=feedback_timeout, args=(message, seconds))
-        t.start()
+        self.feedback.set(message)
+        self.root.after(1000 * seconds, lambda: self.feedback.set(""))
 
     def sign_in_out(self, *args):
         """Validate input from ent_id, then sign in to the Timesheet."""
