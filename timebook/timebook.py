@@ -2,7 +2,7 @@ import json
 import logging
 import pathlib
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime
 from timebook import gui
 
 log = logging.getLogger(__name__)
@@ -206,7 +206,21 @@ class Timesheet():
         log.debug("Sheet saved to {}".format(data_file.resolve()))
 
 
+def is_valid(user_input):
+    valid = True
+    try:
+        _ = int(user_input)
+    except ValueError:
+        valid = False
+    else:
+        if len(user_input) != 9:
+            valid = False 
+    return valid
+
+
 def sign(timesheet, user_id):
+    if not is_valid(user_id):
+        raise ValueError
     try:
         [entry] = [i for i in timesheet.signed_in if
                    timesheet.sheet[i]['User ID'] == user_id] or [None]

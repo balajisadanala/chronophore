@@ -1,5 +1,7 @@
-from timebook import timebook
+import threading
+import time
 import tkinter
+from timebook import timebook
 from tkinter import ttk, N, S, E, W
 
 
@@ -16,7 +18,11 @@ class TimebookUI():
         root = tkinter.Tk()
         root.title("STEM Sign In")
         self.content = ttk.Frame(root, padding=(5, 5, 10, 10))
+
+        # variables
         self.signed_in = tkinter.StringVar()
+        self.user_id = tkinter.StringVar()
+        self.feedback = tkinter.StringVar()
 
         # widgets
         self.frm_signedin = ttk.Frame(
@@ -39,12 +45,10 @@ class TimebookUI():
             text="Welcome to the STEM Learning Center!"
         )
         self.lbl_id = ttk.Label(self.content, text="Enter Student ID")
-
-        self.user_id = tkinter.StringVar()
-
         self.ent_id = ttk.Entry(
             self.content,
             textvariable=self.user_id)
+        self.lbl_feedback = ttk.Label(self.content, textvar=self.feedback)
         self.btn_sign = ttk.Button(
             self.content,
             text="Sign In/Out",
@@ -64,7 +68,8 @@ class TimebookUI():
         self.lbl_id.grid(column=2, row=2, columnspan=1, sticky=(N))
         # TODO(amin): add select all shortcuts to this entry
         self.ent_id.grid(column=2, row=2, columnspan=1, sticky=(E, W))
-        self.btn_sign.grid(column=2, row=2, columnspan=1, sticky=(S))
+        self.lbl_feedback.grid(column=2, row=2, sticky=(S))
+        self.btn_sign.grid(column=2, row=3, columnspan=1, sticky=(N))
 
         # resize weights
         root.columnconfigure(0, minsize=400, weight=1)
@@ -79,16 +84,40 @@ class TimebookUI():
         self.content.rowconfigure(3, weight=3)
 
         root.bind('<Return>', self.sign_in_out)
+        root.bind('<KP_Enter>', self.sign_in_out)
         self.ent_id.focus()
 
+        self.signed_in.set('\n'.join(sorted(
+            [self.t.sheet[i]['User ID'] for i in self.t.signed_in])))
         root.mainloop()
 
+    def show_feedback(self, message, seconds):
+        """Use a thread to display a message in lbl_feedback that times out
+        after some number of seconds. 
+        """
+
+        def feedback_timeout(message, seconds):
+            self.feedback.set(message)
+            time.sleep(seconds)
+            self.feedback.set("")
+
+        t = threading.Thread(target=feedback_timeout, args=(message, seconds))
+        t.start()
+
     def sign_in_out(self, *args):
+        """Validate input from ent_id, then sign in to the Timesheet."""
         user_id = self.ent_id.get()
-        timebook.sign(self.t, user_id)
-        self.t.save_sheet()
-        self.signed_in.set('\n'.join(sorted(
+
+        try:
+            timebook.sign(self.t, user_id)
+        except ValueError:
+            self.show_feedback("Invalid Input", 3)
+        else:
+            self.show_feedback("Welcome", 3)
+            self.t.save_sheet()
+            self.signed_in.set('\n'.join(sorted(
                 [self.t.sheet[i]['User ID'] for i in self.t.signed_in])))
+
         self.ent_id.delete(0, 'end')
         self.ent_id.focus()
 
