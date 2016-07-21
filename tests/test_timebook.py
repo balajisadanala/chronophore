@@ -20,15 +20,33 @@ class InterfaceTest(unittest.TestCase):
         self.t = timebook.Timesheet()
         self.t.save_entry(self.e)
 
+    def test_is_valid(self):
+        self.assertFalse(timebook.is_valid("12"))
+        self.assertFalse(timebook.is_valid("1234567890"))
+        self.assertFalse(timebook.is_valid(""))
+        self.assertFalse(timebook.is_valid(" "))
+        self.assertFalse(timebook.is_valid("123abc"))
+        self.assertFalse(timebook.is_valid("\n"))
+        self.assertTrue(timebook.is_valid("123456789"))
+        self.assertTrue(timebook.is_valid(" 123456789"))
+
+    def test_sign_invalid(self):
+        with self.assertRaises(ValueError):
+            timebook.sign(self.t, "1234567890")
+
     @unittest.mock.patch(
             'timebook.timebook.Entry._make_index',
             return_value='3b27d0f8-3801-4319-398f-ace18829d150')
     def test_sign_in(self, make_index):
         """Sign in with a new ID."""
-        timebook.sign(self.t, "882870l92")
+        # NOTE(amin): remember that time you spent 40 minutes trying to
+        # figure out why this test was failing, only to realize with horror
+        # that there is a difference between "882870192" and "882870l92"?
+        user_id = "882870192"
+        timebook.sign(self.t, user_id)
         self.assertEqual(
             self.t.sheet['3b27d0f8-3801-4319-398f-ace18829d150']['User ID'],
-            "882870l92")
+            user_id)
 
     def test_sign_out(self):
         """Sign out with an ID that's currently signed in."""

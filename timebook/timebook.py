@@ -206,21 +206,30 @@ class Timesheet():
         log.debug("Sheet saved to {}".format(data_file.resolve()))
 
 
-def is_valid(user_input):
+def is_valid(user_id):
+    user_id = user_id.strip()
+
     valid = True
+
     try:
-        _ = int(user_input)
-    except ValueError:
+        _ = int(user_id)
+    except ValueError as e:
         valid = False
     else:
-        if len(user_input) != 9:
-            valid = False 
-    return valid
+        if len(user_id) != 9:
+            valid = False
+    finally:
+        return valid
 
 
 def sign(timesheet, user_id):
+    user_id = user_id.strip()
+
     if not is_valid(user_id):
-        raise ValueError
+        raise ValueError(
+            "Input must be a nine digit integer: {}".format(user_id)
+        )
+
     try:
         [entry] = [i for i in timesheet.signed_in if
                    timesheet.sheet[i]['User ID'] == user_id] or [None]

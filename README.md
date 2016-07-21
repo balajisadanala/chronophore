@@ -17,6 +17,7 @@ To Do
     - [x] Organize data files in date-based hierarchy
     - [x] Load or create data file on startup based on current date
     - [ ] Validate user input
+        - [x] Basic user id validation
         - [ ] Student registry json file
         - [ ] Check whether student is registered 
         - [ ] Check for bad entries from previous days
