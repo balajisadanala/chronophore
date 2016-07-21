@@ -7,29 +7,31 @@ This project was started to help keep track of students signing in and out at a 
 
 To Do
 -----
-- [x] Write to and read from a json file
-- [x] Format json output with nested keys
-- [x] Generate uuid indices for entries
-- [x] Keep track of which users are signed in
-- [x] Logging
-- [ ] Student registry json file
-- [ ] Validate user input
-    - [ ] Check whether student is registered 
-- [ ] Organize data files in date-based hierarchy
-- [ ] Startup tasks
-    - [x] Load or create data file based on current date
-    - [ ] Check for bad entries from previous days
-    - [ ] Flag students that forgot to sign out
-- [ ] Separate thread to periodically auto save
-- [x] Tkinter gui
-- [ ] Admin page
-    - [ ] Generate reports from data, e.g. "total time person x has been signed in"
-- [ ] Configuration file
-- [ ] Improve security
+- Basic Features:
+    - [x] Write to and read from a json file
+    - [x] Format json output with nested keys
+    - [x] Generate uuid indices for entries
+    - [x] Keep track of which users are signed in
+    - [x] Logging
+    - [x] Tkinter gui
+    - [x] Organize data files in date-based hierarchy
+    - [x] Load or create data file on startup based on current date
+    - [ ] Validate user input
+        - [ ] Student registry json file
+        - [ ] Check whether student is registered 
+        - [ ] Check for bad entries from previous days
+        - [ ] Flag students that forgot to sign out
+    - [ ] Package to be a portable windows executable
+
+- Further Improvements: 
+    - [ ] Basic Documentation
+    - [ ] Configuration file
     - [ ] Access database over local wireless network
+    - [ ] Separate thread to periodically auto save
+    - [ ] Admin UI 
     - [ ] Encrypt/decrypt database
-- [ ] Package to be a portable windows executable
-- [ ] Come up with a name no one else is using
+    - [ ] JSON to CSV converter
+    - [ ] Come up with a name no one else is using
 
 
 Lessons Learned
