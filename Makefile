@@ -7,5 +7,8 @@ run:
 test:
 	py.test tests
 
+lint:
+	pycodestyle timebook/*.py tests/*.py
+
 watch:
 	watch -n 1 cat $(DATADIR)$(DATE).json
