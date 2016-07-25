@@ -206,44 +206,76 @@ class Timesheet():
         log.debug("Sheet saved to {}".format(data_file.resolve()))
 
 
-def is_valid(user_id):
-    user_id = user_id.strip()
+class Interface():
 
-    valid = True
+    class NotRegisteredError(Exception):
+        pass
 
-    try:
-        _ = int(user_id)
-    except ValueError as e:
-        valid = False
-    else:
-        if len(user_id) != 9:
-            valid = False
-    finally:
-        return valid
-
-
-def sign(timesheet, user_id):
-    user_id = user_id.strip()
-
-    if not is_valid(user_id):
-        raise ValueError(
-            "Input must be a nine digit integer: {}".format(user_id)
-        )
-
-    try:
-        [entry] = [i for i in timesheet.signed_in if
-                   timesheet.sheet[i]['User ID'] == user_id] or [None]
-    except ValueError as e:
-        # TODO(amin): catch and resolve this without exiting
-        print(e)
-        raise SystemExit
-    else:
-        if not entry:
-            timesheet.save_entry(Entry(user_id))
+    def __init__(self, users_file=None):
+        if users_file is None:
+            self.users_file = pathlib.Path('.', 'data', 'users.json')
         else:
-            e = timesheet.load_entry(entry)
-            e.sign_out()
-            timesheet.save_entry(e)
+            self.users_file = users_file
+
+    def is_valid(self, user_id):
+        user_id = user_id.strip()
+
+        valid = True
+
+        try:
+            _ = int(user_id)
+        except ValueError as e:
+            valid = False
+        else:
+            if len(user_id) != 9:
+                valid = False
+        finally:
+            return valid
+
+    def is_registered(self, user_id):
+        user_id = user_id.strip()
+        with self.users_file.open('r') as f:
+            registered_ids = list(json.load(f).keys())
+        if user_id in registered_ids:
+            return True
+        else:
+            return False
+
+    def sign(self, timesheet, user_id):
+        # TODO(amin): add logger calls
+        user_id = user_id.strip()
+
+        if not self.is_valid(user_id):
+            raise ValueError(
+                "Invalid Input: {}".format(user_id)
+            )
+        elif not self.is_registered(user_id):
+            raise self.NotRegisteredError(
+                "{} not registered. Please register at the front desk.".format(
+                    user_id
+                )
+            )
+
+        try:
+            [entry] = (
+                [
+                    i for i in timesheet.signed_in
+                    if timesheet.sheet[i]['User ID'] == user_id
+                ]
+                or [None]
+            )
+
+        except ValueError as e:
+            # TODO(amin): catch and resolve this without exiting
+            print(e)
+            raise SystemExit
+        else:
+            if not entry:
+                timesheet.save_entry(Entry(user_id))
+            else:
+                e = timesheet.load_entry(entry)
+                e.sign_out()
+                timesheet.save_entry(e)
 
 
 def main():
@@ -251,7 +283,8 @@ def main():
     log.debug("Program initialized")
 
     t = Timesheet()
-    ui = gui.TimebookUI(t)
+    i = Interface()
+    ui = gui.TimebookUI(t, i)
 
     log.debug("Program stopping")
 

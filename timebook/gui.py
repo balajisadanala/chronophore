@@ -10,8 +10,9 @@ class TimebookUI():
             - List of currently signed in users
     """
 
-    def __init__(self, timesheet):
+    def __init__(self, timesheet, interface):
         self.t = timesheet
+        self.i = interface
 
         self.root = tkinter.Tk()
         self.root.title("STEM Sign In")
@@ -103,9 +104,11 @@ class TimebookUI():
         user_id = self.ent_id.get()
 
         try:
-            timebook.sign(self.t, user_id)
-        except ValueError:
-            self.show_feedback("Invalid Input", 3)
+            self.i.sign(self.t, user_id)
+        except ValueError as e:
+            self.show_feedback(e, 3)
+        except self.i.NotRegisteredError as e:
+            self.show_feedback(e, 3)
         else:
             self.show_feedback("Welcome", 3)
             self.t.save_sheet()
@@ -119,4 +122,5 @@ class TimebookUI():
 if __name__ == '__main__':
     # Usage example
     t = timebook.Timesheet()
-    ui = TimebookUI(t)
+    i = timebook.Interface()
+    ui = TimebookUI(t, i)
