@@ -40,6 +40,15 @@ class InterfaceTest(unittest.TestCase):
         with self.assertRaises(self.i.NotRegisteredError):
             self.i.sign(self.t, "888888888")
 
+    def test_sign_duplicates(self):
+        """Sign in with multiple instances of being signed in."""
+        duplicate_id = self.registered_id
+        for _ in range(2):
+            e = timebook.Entry(duplicate_id)
+            self.t.save_entry(e)
+        with self.assertRaises(self.i.DuplicateEntryError):
+            self.i.sign(self.t, duplicate_id)
+
     @unittest.mock.patch(
             'timebook.timebook.Entry._make_index',
             return_value='3b27d0f8-3801-4319-398f-ace18829d150')
