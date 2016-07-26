@@ -12,3 +12,6 @@ lint:
 
 watch:
 	watch -n 1 cat $(DATADIR)$(DATE).json
+
+loc:
+	cloc --by-file --include-lang=Python timebook/ tests/
