@@ -101,7 +101,7 @@ class Entry():
         """Get the time the user signed out"""
         now = self._get_current_datetime()
         self.time_out = datetime.strftime(now, "%H:%M:%S")
-        log.debug("Entry signed out: {}".format(repr(self)))
+        log.info("Entry signed out: {}".format(repr(self)))
 
 
 class Timesheet():
@@ -124,6 +124,9 @@ class Timesheet():
         elif not data_dir.exists():
             # make the data folder
             data_dir.mkdir(exist_ok=False, parents=True)
+
+        log.debug("Timesheet object initialized.")
+        log.debug("Timesheet data file: {}".format(self.data_file))
 
         self._update_signed_in()
 
@@ -148,6 +151,7 @@ class Timesheet():
                     self.sheet[index]['Out'],
                     index
                 )
+        log.debug("Entry loaded: {}".format(repr(entry)))
         return entry
 
     def save_entry(self, entry, index=None):
@@ -184,6 +188,7 @@ class Timesheet():
         indices = {
             k for k, v in self.sheet.items() if search_term in str(v.items())
         }
+        log.debug("Searched for {}. Results: {}".format(search_term, indices))
         return indices
 
     def load_sheet(self, data_file=None):
@@ -219,6 +224,7 @@ class Interface():
             self.users_file = pathlib.Path('.', 'data', 'users.json')
         else:
             self.users_file = users_file
+        log.debug("Interface object initialized")
 
     def is_valid(self, user_id):
         user_id = user_id.strip()
@@ -245,14 +251,15 @@ class Interface():
             return False
 
     def sign(self, timesheet, user_id):
-        # TODO(amin): add logger calls
         user_id = user_id.strip()
 
         if not self.is_valid(user_id):
+            log.debug("Invalid input: {}".format(user_id))
             raise ValueError(
                 "Invalid Input: {}".format(user_id)
             )
         elif not self.is_registered(user_id):
+            log.debug("User not registered: {}".format(user_id))
             raise self.NotRegisteredError(
                 "{} not registered. Please register at the front desk.".format(
                     user_id
