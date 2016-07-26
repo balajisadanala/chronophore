@@ -211,6 +211,9 @@ class Interface():
     class NotRegisteredError(Exception):
         pass
 
+    class DuplicateEntryError(Exception):
+        pass
+
     def __init__(self, users_file=None):
         if users_file is None:
             self.users_file = pathlib.Path('.', 'data', 'users.json')
@@ -224,7 +227,7 @@ class Interface():
 
         try:
             _ = int(user_id)
-        except ValueError as e:
+        except ValueError:
             valid = False
         else:
             if len(user_id) != 9:
@@ -264,11 +267,33 @@ class Interface():
                 ]
                 or [None]
             )
+        except ValueError:
+            duplicate_entries = (
+                [
+                    i for i in timesheet.signed_in
+                    if timesheet.sheet[i]['User ID'] == user_id
+                ]
+            )
+            log.warning(
+                "Multiple signed in instances of user {}: {}".format(
+                    user_id, duplicate_entries
+                )
+            )
+            log.info(
+                "Signing out of duplicate instances of user {}: {}".format(
+                    user_id, duplicate_entries
+                )
+            )
+            for entry in duplicate_entries:
+                e = timesheet.load_entry(entry)
+                e.sign_out()
+                timesheet.save_entry(e)
 
-        except ValueError as e:
-            # TODO(amin): catch and resolve this without exiting
-            print(e)
-            raise SystemExit
+            raise self.DuplicateEntryError(
+                "Signing out of duplicate instances of user {}".format(
+                    user_id
+                )
+            )
         else:
             if not entry:
                 timesheet.save_entry(Entry(user_id))

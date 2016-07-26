@@ -119,8 +119,11 @@ class TimebookUI():
             self.show_feedback(e)
         except self.i.NotRegisteredError as e:
             self.show_feedback(e)
+        except self.i.DuplicateEntryError as e:
+            self.show_feedback(e)
         else:
             self.show_feedback("Welcome")
+        finally:
             self.t.save_sheet()
             self.signed_in.set('\n'.join(sorted(
                 [self.t.sheet[i]['User ID'] for i in self.t.signed_in])))
