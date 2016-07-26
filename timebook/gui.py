@@ -1,3 +1,4 @@
+import contextlib
 import tkinter
 from timebook import timebook
 from tkinter import ttk, N, S, E, W
@@ -88,16 +89,25 @@ class TimebookUI():
 
         self.signed_in.set('\n'.join(sorted(
             [self.t.sheet[i]['User ID'] for i in self.t.signed_in])))
+
         self.root.mainloop()
 
-    def show_feedback(self, message, seconds):
+    def show_feedback(self, message, seconds=3):
         """Display a message in lbl_feedback, which then times out
         after some number of seconds. Use after() to schedule a callback
         to hide the feedback message. This works better than using threads,
         which can cause problems in Tk.
         """
+        with contextlib.suppress(AttributeError):
+            # cancel any existing callback to clear the feedback
+            # label. this prevents flickering and inconsistent
+            # timing during rapid input. 
+            self.root.after_cancel(self.clear_feedback)
+
         self.feedback.set(message)
-        self.root.after(1000 * seconds, lambda: self.feedback.set(""))
+        self.clear_feedback = self.root.after(
+            1000 * seconds, lambda: self.feedback.set("")
+        )
 
     def sign_in_out(self, *args):
         """Validate input from ent_id, then sign in to the Timesheet."""
@@ -106,11 +116,11 @@ class TimebookUI():
         try:
             self.i.sign(self.t, user_id)
         except ValueError as e:
-            self.show_feedback(e, 3)
+            self.show_feedback(e)
         except self.i.NotRegisteredError as e:
-            self.show_feedback(e, 3)
+            self.show_feedback(e)
         else:
-            self.show_feedback("Welcome", 3)
+            self.show_feedback("Welcome")
             self.t.save_sheet()
             self.signed_in.set('\n'.join(sorted(
                 [self.t.sheet[i]['User ID'] for i in self.t.signed_in])))

@@ -18,8 +18,8 @@ To Do
     - [x] Load or create data file on startup based on current date
     - [ ] Validate user input
         - [x] Basic user id validation
-        - [ ] Student registry json file
-        - [ ] Check whether student is registered 
+        - [x] Student registry json file
+        - [x] Check whether student is registered 
         - [ ] Check for bad entries from previous days
         - [ ] Flag students that forgot to sign out
     - [ ] Package to be a portable windows executable
