@@ -101,7 +101,7 @@ class TimebookUI():
         with contextlib.suppress(AttributeError):
             # cancel any existing callback to clear the feedback
             # label. this prevents flickering and inconsistent
-            # timing during rapid input. 
+            # timing during rapid input.
             self.root.after_cancel(self.clear_feedback)
 
         self.feedback.set(message)

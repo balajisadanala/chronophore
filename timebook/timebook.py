@@ -30,7 +30,7 @@ def setup_logger():
 class Entry():
     """Contains all data for a single entry"""
 
-    def __init__(self, user_id=None, date=None, time_in=None,
+    def __init__(self, user_id=None, name=None, date=None, time_in=None,
                  time_out=None, index=None):
         """Parameters have different default behaviors, and can all be
         overwritten.
@@ -41,14 +41,19 @@ class Entry():
             index: assigned a uuid
         """
         now = self._get_current_datetime()
-        if date is None:
-            self.date = datetime.strftime(now, "%Y-%m-%d")
-        else:
-            self.date = date
+
         if user_id is None:
             self.user_id = ""
         else:
             self.user_id = user_id
+        if name is None:
+            self.name = ""
+        else:
+            self.name = name
+        if date is None:
+            self.date = datetime.strftime(now, "%Y-%m-%d")
+        else:
+            self.date = date
         if time_in is None:
             self.time_in = datetime.strftime(now, "%H:%M:%S")
         else:
@@ -61,14 +66,16 @@ class Entry():
             self.index = self._make_index()
         else:
             self.index = index
+
         log.debug("Entry object initialized: {}".format(repr(self)))
 
     def __repr__(self):
         """Return an unambiguous representation of the entry."""
-        entry = ("timebook.Entry(user_id='{}', date='{}', time_in='{}', "
-                 "time_out='{}', index='{}')")
+        entry = ("timebook.Entry(user_id='{}', name='{}', date='{}', "
+                 "time_in='{}', time_out='{}', index='{}')")
         return entry.format(
             self.user_id,
+            self.name,
             self.date,
             self.time_in,
             self.time_out,
@@ -145,12 +152,13 @@ class Timesheet():
     def load_entry(self, index):
         """Load an entry into its own object."""
         entry = Entry(
-                    self.sheet[index]['User ID'],
-                    self.sheet[index]['Date'],
-                    self.sheet[index]['In'],
-                    self.sheet[index]['Out'],
-                    index
-                )
+            user_id=self.sheet[index]['User ID'],
+            name=self.sheet[index]['Name'],
+            date=self.sheet[index]['Date'],
+            time_in=self.sheet[index]['In'],
+            time_out=self.sheet[index]['Out'],
+            index=index
+        )
         log.debug("Entry loaded: {}".format(repr(entry)))
         return entry
 
@@ -164,8 +172,9 @@ class Timesheet():
             index = index
 
         entry_data = {}
-        entry_data['Date'] = entry.date
         entry_data['User ID'] = entry.user_id
+        entry_data['Name'] = entry.name
+        entry_data['Date'] = entry.date
         entry_data['In'] = entry.time_in
         entry_data['Out'] = entry.time_out
 
@@ -250,6 +259,29 @@ class Interface():
         else:
             return False
 
+    def update_name_list(self, timesheet):
+        # TODO(amin): just add a 'name' field to the entry class.
+        # it's not worth this much trouble
+
+        # get the user data from the user file
+        with self.users_file.open('r') as f:
+            user_data = json.load(f)
+        # get just the ids and names
+        users = {
+            i: user_data[i]['First Name']
+            for i in user_data.keys()
+        }
+        # get signed in ids
+        signed_in_ids = [
+            timesheet.sheet[index]["User ID"] for index in timesheet.signed_in
+        ]
+        # get the names currently signed in
+        current_names = [
+            name for user_id, name in users.items()
+            if user_id in signed_in_ids
+        ]
+        return current_names
+
     def sign(self, timesheet, user_id):
         user_id = user_id.strip()
 
@@ -258,6 +290,7 @@ class Interface():
             raise ValueError(
                 "Invalid Input: {}".format(user_id)
             )
+
         elif not self.is_registered(user_id):
             log.debug("User not registered: {}".format(user_id))
             raise self.NotRegisteredError(
@@ -274,7 +307,9 @@ class Interface():
                 ]
                 or [None]
             )
+
         except ValueError:
+            # handle duplicates
             duplicate_entries = (
                 [
                     i for i in timesheet.signed_in
@@ -301,9 +336,11 @@ class Interface():
                     user_id
                 )
             )
+
         else:
+            # sign in or out
             if not entry:
-                timesheet.save_entry(Entry(user_id))
+                timesheet.save_entry(Entry(user_id=user_id))
             else:
                 e = timesheet.load_entry(entry)
                 e.sign_out()

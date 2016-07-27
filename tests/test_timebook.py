@@ -143,18 +143,21 @@ class TimesheetTest(unittest.TestCase):
             "1f4f10a4-b0c6-43bf-94f4-9ce6e3e204d2": {
                 "Date": "2016-02-17",
                 "In": "10:45",
+                "Name": "Test",
                 "Out": "13:30",
                 "User ID": "889870966",
             },
             "2ed2be60-693a-44fe-adc1-2803a674ec9b": {
                 "Date": "2016-02-17",
                 "In": "10:45",
+                "Name": "Bork",
                 "Out": "",
                 "User ID": "885894966",
             },
             "7b4ae0fc-3801-4412-998f-ace14829d150": {
                 "Date": "2016-02-17",
                 "In": "12:45",
+                "Name": "User",
                 "Out": "16:44",
                 "User ID": "889249566",
             },
@@ -173,7 +176,11 @@ class TimesheetTest(unittest.TestCase):
         """User signs in, and they are added to the list of currently
         signed in users.
         """
-        e = timebook.Entry("889870966", "2016-02-17", "10:45")
+        e = timebook.Entry(
+            user_id="889870966",
+            date="2016-02-17",
+            time_in="10:45"
+        )
         self.t.save_entry(e)
         self.assertIn(e.index, self.t.signed_in)
 
@@ -182,7 +189,12 @@ class TimesheetTest(unittest.TestCase):
         signed in users.
         """
         self.t.sheet = dict(self.example_sheet)
-        e = timebook.Entry("889870966", "2016-02-17", "10:45", "13:30")
+        e = timebook.Entry(
+            user_id="889870966",
+            date="2016-02-17",
+            time_in="10:45",
+            time_out="13:30"
+        )
         self.t.save_entry(e)
         self.assertNotIn(e.index, self.t.signed_in)
 
@@ -192,6 +204,7 @@ class TimesheetTest(unittest.TestCase):
         entry = self.t.load_entry("1f4f10a4-b0c6-43bf-94f4-9ce6e3e204d2")
         expected_entry = timebook.Entry(
             user_id="889870966",
+            name="Test",
             date="2016-02-17",
             time_in="10:45",
             time_out="13:30",
@@ -204,14 +217,21 @@ class TimesheetTest(unittest.TestCase):
             return_value='3b27d0f8-3801-4319-398f-ace18829d150')
     def test_save_entry(self, make_index):
         """Add an entry to an empty timesheet."""
-        e = timebook.Entry("889870966", "2016-02-17", "10:45", "13:30")
+        e = timebook.Entry(
+            user_id="889870966",
+            name="Test",
+            date="2016-02-17",
+            time_in="10:45",
+            time_out="13:30"
+        )
         self.t.save_entry(e)
         expected_sheet = {
             "3b27d0f8-3801-4319-398f-ace18829d150": {
-                "In": "10:45",
                 "Date": "2016-02-17",
-                "User ID": "889870966",
+                "In": "10:45",
+                "Name": "Test",
                 "Out": "13:30",
+                "User ID": "889870966",
             },
         }
         self.assertEqual(self.t.sheet, expected_sheet)
