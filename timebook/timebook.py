@@ -235,6 +235,15 @@ class Interface():
             self.users_file = users_file
         log.debug("Interface object initialized")
 
+    def _get_name(self, user_id):
+        # get the user data from the user file
+        with self.users_file.open('r') as f:
+            user_data = json.load(f)
+
+        name = user_data[user_id]['First Name']
+        print(name)
+        return name
+
     def is_valid(self, user_id):
         user_id = user_id.strip()
 
@@ -258,29 +267,6 @@ class Interface():
             return True
         else:
             return False
-
-    def update_name_list(self, timesheet):
-        # TODO(amin): just add a 'name' field to the entry class.
-        # it's not worth this much trouble
-
-        # get the user data from the user file
-        with self.users_file.open('r') as f:
-            user_data = json.load(f)
-        # get just the ids and names
-        users = {
-            i: user_data[i]['First Name']
-            for i in user_data.keys()
-        }
-        # get signed in ids
-        signed_in_ids = [
-            timesheet.sheet[index]["User ID"] for index in timesheet.signed_in
-        ]
-        # get the names currently signed in
-        current_names = [
-            name for user_id, name in users.items()
-            if user_id in signed_in_ids
-        ]
-        return current_names
 
     def sign(self, timesheet, user_id):
         user_id = user_id.strip()
@@ -340,7 +326,12 @@ class Interface():
         else:
             # sign in or out
             if not entry:
-                timesheet.save_entry(Entry(user_id=user_id))
+                timesheet.save_entry(
+                    Entry(
+                        user_id=user_id,
+                        name=self._get_name(user_id)
+                    )
+                )
             else:
                 e = timesheet.load_entry(entry)
                 e.sign_out()

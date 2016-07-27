@@ -88,7 +88,7 @@ class TimebookUI():
         self.ent_id.focus()
 
         self.signed_in.set('\n'.join(sorted(
-            [self.t.sheet[i]['User ID'] for i in self.t.signed_in])))
+            [self.t.sheet[i]['Name'] for i in self.t.signed_in])))
 
         self.root.mainloop()
 
@@ -126,7 +126,7 @@ class TimebookUI():
         finally:
             self.t.save_sheet()
             self.signed_in.set('\n'.join(sorted(
-                [self.t.sheet[i]['User ID'] for i in self.t.signed_in])))
+                [self.t.sheet[i]['Name'] for i in self.t.signed_in])))
 
         self.ent_id.delete(0, 'end')
         self.ent_id.focus()
