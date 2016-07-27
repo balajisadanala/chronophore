@@ -15,3 +15,6 @@ watch:
 
 loc:
 	cloc --by-file --include-lang=Python timebook/ tests/
+
+todo:
+	grep -FR --ignore-case --binary-file=without-match todo timebook/ tests/
