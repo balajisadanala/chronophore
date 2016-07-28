@@ -9,12 +9,13 @@ from timebook import timebook
 
 
 class InterfaceTest(unittest.TestCase):
+    test_file = pathlib.Path('.', 'tests', 'test.json')
     users_file = pathlib.Path('.', 'tests', 'users.json')
-    registered_id = "880003930"
+    registered_id = "876543210"
     i = timebook.Interface(users_file)
 
     def setUp(self):
-        self.t = timebook.Timesheet()
+        self.t = timebook.Timesheet(data_file=self.test_file)
 
     def test_is_valid(self):
         self.assertFalse(self.i.is_valid("12"))
@@ -59,7 +60,6 @@ class InterfaceTest(unittest.TestCase):
         # that there is a difference between "882870192" and "882870l92"?
         user_id = self.registered_id
         self.i.sign(self.t, user_id)
-        print(self.t.sheet)
         self.assertEqual(
             self.t.sheet['3b27d0f8-3801-4319-398f-ace18829d150']['User ID'],
             user_id)
@@ -137,7 +137,7 @@ class TimesheetTest(unittest.TestCase):
 
     def setUp(self):
         self.maxDiff = None
-        self.t = timebook.Timesheet(self.test_file)
+        self.t = timebook.Timesheet(data_file=self.test_file)
         # this matches the contents of the example_file
         self.example_sheet = {
             "1f4f10a4-b0c6-43bf-94f4-9ce6e3e204d2": {
@@ -259,6 +259,19 @@ class TimesheetTest(unittest.TestCase):
         self.t.load_sheet(data_file=self.example_file)
         loaded_sheet = self.t.sheet
         self.assertEqual(loaded_sheet, self.example_sheet)
+
+    def test_load_invalid_sheet(self):
+        """Load an invalid json file. Make sure it gets
+        renamed a with a '.bak' suffix.
+        """
+        invalid_file = pathlib.Path('.', 'tests', 'invalid.json')
+        backup = invalid_file.with_suffix('.bak')
+        with invalid_file.open('w') as f:
+            f.write("invalid file contents")
+        self.t.load_sheet(data_file=invalid_file)
+        self.assertTrue(backup.is_file())
+        self.assertFalse(invalid_file.is_file())
+        backup.unlink()
 
     def test_save_sheet(self):
         """Save a sheet to a file."""

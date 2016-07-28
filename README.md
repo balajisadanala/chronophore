@@ -32,6 +32,8 @@ To Do
     - [ ] Admin UI 
     - [ ] Encrypt/decrypt database
     - [ ] JSON to CSV converter
+    - [ ] Change unit tests to use [file-like objects](http://stackoverflow.com/questions/3942820/how-to-do-unit-testing-of-functions-writing-files-using-python-unittest) instead of files
+    - [ ] Convert unit tests to pytest syntax
     - [ ] Come up with a name no one else is using
 
 

@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 import pathlib
 import uuid
 from datetime import datetime
@@ -129,7 +130,6 @@ class Timesheet():
         if self.data_file.exists():
             self.load_sheet()
         elif not data_dir.exists():
-            # make the data folder
             data_dir.mkdir(exist_ok=False, parents=True)
 
         log.debug("Timesheet object initialized.")
@@ -204,11 +204,23 @@ class Timesheet():
         """Read the timesheet from a json file."""
         if data_file is None:
             data_file = self.data_file
+        else:
+            data_file = data_file
 
-        with data_file.open('r') as f:
-            self.sheet = json.load(f)
-        log.debug("Sheet loaded from {}".format(data_file.resolve()))
-        self._update_signed_in()
+        try:
+            with data_file.open('r') as f:
+                self.sheet = json.load(f)
+        except json.decoder.JSONDecodeError as e:
+            backup = data_file.with_suffix('.bak')
+            os.rename(str(data_file), str(backup))
+            log.error(
+                "Invalid JSON file: {}. {} moved to {}".format(
+                    e, data_file, backup
+                )
+            )
+        else:
+            log.debug("Sheet loaded from {}".format(data_file.resolve()))
+            self._update_signed_in()
 
     def save_sheet(self, data_file=None):
         """Write the timesheet to json file."""
@@ -236,12 +248,10 @@ class Interface():
         log.debug("Interface object initialized")
 
     def _get_name(self, user_id):
-        # get the user data from the user file
         with self.users_file.open('r') as f:
             user_data = json.load(f)
 
         name = user_data[user_id]['First Name']
-        print(name)
         return name
 
     def is_valid(self, user_id):
