@@ -1,3 +1,4 @@
+import collections
 import json
 import logging
 import os
@@ -233,11 +234,13 @@ class Timesheet():
 
 
 class Interface():
-
-    class NotRegisteredError(Exception):
+    class DuplicateEntryError(Exception):
         pass
 
-    class DuplicateEntryError(Exception):
+    class DuplicateKeysError(Exception):
+        pass
+
+    class NotRegisteredError(Exception):
         pass
 
     def __init__(self, users_file=None):
@@ -245,7 +248,36 @@ class Interface():
             self.users_file = pathlib.Path('.', 'data', 'users.json')
         else:
             self.users_file = users_file
+
+        try:
+            self._detect_duplicates(self.users_file)
+        except json.decoder.JSONDecodeError as e:
+            log.critical("Invalid users file: {}.".format(e))
+            raise SystemExit
+        except self.DuplicateKeyError as e:
+            log.error(e)
+
         log.debug("Interface object initialized")
+
+    def _detect_duplicates(self, json_file):
+        """Raise exception if json_file contains multiple identical keys."""
+        with json_file.open('r') as f:
+            d = json.load(f, object_pairs_hook=list)
+
+        keys = [key_value_pair[0] for key_value_pair in d]
+
+        duplicate_keys = [
+            key for key, count
+            in collections.Counter(keys).items()
+            if count > 1
+        ]
+
+        if len(duplicate_keys) != 0:
+            raise self.DuplicateKeysError(
+                "Duplicate key(s): {} in json file: {}".format(
+                    duplicate_keys, json_file
+                )
+            )
 
     def _get_name(self, user_id):
         with self.users_file.open('r') as f:

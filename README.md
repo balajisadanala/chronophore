@@ -20,6 +20,7 @@ To Do
         - [x] Basic user id validation
         - [x] Student registry json file
         - [x] Check whether student is registered 
+        - [x] Handle invalid json files
         - [ ] Check for bad entries from previous days
         - [ ] Flag students that forgot to sign out
     - [ ] Package to be a portable windows executable

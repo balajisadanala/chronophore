@@ -17,6 +17,17 @@ class InterfaceTest(unittest.TestCase):
     def setUp(self):
         self.t = timebook.Timesheet(data_file=self.test_file)
 
+    def test_detect_duplicates(self):
+        duplicate_keys_file = pathlib.Path(
+            '.', 'tests', 'duplicate_keys.json'
+        )
+        lines = ["{", '"key":1234,', '"key":5678', "}"]
+        with duplicate_keys_file.open('w') as f:
+            f.write('\n'.join(lines))
+        with self.assertRaises(self.i.DuplicateKeysError):
+            self.i._detect_duplicates(duplicate_keys_file)
+        duplicate_keys_file.unlink()
+
     def test_is_valid(self):
         self.assertFalse(self.i.is_valid("12"))
         self.assertFalse(self.i.is_valid("1234567890"))
