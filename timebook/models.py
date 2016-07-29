@@ -1,32 +1,11 @@
-import collections
 import json
 import logging
 import os
 import pathlib
 import uuid
 from datetime import datetime
-from timebook import gui
 
-log = logging.getLogger(__name__)
-
-
-def setup_logger():
-    log.setLevel(logging.DEBUG)
-
-    fh = logging.FileHandler('debug.log')
-    fh.setLevel(logging.DEBUG)
-
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.WARNING)
-
-    formatter = logging.Formatter(
-        "{asctime} {levelname}: {message}", style='{'
-    )
-    fh.setFormatter(formatter)
-    ch.setFormatter(formatter)
-
-    log.addHandler(fh)
-    log.addHandler(ch)
+logger = logging.getLogger(__name__)
 
 
 class Entry():
@@ -69,11 +48,11 @@ class Entry():
         else:
             self.index = index
 
-        log.debug("Entry object initialized: {}".format(repr(self)))
+        logger.debug("Entry object initialized: {}".format(repr(self)))
 
     def __repr__(self):
         """Return an unambiguous representation of the entry."""
-        entry = ("timebook.Entry(user_id='{}', name='{}', date='{}', "
+        entry = ("Entry(user_id='{}', name='{}', date='{}', "
                  "time_in='{}', time_out='{}', index='{}')")
         return entry.format(
             self.user_id,
@@ -110,7 +89,7 @@ class Entry():
         """Get the time the user signed out"""
         now = self._get_current_datetime()
         self.time_out = datetime.strftime(now, "%H:%M:%S")
-        log.info("Entry signed out: {}".format(repr(self)))
+        logger.info("Entry signed out: {}".format(repr(self)))
 
 
 class Timesheet():
@@ -133,8 +112,8 @@ class Timesheet():
         elif not data_dir.exists():
             data_dir.mkdir(exist_ok=False, parents=True)
 
-        log.debug("Timesheet object initialized.")
-        log.debug("Timesheet data file: {}".format(self.data_file))
+        logger.debug("Timesheet object initialized.")
+        logger.debug("Timesheet data file: {}".format(self.data_file))
 
         self._update_signed_in()
 
@@ -148,7 +127,7 @@ class Timesheet():
         # TODO(amin): Make this add or remove an entry every time one is
         # saved, rather than scanning the whole sheet every time.
         self.signed_in = [k for k, v in self.sheet.items() if v['Out'] == ""]
-        log.debug("Signed in entries: {}".format(self.signed_in))
+        logger.debug("Signed in entries: {}".format(self.signed_in))
 
     def load_entry(self, index):
         """Load an entry into its own object."""
@@ -160,7 +139,7 @@ class Timesheet():
             time_out=self.sheet[index]['Out'],
             index=index
         )
-        log.debug("Entry loaded: {}".format(repr(entry)))
+        logger.debug("Entry loaded: {}".format(repr(entry)))
         return entry
 
     def save_entry(self, entry, index=None):
@@ -180,14 +159,14 @@ class Timesheet():
         entry_data['Out'] = entry.time_out
 
         self.sheet[index] = entry_data
-        log.debug("Entry saved: {}".format(repr(entry)))
+        logger.debug("Entry saved: {}".format(repr(entry)))
         self._update_signed_in()
 
     def remove_entry(self, index):
         """Delete a single entry from the timesheet."""
         removed_entry = self.load_entry(index)
         del self.sheet[str(index)]
-        log.debug("Entry removed: {}".format(removed_entry))
+        logger.debug("Entry removed: {}".format(removed_entry))
         self._update_signed_in()
 
     def search_entries(self, search_term):
@@ -198,7 +177,11 @@ class Timesheet():
         indices = {
             k for k, v in self.sheet.items() if search_term in str(v.items())
         }
-        log.debug("Searched for {}. Results: {}".format(search_term, indices))
+        logger.debug(
+            "Searched for {}. Results: {}".format(
+                search_term, indices
+            )
+        )
         return indices
 
     def load_sheet(self, data_file=None):
@@ -214,13 +197,13 @@ class Timesheet():
         except json.decoder.JSONDecodeError as e:
             backup = data_file.with_suffix('.bak')
             os.rename(str(data_file), str(backup))
-            log.error(
+            logger.error(
                 "Invalid JSON file: {}. {} moved to {}".format(
                     e, data_file, backup
                 )
             )
         else:
-            log.debug("Sheet loaded from {}".format(data_file.resolve()))
+            logger.debug("Sheet loaded from {}".format(data_file.resolve()))
             self._update_signed_in()
 
     def save_sheet(self, data_file=None):
@@ -230,166 +213,4 @@ class Timesheet():
 
         with data_file.open('w') as f:
             json.dump(self.sheet, f, indent=4, sort_keys=True)
-        log.debug("Sheet saved to {}".format(data_file.resolve()))
-
-
-class Interface():
-    class DuplicateEntryError(Exception):
-        pass
-
-    class DuplicateKeysError(Exception):
-        pass
-
-    class NotRegisteredError(Exception):
-        pass
-
-    def __init__(self, users_file=None):
-        if users_file is None:
-            self.users_file = pathlib.Path('.', 'data', 'users.json')
-        else:
-            self.users_file = users_file
-
-        try:
-            self._detect_duplicates(self.users_file)
-        except json.decoder.JSONDecodeError as e:
-            log.critical("Invalid users file: {}.".format(e))
-            raise SystemExit
-        except self.DuplicateKeyError as e:
-            log.error(e)
-
-        log.debug("Interface object initialized")
-
-    def _detect_duplicates(self, json_file):
-        """Raise exception if json_file contains multiple identical keys."""
-        with json_file.open('r') as f:
-            d = json.load(f, object_pairs_hook=list)
-
-        keys = [key_value_pair[0] for key_value_pair in d]
-
-        duplicate_keys = [
-            key for key, count
-            in collections.Counter(keys).items()
-            if count > 1
-        ]
-
-        if len(duplicate_keys) != 0:
-            raise self.DuplicateKeysError(
-                "Duplicate key(s): {} in json file: {}".format(
-                    duplicate_keys, json_file
-                )
-            )
-
-    def _get_name(self, user_id):
-        with self.users_file.open('r') as f:
-            user_data = json.load(f)
-
-        name = user_data[user_id]['First Name']
-        return name
-
-    def is_valid(self, user_id):
-        user_id = user_id.strip()
-
-        valid = True
-
-        try:
-            _ = int(user_id)
-        except ValueError:
-            valid = False
-        else:
-            if len(user_id) != 9:
-                valid = False
-        finally:
-            return valid
-
-    def is_registered(self, user_id):
-        user_id = user_id.strip()
-        with self.users_file.open('r') as f:
-            registered_ids = list(json.load(f).keys())
-        if user_id in registered_ids:
-            return True
-        else:
-            return False
-
-    def sign(self, timesheet, user_id):
-        user_id = user_id.strip()
-
-        if not self.is_valid(user_id):
-            log.debug("Invalid input: {}".format(user_id))
-            raise ValueError(
-                "Invalid Input: {}".format(user_id)
-            )
-
-        elif not self.is_registered(user_id):
-            log.debug("User not registered: {}".format(user_id))
-            raise self.NotRegisteredError(
-                "{} not registered. Please register at the front desk.".format(
-                    user_id
-                )
-            )
-
-        try:
-            [entry] = (
-                [
-                    i for i in timesheet.signed_in
-                    if timesheet.sheet[i]['User ID'] == user_id
-                ]
-                or [None]
-            )
-
-        except ValueError:
-            # handle duplicates
-            duplicate_entries = (
-                [
-                    i for i in timesheet.signed_in
-                    if timesheet.sheet[i]['User ID'] == user_id
-                ]
-            )
-            log.warning(
-                "Multiple signed in instances of user {}: {}".format(
-                    user_id, duplicate_entries
-                )
-            )
-            log.info(
-                "Signing out of duplicate instances of user {}: {}".format(
-                    user_id, duplicate_entries
-                )
-            )
-            for entry in duplicate_entries:
-                e = timesheet.load_entry(entry)
-                e.sign_out()
-                timesheet.save_entry(e)
-
-            raise self.DuplicateEntryError(
-                "Signing out of duplicate instances of user {}".format(
-                    user_id
-                )
-            )
-
-        else:
-            # sign in or out
-            if not entry:
-                timesheet.save_entry(
-                    Entry(
-                        user_id=user_id,
-                        name=self._get_name(user_id)
-                    )
-                )
-            else:
-                e = timesheet.load_entry(entry)
-                e.sign_out()
-                timesheet.save_entry(e)
-
-
-def main():
-    setup_logger()
-    log.debug("Program initialized")
-
-    t = Timesheet()
-    i = Interface()
-    ui = gui.TimebookUI(t, i)
-
-    log.debug("Program stopping")
-
-
-if __name__ == '__main__':
-    main()
+        logger.debug("Sheet saved to {}".format(data_file.resolve()))

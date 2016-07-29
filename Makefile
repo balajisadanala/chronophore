@@ -2,7 +2,7 @@ DATADIR = data/
 DATE = `date +%Y-%m-%d`
 
 run:
-	python -m timebook.timebook
+	python -m timebook
 
 test:
 	py.test tests

@@ -1,21 +1,23 @@
 import filecmp
-import json
+import logging
 import pathlib
-import sys
 import unittest
 import unittest.mock
 from datetime import datetime
-from timebook import timebook
+from timebook.controller import Interface
+from timebook.models import Entry, Timesheet
+
+logging.disable(logging.CRITICAL)
 
 
 class InterfaceTest(unittest.TestCase):
     test_file = pathlib.Path('.', 'tests', 'test.json')
     users_file = pathlib.Path('.', 'tests', 'users.json')
     registered_id = "876543210"
-    i = timebook.Interface(users_file)
+    i = Interface(users_file)
 
     def setUp(self):
-        self.t = timebook.Timesheet(data_file=self.test_file)
+        self.t = Timesheet(data_file=self.test_file)
 
     def test_detect_duplicates(self):
         duplicate_keys_file = pathlib.Path(
@@ -56,13 +58,13 @@ class InterfaceTest(unittest.TestCase):
         """Sign in with multiple instances of being signed in."""
         duplicate_id = self.registered_id
         for _ in range(2):
-            e = timebook.Entry(duplicate_id)
+            e = Entry(duplicate_id)
             self.t.save_entry(e)
         with self.assertRaises(self.i.DuplicateEntryError):
             self.i.sign(self.t, duplicate_id)
 
     @unittest.mock.patch(
-            'timebook.timebook.Entry._make_index',
+            'timebook.models.Entry._make_index',
             return_value='3b27d0f8-3801-4319-398f-ace18829d150')
     def test_sign_in(self, make_index):
         """Sign in with a new ID."""
@@ -73,11 +75,12 @@ class InterfaceTest(unittest.TestCase):
         self.i.sign(self.t, user_id)
         self.assertEqual(
             self.t.sheet['3b27d0f8-3801-4319-398f-ace18829d150']['User ID'],
-            user_id)
+            user_id
+        )
 
     def test_sign_out(self):
         """Sign out with an ID that's currently signed in."""
-        self.e = timebook.Entry(
+        self.e = Entry(
             user_id=self.registered_id,
             date="2016-02-17",
             time_in="10:45",
@@ -92,11 +95,11 @@ class InterfaceTest(unittest.TestCase):
 
 class EntryTest(unittest.TestCase):
     @unittest.mock.patch(
-            'timebook.timebook.Entry._get_current_datetime',
+            'timebook.models.Entry._get_current_datetime',
             return_value=datetime(2016, 5, 9, 15, 43, 41, 0))
     def test_create_entry(self, get_current_datetime):
         """Create an entry with an ID."""
-        e = timebook.Entry(user_id="882369423")
+        e = Entry(user_id="882369423")
         self.assertEqual(e.date, "2016-05-09")
         self.assertEqual(e.time_in, "15:43:41")
         self.assertEqual(e.time_out, "")
@@ -106,12 +109,12 @@ class EntryTest(unittest.TestCase):
         """Test whether the repr of an Entry evaluates to an
         equivalent Entry object.
         """
-        e = timebook.Entry()
+        e = Entry()
         self.assertEqual(e, eval(repr(e)))
 
     def test_comparison(self):
         """Test whether '==' and '!=' work properly."""
-        entry = timebook.Entry(
+        entry = Entry(
             user_id="889870966",
             date="2016-02-17",
             time_in="10:45",
@@ -119,7 +122,7 @@ class EntryTest(unittest.TestCase):
             index="1f4f10a4-b0c6-43bf-94f4-9ce6e3e204d2"
         )
 
-        equal_entry = timebook.Entry(
+        equal_entry = Entry(
             user_id="889870966",
             date="2016-02-17",
             time_in="10:45",
@@ -133,11 +136,11 @@ class EntryTest(unittest.TestCase):
         self.assertFalse(equal_entry != entry)
 
     @unittest.mock.patch(
-            'timebook.timebook.Entry._get_current_datetime',
+            'timebook.models.Entry._get_current_datetime',
             return_value=datetime(2016, 5, 9, 17, 30, 17, 0))
     def test_sign_out(self, get_current_datetime):
         """Create an entry, then sign out of it."""
-        e = timebook.Entry(user_id="882369423")
+        e = Entry(user_id="882369423")
         e.sign_out()
         self.assertEqual(e.time_out, "17:30:17")
 
@@ -148,7 +151,7 @@ class TimesheetTest(unittest.TestCase):
 
     def setUp(self):
         self.maxDiff = None
-        self.t = timebook.Timesheet(data_file=self.test_file)
+        self.t = Timesheet(data_file=self.test_file)
         # this matches the contents of the example_file
         self.example_sheet = {
             "1f4f10a4-b0c6-43bf-94f4-9ce6e3e204d2": {
@@ -187,7 +190,7 @@ class TimesheetTest(unittest.TestCase):
         """User signs in, and they are added to the list of currently
         signed in users.
         """
-        e = timebook.Entry(
+        e = Entry(
             user_id="889870966",
             date="2016-02-17",
             time_in="10:45"
@@ -200,7 +203,7 @@ class TimesheetTest(unittest.TestCase):
         signed in users.
         """
         self.t.sheet = dict(self.example_sheet)
-        e = timebook.Entry(
+        e = Entry(
             user_id="889870966",
             date="2016-02-17",
             time_in="10:45",
@@ -213,7 +216,7 @@ class TimesheetTest(unittest.TestCase):
         """Initialize an entry object with data from the timesheet."""
         self.t.sheet = self.example_sheet
         entry = self.t.load_entry("1f4f10a4-b0c6-43bf-94f4-9ce6e3e204d2")
-        expected_entry = timebook.Entry(
+        expected_entry = Entry(
             user_id="889870966",
             name="Test",
             date="2016-02-17",
@@ -224,11 +227,11 @@ class TimesheetTest(unittest.TestCase):
         self.assertEqual(entry, expected_entry)
 
     @unittest.mock.patch(
-            'timebook.timebook.Entry._make_index',
+            'timebook.models.Entry._make_index',
             return_value='3b27d0f8-3801-4319-398f-ace18829d150')
     def test_save_entry(self, make_index):
         """Add an entry to an empty timesheet."""
-        e = timebook.Entry(
+        e = Entry(
             user_id="889870966",
             name="Test",
             date="2016-02-17",

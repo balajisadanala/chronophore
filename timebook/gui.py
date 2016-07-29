@@ -1,6 +1,5 @@
 import contextlib
 import tkinter
-from timebook import timebook
 from tkinter import ttk, N, S, E, W
 
 
@@ -134,6 +133,8 @@ class TimebookUI():
 
 if __name__ == '__main__':
     # Usage example
-    t = timebook.Timesheet()
-    i = timebook.Interface()
+    from timebook.models import Timesheet
+    from timebook.timebook import Interface
+    t = Timesheet()
+    i = Interface()
     ui = TimebookUI(t, i)
