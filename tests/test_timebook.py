@@ -4,17 +4,17 @@ import pathlib
 import unittest
 import unittest.mock
 from datetime import datetime
-from timebook.controller import Interface
-from timebook.models import Entry, Timesheet
+from timebook.controller import Controller
+from timebook.model import Entry, Timesheet
 
 logging.disable(logging.CRITICAL)
 
 
-class InterfaceTest(unittest.TestCase):
+class ControllerTest(unittest.TestCase):
     test_file = pathlib.Path('.', 'tests', 'test.json')
     users_file = pathlib.Path('.', 'tests', 'users.json')
     registered_id = "876543210"
-    i = Interface(users_file)
+    c = Controller(users_file)
 
     def setUp(self):
         self.t = Timesheet(data_file=self.test_file)
@@ -26,33 +26,33 @@ class InterfaceTest(unittest.TestCase):
         lines = ["{", '"key":1234,', '"key":5678', "}"]
         with duplicate_keys_file.open('w') as f:
             f.write('\n'.join(lines))
-        with self.assertRaises(self.i.DuplicateKeysError):
-            self.i._detect_duplicates(duplicate_keys_file)
+        with self.assertRaises(self.c.DuplicateKeysError):
+            self.c._detect_duplicates(duplicate_keys_file)
         duplicate_keys_file.unlink()
 
     def test_is_valid(self):
-        self.assertFalse(self.i.is_valid("12"))
-        self.assertFalse(self.i.is_valid("1234567890"))
-        self.assertFalse(self.i.is_valid("1234 56789"))
-        self.assertFalse(self.i.is_valid(""))
-        self.assertFalse(self.i.is_valid(" "))
-        self.assertFalse(self.i.is_valid("123abc"))
-        self.assertFalse(self.i.is_valid('\n'))
-        self.assertTrue(self.i.is_valid("123456789"))
-        self.assertTrue(self.i.is_valid(" 123456789"))
-        self.assertTrue(self.i.is_valid("123456789 "))
+        self.assertFalse(self.c.is_valid("12"))
+        self.assertFalse(self.c.is_valid("1234567890"))
+        self.assertFalse(self.c.is_valid("1234 56789"))
+        self.assertFalse(self.c.is_valid(""))
+        self.assertFalse(self.c.is_valid(" "))
+        self.assertFalse(self.c.is_valid("123abc"))
+        self.assertFalse(self.c.is_valid('\n'))
+        self.assertTrue(self.c.is_valid("123456789"))
+        self.assertTrue(self.c.is_valid(" 123456789"))
+        self.assertTrue(self.c.is_valid("123456789 "))
 
     def test_is_registered(self):
-        self.assertFalse(self.i.is_registered("888888888"))
-        self.assertTrue(self.i.is_registered(self.registered_id))
+        self.assertFalse(self.c.is_registered("888888888"))
+        self.assertTrue(self.c.is_registered(self.registered_id))
 
     def test_sign_invalid(self):
         with self.assertRaises(ValueError):
-            self.i.sign(self.t, "1234567890")
+            self.c.sign(self.t, "1234567890")
 
     def test_sign_not_registered(self):
-        with self.assertRaises(self.i.NotRegisteredError):
-            self.i.sign(self.t, "888888888")
+        with self.assertRaises(self.c.NotRegisteredError):
+            self.c.sign(self.t, "888888888")
 
     def test_sign_duplicates(self):
         """Sign in with multiple instances of being signed in."""
@@ -60,11 +60,11 @@ class InterfaceTest(unittest.TestCase):
         for _ in range(2):
             e = Entry(duplicate_id)
             self.t.save_entry(e)
-        with self.assertRaises(self.i.DuplicateEntryError):
-            self.i.sign(self.t, duplicate_id)
+        with self.assertRaises(self.c.DuplicateEntryError):
+            self.c.sign(self.t, duplicate_id)
 
     @unittest.mock.patch(
-            'timebook.models.Entry._make_index',
+            'timebook.model.Entry._make_index',
             return_value='3b27d0f8-3801-4319-398f-ace18829d150')
     def test_sign_in(self, make_index):
         """Sign in with a new ID."""
@@ -72,7 +72,7 @@ class InterfaceTest(unittest.TestCase):
         # figure out why this test was failing, only to realize with horror
         # that there is a difference between "882870192" and "882870l92"?
         user_id = self.registered_id
-        self.i.sign(self.t, user_id)
+        self.c.sign(self.t, user_id)
         self.assertEqual(
             self.t.sheet['3b27d0f8-3801-4319-398f-ace18829d150']['User ID'],
             user_id
@@ -88,14 +88,14 @@ class InterfaceTest(unittest.TestCase):
             index="2ed2be60-693a-44fe-adc1-2803a674ec9b"
         )
         self.t.save_entry(self.e)
-        self.i.sign(self.t, self.registered_id)
+        self.c.sign(self.t, self.registered_id)
         self.assertIsNotNone(self.t.sheet[self.e.index])
         self.assertNotIn(self.e.index, self.t.signed_in)
 
 
 class EntryTest(unittest.TestCase):
     @unittest.mock.patch(
-            'timebook.models.Entry._get_current_datetime',
+            'timebook.model.Entry._get_current_datetime',
             return_value=datetime(2016, 5, 9, 15, 43, 41, 0))
     def test_create_entry(self, get_current_datetime):
         """Create an entry with an ID."""
@@ -136,7 +136,7 @@ class EntryTest(unittest.TestCase):
         self.assertFalse(equal_entry != entry)
 
     @unittest.mock.patch(
-            'timebook.models.Entry._get_current_datetime',
+            'timebook.model.Entry._get_current_datetime',
             return_value=datetime(2016, 5, 9, 17, 30, 17, 0))
     def test_sign_out(self, get_current_datetime):
         """Create an entry, then sign out of it."""
@@ -227,7 +227,7 @@ class TimesheetTest(unittest.TestCase):
         self.assertEqual(entry, expected_entry)
 
     @unittest.mock.patch(
-            'timebook.models.Entry._make_index',
+            'timebook.model.Entry._make_index',
             return_value='3b27d0f8-3801-4319-398f-ace18829d150')
     def test_save_entry(self, make_index):
         """Add an entry to an empty timesheet."""

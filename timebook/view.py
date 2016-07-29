@@ -10,9 +10,9 @@ class TimebookUI():
             - List of currently signed in users
     """
 
-    def __init__(self, timesheet, interface):
+    def __init__(self, timesheet, controller):
         self.t = timesheet
-        self.i = interface
+        self.c = controller
 
         self.root = tkinter.Tk()
         self.root.title("STEM Sign In")
@@ -113,12 +113,12 @@ class TimebookUI():
         user_id = self.ent_id.get()
 
         try:
-            self.i.sign(self.t, user_id)
+            self.c.sign(self.t, user_id)
         except ValueError as e:
             self.show_feedback(e)
-        except self.i.NotRegisteredError as e:
+        except self.c.NotRegisteredError as e:
             self.show_feedback(e)
-        except self.i.DuplicateEntryError as e:
+        except self.c.DuplicateEntryError as e:
             self.show_feedback(e)
         else:
             self.show_feedback("Welcome")
@@ -133,8 +133,8 @@ class TimebookUI():
 
 if __name__ == '__main__':
     # Usage example
-    from timebook.models import Timesheet
-    from timebook.timebook import Interface
+    from timebook.model import Timesheet
+    from timebook.controller import Controller
     t = Timesheet()
-    i = Interface()
-    ui = TimebookUI(t, i)
+    c = Controller()
+    ui = TimebookUI(timesheet=t, controller=c)

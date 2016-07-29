@@ -2,12 +2,12 @@ import collections
 import json
 import logging
 import pathlib
-from timebook.models import Entry
+from timebook.model import Entry
 
 logger = logging.getLogger(__name__)
 
 
-class Interface():
+class Controller():
     class DuplicateEntryError(Exception):
         pass
 
@@ -31,7 +31,7 @@ class Interface():
         except self.DuplicateKeyError as e:
             logger.error(e)
 
-        logger.debug("Interface object initialized")
+        logger.debug("Controller object initialized")
 
     def _detect_duplicates(self, json_file):
         """Raise exception if json_file contains multiple identical keys."""
