@@ -2,6 +2,7 @@
 *.log
 *.swp
 *.vim
+.coverage
 .cache/
 data/
 .reference/
