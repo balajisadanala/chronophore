@@ -4,6 +4,8 @@ Timebook is a simple time-tracking program. It keeps track of users' hours as th
 
 This project was started to help keep track of students signing in and out at a tutoring program in a community college, but should be adaptable to other use cases.
 
+![Tk Interface](docs/screenshot_program.png)
+![Example Json Data](docs/screenshot_data.png)
 
 To Do
 -----
@@ -16,20 +18,19 @@ To Do
     - [x] Tkinter gui
     - [x] Organize data files in date-based hierarchy
     - [x] Load or create data file on startup based on current date
-    - [ ] Validate user input
+    - [x] Validate user input
         - [x] Basic user id validation
         - [x] Student registry json file
         - [x] Check whether student is registered 
         - [x] Handle invalid json files
-        - [ ] Check for bad entries from previous days
-        - [ ] Flag students that forgot to sign out
     - [ ] Package to be a portable windows executable
 
 - Further Improvements: 
-    - [ ] Basic Documentation
+    - [ ] Check for bad entries from previous days
+    - [ ] Flag students that forgot to sign out
+    - [ ] Documentation
     - [ ] Configuration file
     - [ ] Access database over local wireless network
-    - [ ] Separate thread to periodically auto save
     - [ ] Admin UI 
     - [ ] Encrypt/decrypt database
     - [ ] JSON to CSV converter
