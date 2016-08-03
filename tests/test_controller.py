@@ -62,7 +62,7 @@ class ControllerTest(unittest.TestCase):
             self.c.sign(self.t, duplicate_id)
 
     @unittest.mock.patch(
-            'timebook.model.Entry._make_index',
+            'timebook.model.Entry.make_index',
             return_value='3b27d0f8-3801-4319-398f-ace18829d150')
     def test_sign_in(self, make_index):
         """Sign in with a new ID."""

@@ -12,17 +12,19 @@ class Entry():
     """Contains all data for a single entry"""
 
     def __init__(self, user_id="", name="", date=None, time_in=None,
-                 time_out="", index=None, now=datetime.today()):
+                 time_out="", index=None, now=None):
         """Parameters have different default behaviors, and can all be
         overwritten.
         """
 
+        if now is None:
+            now = datetime.today()
         if date is None:
             date = datetime.strftime(now, "%Y-%m-%d")
         if time_in is None:
             time_in = datetime.strftime(now, "%H:%M:%S")
         if index is None:
-            index = self._make_index()
+            index = self.make_index()
 
         self.user_id = user_id
         self.name = name
@@ -52,13 +54,14 @@ class Entry():
         """
         if isinstance(other, Entry):
             return self.__dict__ == other.__dict__
-        return false
+        return NotImplemented
 
     def __ne__(self, other):
         """'!=' returns the opposite of '=='."""
         return not self == other
 
-    def _make_index(self):
+    @staticmethod
+    def make_index():
         """Generate a UUID version 4 (basically random)"""
         return str(uuid.uuid4())
 

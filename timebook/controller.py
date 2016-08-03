@@ -19,16 +19,16 @@ class Controller():
 
     def __init__(self, users_file=None):
         if users_file is None:
-            self.users_file = pathlib.Path('.', 'data', 'users.json')
-        else:
-            self.users_file = users_file
+            users_file = pathlib.Path('.', 'data', 'users.json')
+
+        self.users_file = users_file
 
         try:
             self._detect_duplicates(self.users_file)
         except json.decoder.JSONDecodeError as e:
             logger.critical("Invalid users file: {}.".format(e))
             raise SystemExit
-        except self.DuplicateKeyError as e:
+        except self.DuplicateKeysError as e:
             logger.error(e)
 
         logger.debug("Controller object initialized")
@@ -60,29 +60,22 @@ class Controller():
         name = user_data[user_id]['First Name']
         return name
 
-    def is_valid(self, user_id):
+    @staticmethod
+    def is_valid(user_id):
         user_id = user_id.strip()
 
-        valid = True
-
         try:
-            _ = int(user_id)
+            int(user_id)
         except ValueError:
-            valid = False
+            return False
         else:
-            if len(user_id) != 9:
-                valid = False
-        finally:
-            return valid
+            return bool(len(user_id) == 9)
 
     def is_registered(self, user_id):
         user_id = user_id.strip()
         with self.users_file.open('r') as f:
             registered_ids = list(json.load(f).keys())
-        if user_id in registered_ids:
-            return True
-        else:
-            return False
+        return bool(user_id in registered_ids)
 
     def sign(self, timesheet, user_id):
         user_id = user_id.strip()
