@@ -2,7 +2,6 @@ import filecmp
 import logging
 import pathlib
 import unittest
-import unittest.mock
 from datetime import datetime
 from timebook.model import Entry, Timesheet
 
@@ -10,12 +9,13 @@ logging.disable(logging.CRITICAL)
 
 
 class EntryTest(unittest.TestCase):
-    @unittest.mock.patch(
-            'timebook.model.Entry._get_current_datetime',
-            return_value=datetime(2016, 5, 9, 15, 43, 41, 0))
-    def test_create_entry(self, get_current_datetime):
+
+    def test_create_entry(self):
         """Create an entry with an ID."""
-        e = Entry(user_id="882369423")
+        e = Entry(
+            user_id="882369423",
+            now=datetime(2016, 5, 9, 15, 43, 41, 0)
+        )
         self.assertEqual(e.date, "2016-05-09")
         self.assertEqual(e.time_in, "15:43:41")
         self.assertEqual(e.time_out, "")
@@ -38,26 +38,17 @@ class EntryTest(unittest.TestCase):
             index="1f4f10a4-b0c6-43bf-94f4-9ce6e3e204d2"
         )
 
-        equal_entry = Entry(
-            user_id="889870966",
-            date="2016-02-17",
-            time_in="10:45",
-            time_out="13:30",
-            index="1f4f10a4-b0c6-43bf-94f4-9ce6e3e204d2"
-        )
+        equal_entry = entry
 
         self.assertTrue(entry == equal_entry)
         self.assertTrue(equal_entry == entry)
         self.assertFalse(entry != equal_entry)
         self.assertFalse(equal_entry != entry)
 
-    @unittest.mock.patch(
-            'timebook.model.Entry._get_current_datetime',
-            return_value=datetime(2016, 5, 9, 17, 30, 17, 0))
-    def test_sign_out(self, get_current_datetime):
+    def test_sign_out(self):
         """Create an entry, then sign out of it."""
         e = Entry(user_id="882369423")
-        e.sign_out()
+        e.sign_out(time=datetime(2016, 5, 9, 17, 30, 17, 0))
         self.assertEqual(e.time_out, "17:30:17")
 
 
@@ -66,7 +57,6 @@ class TimesheetTest(unittest.TestCase):
     example_file = pathlib.Path('.', 'tests', 'example.json')
 
     def setUp(self):
-        self.maxDiff = None
         self.t = Timesheet(data_file=self.test_file)
         # this matches the contents of the example_file
         self.example_sheet = {
@@ -142,17 +132,15 @@ class TimesheetTest(unittest.TestCase):
         )
         self.assertEqual(entry, expected_entry)
 
-    @unittest.mock.patch(
-            'timebook.model.Entry._make_index',
-            return_value='3b27d0f8-3801-4319-398f-ace18829d150')
-    def test_save_entry(self, make_index):
+    def test_save_entry(self):
         """Add an entry to an empty timesheet."""
         e = Entry(
             user_id="889870966",
             name="Test",
             date="2016-02-17",
             time_in="10:45",
-            time_out="13:30"
+            time_out="13:30",
+            index="3b27d0f8-3801-4319-398f-ace18829d150"
         )
         self.t.save_entry(e)
         expected_sheet = {

@@ -11,42 +11,25 @@ logger = logging.getLogger(__name__)
 class Entry():
     """Contains all data for a single entry"""
 
-    def __init__(self, user_id=None, name=None, date=None, time_in=None,
-                 time_out=None, index=None):
+    def __init__(self, user_id="", name="", date=None, time_in=None,
+                 time_out="", index=None, now=datetime.today()):
         """Parameters have different default behaviors, and can all be
         overwritten.
-
-        Default Behaviors:
-            date, time_in: assigned the current date/time
-            user_id, time_out: left as empty strings
-            index: assigned a uuid
         """
-        now = self._get_current_datetime()
 
-        if user_id is None:
-            self.user_id = ""
-        else:
-            self.user_id = user_id
-        if name is None:
-            self.name = ""
-        else:
-            self.name = name
         if date is None:
-            self.date = datetime.strftime(now, "%Y-%m-%d")
-        else:
-            self.date = date
+            date = datetime.strftime(now, "%Y-%m-%d")
         if time_in is None:
-            self.time_in = datetime.strftime(now, "%H:%M:%S")
-        else:
-            self.time_in = time_in
-        if time_out is None:
-            self.time_out = ""
-        else:
-            self.time_out = time_out
+            time_in = datetime.strftime(now, "%H:%M:%S")
         if index is None:
-            self.index = self._make_index()
-        else:
-            self.index = index
+            index = self._make_index()
+
+        self.user_id = user_id
+        self.name = name
+        self.date = date
+        self.time_in = time_in
+        self.time_out = time_out
+        self.index = index
 
         logger.debug("Entry object initialized: {}".format(repr(self)))
 
@@ -75,20 +58,13 @@ class Entry():
         """'!=' returns the opposite of '=='."""
         return not self == other
 
-    def _get_current_datetime(self):
-        """Serves as a mockable reference to datetime.today().
-        Mocking is used in the unit tests.
-        """
-        return datetime.today()
-
     def _make_index(self):
         """Generate a UUID version 4 (basically random)"""
         return str(uuid.uuid4())
 
-    def sign_out(self):
+    def sign_out(self, time=datetime.today()):
         """Get the time the user signed out"""
-        now = self._get_current_datetime()
-        self.time_out = datetime.strftime(now, "%H:%M:%S")
+        self.time_out = datetime.strftime(time, "%H:%M:%S")
         logger.info("Entry signed out: {}".format(repr(self)))
 
 
@@ -119,18 +95,11 @@ class Timesheet():
 
     def _update_signed_in(self):
         """Update the list of all entries that haven't been signed out."""
-        # NOTE(amin): This doesn't prevent or detect multiple entries
-        # with the same user signed in. This needs to be checked for
-        # elsewhere. It also scales inefficiently with the total size
-        # of the sheet.
-
-        # TODO(amin): Make this add or remove an entry every time one is
-        # saved, rather than scanning the whole sheet every time.
         self.signed_in = [k for k, v in self.sheet.items() if v['Out'] == ""]
         logger.debug("Signed in entries: {}".format(self.signed_in))
 
     def load_entry(self, index):
-        """Load an entry into its own object."""
+        """Load and return an entry object."""
         entry = Entry(
             user_id=self.sheet[index]['User ID'],
             name=self.sheet[index]['Name'],
@@ -148,8 +117,6 @@ class Timesheet():
         """
         if index is None:
             index = entry.index
-        else:
-            index = index
 
         entry_data = {}
         entry_data['User ID'] = entry.user_id
@@ -188,8 +155,6 @@ class Timesheet():
         """Read the timesheet from a json file."""
         if data_file is None:
             data_file = self.data_file
-        else:
-            data_file = data_file
 
         try:
             with data_file.open('r') as f:

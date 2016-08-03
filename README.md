@@ -1,11 +1,13 @@
 Timebook
 ========
+![Tk Interface](docs/screenshot_program.png)
+
 Timebook is a simple time-tracking program. It keeps track of users' hours as they sign in and out. Data is stored in a human-readable json file. 
+
+![Example Json Data](docs/screenshot_data.png)
 
 This project was started to help keep track of students signing in and out at a tutoring program in a community college, but should be adaptable to other use cases.
 
-![Tk Interface](docs/screenshot_program.png)
-![Example Json Data](docs/screenshot_data.png)
 
 To Do
 -----
