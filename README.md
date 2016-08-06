@@ -28,6 +28,7 @@ To Do
     - [ ] Package to be a portable windows executable
 
 - Further Improvements: 
+    - [x] JSON to spreadsheet converter
     - [ ] Check for bad entries from previous days
     - [ ] Flag students that forgot to sign out
     - [ ] Documentation
@@ -35,7 +36,6 @@ To Do
     - [ ] Access database over local wireless network
     - [ ] Admin UI 
     - [ ] Encrypt/decrypt database
-    - [ ] JSON to CSV converter
     - [ ] Change unit tests to use [file-like objects](http://stackoverflow.com/questions/3942820/how-to-do-unit-testing-of-functions-writing-files-using-python-unittest) instead of files
     - [ ] Convert unit tests to pytest syntax
     - [ ] Come up with a name no one else is using

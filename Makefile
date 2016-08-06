@@ -9,7 +9,7 @@ test:
 	py.test tests
 
 lint:
-	flake8 timebook/*.py tests/*.py
+	flake8 timebook/*.py tests/*.py scripts/*.py
 
 run:
 	python -m timebook

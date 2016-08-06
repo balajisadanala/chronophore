@@ -44,7 +44,7 @@ def generate_users(num_users):
     file_name = 'users.json'
     data_file = data_dir.joinpath(file_name)
 
-    users = {} 
+    users = {}
 
     for _ in range(num_users):
         user_id = random.randint(880000000, 889999999)
@@ -52,7 +52,7 @@ def generate_users(num_users):
         date_left = random_date(date_joined.year + 1, 2020)
 
         student = {}
-        student['First Name'] = random.choice(FIRST_NAMES) 
+        student['First Name'] = random.choice(FIRST_NAMES)
         student['Last Name'] = random.choice(LAST_NAMES)
         student['Major'] = random.choice(MAJORS)
         student['Email'] = (
