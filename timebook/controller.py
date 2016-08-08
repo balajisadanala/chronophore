@@ -143,3 +143,5 @@ class Controller():
                 e = timesheet.load_entry(entry)
                 e.sign_out()
                 timesheet.save_entry(e)
+        finally:
+            timesheet.save_sheet()

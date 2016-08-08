@@ -123,7 +123,6 @@ class TimebookUI():
         else:
             self.show_feedback("Welcome")
         finally:
-            self.t.save_sheet()
             self.signed_in.set('\n'.join(sorted(
                 [self.t.sheet[i]['Name'] for i in self.t.signed_in])))
 

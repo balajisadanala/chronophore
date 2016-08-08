@@ -1,3 +1,4 @@
+import collections
 import json
 import logging
 import os
@@ -65,8 +66,10 @@ class Entry():
         """Generate a UUID version 4 (basically random)"""
         return str(uuid.uuid4())
 
-    def sign_out(self, time=datetime.today()):
+    def sign_out(self, time=None):
         """Get the time the user signed out"""
+        if time is None:
+            time = datetime.today()
         self.time_out = datetime.strftime(time, "%H:%M:%S")
         logger.info("Entry signed out: {}".format(repr(self)))
 
@@ -75,22 +78,19 @@ class Timesheet():
     """Contains multiple entries"""
 
     def __init__(self, data_file=None):
-        self.sheet = {}
+        self.sheet = collections.OrderedDict()
         self.signed_in = []
         data_dir = pathlib.Path('.', 'data')
 
         if data_file is None:
             today = datetime.strftime(datetime.today(), "%Y-%m-%d")
             file_name = today + ".json"
-            self.data_file = data_dir.joinpath(file_name)
-        else:
-            self.data_file = data_file
+            data_file = data_dir.joinpath(file_name)
 
-        if self.data_file.exists():
-            self.load_sheet()
-        elif not data_dir.exists():
-            data_dir.mkdir(exist_ok=False, parents=True)
+        self.data_file = data_file
 
+        self.load_sheet()
+        data_dir.mkdir(exist_ok=True, parents=True)
         logger.debug("Timesheet object initialized.")
         logger.debug("Timesheet data file: {}".format(self.data_file))
 
@@ -121,7 +121,7 @@ class Timesheet():
         if index is None:
             index = entry.index
 
-        entry_data = {}
+        entry_data = collections.OrderedDict()
         entry_data['User ID'] = entry.user_id
         entry_data['Name'] = entry.name
         entry_data['Date'] = entry.date
@@ -160,8 +160,14 @@ class Timesheet():
             data_file = self.data_file
 
         try:
-            with data_file.open('r') as f:
-                self.sheet = json.load(f)
+            with data_file.open('r') as data:
+                self.sheet = json.load(
+                    data, object_pairs_hook=collections.OrderedDict
+                )
+        except FileNotFoundError:
+            logger.debug(
+                "{} not found. It will be created.".format(self.data_file)
+            )
         except json.decoder.JSONDecodeError as e:
             backup = data_file.with_suffix('.bak')
             os.rename(str(data_file), str(backup))
@@ -171,7 +177,8 @@ class Timesheet():
                 )
             )
         else:
-            logger.debug("Sheet loaded from {}".format(data_file.resolve()))
+            logger.debug("Sheet loaded from {}".format(data_file))
+        finally:
             self._update_signed_in()
 
     def save_sheet(self, data_file=None):
@@ -180,5 +187,5 @@ class Timesheet():
             data_file = self.data_file
 
         with data_file.open('w') as f:
-            json.dump(self.sheet, f, indent=4, sort_keys=True)
+            json.dump(self.sheet, f, indent=4, sort_keys=False)
         logger.debug("Sheet saved to {}".format(data_file.resolve()))

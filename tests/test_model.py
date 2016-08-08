@@ -1,4 +1,6 @@
+import collections
 import filecmp
+import json
 import logging
 import pathlib
 import unittest
@@ -58,30 +60,16 @@ class TimesheetTest(unittest.TestCase):
 
     def setUp(self):
         self.t = Timesheet(data_file=self.test_file)
-        # this matches the contents of the example_file
-        self.example_sheet = {
-            "1f4f10a4-b0c6-43bf-94f4-9ce6e3e204d2": {
-                "Date": "2016-02-17",
-                "In": "10:45",
-                "Name": "Test",
-                "Out": "13:30",
-                "User ID": "889870966",
-            },
-            "2ed2be60-693a-44fe-adc1-2803a674ec9b": {
-                "Date": "2016-02-17",
-                "In": "10:45",
-                "Name": "Bork",
-                "Out": "",
-                "User ID": "885894966",
-            },
-            "7b4ae0fc-3801-4412-998f-ace14829d150": {
-                "Date": "2016-02-17",
-                "In": "12:45",
-                "Name": "User",
-                "Out": "16:44",
-                "User ID": "889249566",
-            },
-        }
+
+        example_file = pathlib.Path('.', 'tests', 'example.json')
+        with example_file.open() as f:
+            self.example_sheet = json.load(
+                f, object_pairs_hook=collections.OrderedDict
+            )
+
+    def tearDown(self):
+        if self.test_file.exists():
+            self.test_file.unlink()
 
     def test_find_signed_in(self):
         """Find all entries of people that are currently signed in
@@ -193,15 +181,14 @@ class TimesheetTest(unittest.TestCase):
 
     def test_save_sheet(self):
         """Save a sheet to a file."""
-        self.t.sheet = dict(self.example_sheet)
-        self.t.save_sheet(data_file=self.test_file)
+        self.t.sheet = self.example_sheet
+        self.t.save_sheet()
         self.assertTrue(
             filecmp.cmp(
-                str(self.test_file),
+                str(self.t.data_file),
                 str(self.example_file)
             )
         )
-        self.test_file.unlink()
 
 
 if __name__ == '__main__':
