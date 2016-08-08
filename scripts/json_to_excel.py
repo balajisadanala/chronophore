@@ -4,7 +4,15 @@ import openpyxl
 from collections import OrderedDict
 
 
-def data_to_excel(data, output_file="data.xls", title="Data"):
+def data_to_excel(data, title="data"):
+    """Saves data from one of Timebook's json files
+    to an Excel spreadsheet.
+
+    Parameters:
+        - data: A dictionary (preferably an OrderedDict) from
+                a json file created by Timebook.
+        - title: The title of the output file.
+    """
     try:
         headers = {header for key in data for header in data[key].keys()}
         logging.debug("Headers: {}".format(headers))
@@ -38,6 +46,7 @@ def data_to_excel(data, output_file="data.xls", title="Data"):
                 col_num = header_columns[header]
                 sheet.cell(row=row_num, column=col_num).value = value
 
+        output_file = title + ".xls"
         wb.save(output_file)
         logging.info("Worksheet saved: {}".format(output_file))
 
