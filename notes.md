@@ -64,3 +64,15 @@ Report
     - Date
         - Total student hours per date
         - Total bad entries per date
+
+
+Lessons Learned
+---------------
+- Premature abstraction is inefficient.
+    - First make the straight-line code that does what you want it to do.
+    - Understand the problem space.
+    - Then consider which parts of the code are useful to abstract into functions or classes.
+- Premature optimization is inefficient.
+    - Always keep performance in mind, but write the basic version of the code first.
+    - Understand the performance constraints before optimizing.
+- When creating an API, [write the usage code first](https://mollyrocket.com/casey/stream_0029.html).
