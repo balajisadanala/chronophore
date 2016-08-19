@@ -160,6 +160,8 @@ class Timesheet():
             data_file = self.data_file
 
         try:
+            # TODO(amin): lift this IO out into a separate function.
+            # Make this method take a file-like-object.
             with data_file.open('r') as data:
                 self.sheet = json.load(
                     data, object_pairs_hook=collections.OrderedDict
@@ -168,6 +170,7 @@ class Timesheet():
             logger.debug(
                 "{} not found. It will be created.".format(self.data_file)
             )
+        # TODO(amin): use utils.validate_json() for validation
         except json.decoder.JSONDecodeError as e:
             backup = data_file.with_suffix('.bak')
             os.rename(str(data_file), str(backup))

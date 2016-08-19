@@ -1,6 +1,7 @@
 import contextlib
 import tkinter
 from tkinter import ttk, N, S, E, W
+from timebook import controller
 
 
 class TimebookUI():
@@ -10,9 +11,8 @@ class TimebookUI():
             - List of currently signed in users
     """
 
-    def __init__(self, timesheet, controller):
+    def __init__(self, timesheet):
         self.t = timesheet
-        self.c = controller
 
         self.root = tkinter.Tk()
         self.root.title("STEM Sign In")
@@ -97,10 +97,11 @@ class TimebookUI():
         to hide the feedback message. This works better than using threads,
         which can cause problems in Tk.
         """
+
+        # cancel any existing callback to clear the feedback
+        # label. this prevents flickering and inconsistent
+        # timing during rapid input.
         with contextlib.suppress(AttributeError):
-            # cancel any existing callback to clear the feedback
-            # label. this prevents flickering and inconsistent
-            # timing during rapid input.
             self.root.after_cancel(self.clear_feedback)
 
         self.feedback.set(message)
@@ -110,15 +111,11 @@ class TimebookUI():
 
     def sign_in_out(self, *args):
         """Validate input from ent_id, then sign in to the Timesheet."""
-        user_id = self.ent_id.get()
+        user_id = self.ent_id.get().strip()
 
         try:
-            self.c.sign(self.t, user_id)
+            controller.sign(self.t, user_id)
         except ValueError as e:
-            self.show_feedback(e)
-        except self.c.NotRegisteredError as e:
-            self.show_feedback(e)
-        except self.c.DuplicateEntryError as e:
             self.show_feedback(e)
         else:
             self.show_feedback("Welcome")
@@ -133,7 +130,5 @@ class TimebookUI():
 if __name__ == '__main__':
     # Usage example
     from timebook.model import Timesheet
-    from timebook.controller import Controller
     t = Timesheet()
-    c = Controller()
-    ui = TimebookUI(timesheet=t, controller=c)
+    ui = TimebookUI(timesheet=t)
