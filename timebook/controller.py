@@ -1,13 +1,12 @@
 import logging
-import pathlib
-from timebook import utils
+from timebook import config, utils
 from timebook.model import Entry
 
 logger = logging.getLogger(__name__)
 
 
 def sign(timesheet, user_id):
-    users_file = pathlib.Path('data', 'users.json')
+    users_file = config.DATA_DIR.joinpath("users.json")
     users = utils.get_users(users_file)
 
     if not utils.is_valid(user_id):

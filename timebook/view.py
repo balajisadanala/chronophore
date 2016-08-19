@@ -1,7 +1,7 @@
 import contextlib
 import tkinter
 from tkinter import ttk, N, S, E, W
-from timebook import controller
+from timebook import config, controller
 
 
 class TimebookUI():
@@ -41,7 +41,7 @@ class TimebookUI():
         )
         self.lbl_welcome = ttk.Label(
             self.content,
-            text="Welcome to the STEM Learning Center!"
+            text=config.GUI_WELCOME_LABLE
         )
         self.lbl_id = ttk.Label(self.content, text="Enter Student ID")
         self.ent_id = ttk.Entry(

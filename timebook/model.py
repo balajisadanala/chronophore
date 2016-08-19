@@ -2,9 +2,9 @@ import collections
 import json
 import logging
 import os
-import pathlib
 import uuid
 from datetime import datetime
+from timebook import config
 
 logger = logging.getLogger(__name__)
 
@@ -80,7 +80,7 @@ class Timesheet():
     def __init__(self, data_file=None):
         self.sheet = collections.OrderedDict()
         self.signed_in = []
-        data_dir = pathlib.Path('.', 'data')
+        data_dir = config.DATA_DIR
 
         if data_file is None:
             today = datetime.strftime(datetime.today(), "%Y-%m-%d")

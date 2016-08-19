@@ -31,10 +31,10 @@ To Do
 - Further Improvements: 
     - [x] JSON to spreadsheet converter
     - [x] Convert unit tests to pytest syntax
+    - [x] Configuration file
     - [ ] Check for bad entries from previous days
     - [ ] Flag students that forgot to sign out
     - [ ] Documentation
-    - [ ] Configuration file
     - [ ] Access database over local wireless network
     - [ ] Admin UI 
     - [ ] Encrypt/decrypt database

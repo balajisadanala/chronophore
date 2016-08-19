@@ -1,11 +1,9 @@
 import collections
 import json
 import logging
+from timebook import config
 
 logger = logging.getLogger(__name__)
-
-
-USER_ID_LENGTH = 9
 
 
 def validate_json(json_file):
@@ -51,7 +49,7 @@ def is_valid(user_id):
     except ValueError:
         return False
     else:
-        return bool(len(user_id) == USER_ID_LENGTH)
+        return bool(len(user_id) == config.USER_ID_LENGTH)
 
 
 def is_registered(user_id, users):
