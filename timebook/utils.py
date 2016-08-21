@@ -39,8 +39,7 @@ def get_users(users_file):
 
 
 def user_name(user_id, users):
-    # TODO(amin): Make this return a tuple: (first_name, last_name)
-    return users[user_id]['First Name']
+    return (users[user_id]['First Name'], users[user_id]['Last Name'])
 
 
 def is_valid(user_id):

@@ -5,6 +5,10 @@ from timebook.model import Entry
 logger = logging.getLogger(__name__)
 
 
+def signed_in_names(timesheet):
+    return [timesheet.sheet[i]['Name'] for i in timesheet.signed_in]
+
+
 def sign(timesheet, user_id):
     users_file = config.DATA_DIR.joinpath("users.json")
     users = utils.get_users(users_file)

@@ -86,10 +86,16 @@ class TimebookUI():
         self.root.bind('<KP_Enter>', self.sign_in_out)
         self.ent_id.focus()
 
-        self.signed_in.set('\n'.join(sorted(
-            [self.t.sheet[i]['Name'] for i in self.t.signed_in])))
+        self._set_signed_in()
 
         self.root.mainloop()
+
+    def _set_signed_in(self):
+        names = [
+            " ".join([first, last])
+            for first, last in controller.signed_in_names(self.t)
+        ]
+        self.signed_in.set('\n'.join(sorted(names)))
 
     def show_feedback(self, message, seconds=3):
         """Display a message in lbl_feedback, which then times out
@@ -120,8 +126,7 @@ class TimebookUI():
         else:
             self.show_feedback("Welcome")
         finally:
-            self.signed_in.set('\n'.join(sorted(
-                [self.t.sheet[i]['Name'] for i in self.t.signed_in])))
+            self._set_signed_in()
 
         self.ent_id.delete(0, 'end')
         self.ent_id.focus()
