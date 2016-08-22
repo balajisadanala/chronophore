@@ -1,24 +1,47 @@
 import logging
-from timebook import config, utils
+from timebook import utils
 from timebook.model import Entry
 
 logger = logging.getLogger(__name__)
 
 
 def signed_in_names(timesheet):
+    """Return list of names of currently signed in users."""
     return [timesheet.sheet[i]['Name'] for i in timesheet.signed_in]
 
 
-def sign(timesheet, user_id):
+def user_signed_in(user_id, timesheet):
+    """Check whether a given user is signed in.
+
+    Return:
+        - None if 0 instances of user_id signed in
+        - user_id if 1 instance of user_id signed in
+
+    Raise:
+        - ValueError if >1 instance of user_id signed in
     """
-    parameters:
-        - timesheet: timesheet object
-        - user_id: string of user's unique login ID.
-    returns:
+    [entry] = (
+        [
+            i for i in timesheet.signed_in
+            if timesheet.sheet[i]['User ID'] == user_id
+        ]
+        or [None]
+    )
+    return entry
+
+
+def sign(user_id, timesheet):
+    """Check user id for validity, then sign user in or out
+    depending on whether or not they are currently signed in.
+
+    Return:
         - status: "Signed in", "Signed out", or "Error"
+
+    Raise:
+        - ValueError if user_id is invalid. Include a
+        message to be passed to the caller.
     """
-    users_file = config.USERS_FILE
-    users = utils.get_users(users_file)
+    users = utils.get_users()
 
     if not utils.is_valid(user_id):
         logger.debug("Invalid input: {}".format(user_id))
@@ -35,14 +58,7 @@ def sign(timesheet, user_id):
         )
 
     try:
-        [entry] = (
-            [
-                i for i in timesheet.signed_in
-                if timesheet.sheet[i]['User ID'] == user_id
-            ]
-            or [None]
-        )
-
+        entry = user_signed_in(user_id, timesheet)
     except ValueError:
         # handle duplicates
         duplicate_entries = [
@@ -69,7 +85,6 @@ def sign(timesheet, user_id):
                 user_id
             )
         )
-
     else:
         if not entry:
             # sign in
@@ -86,5 +101,6 @@ def sign(timesheet, user_id):
             e.sign_out()
             timesheet.save_entry(e)
             status = "Signed out"
+
         timesheet.save_sheet()
         return status

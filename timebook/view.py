@@ -122,7 +122,7 @@ class TimebookUI():
         user_id = self.ent_id.get().strip()
 
         try:
-            sign_in_status = controller.sign(self.t, user_id)
+            sign_in_status = controller.sign(user_id, self.t)
         except ValueError as e:
             self._show_feedback(e)
         else:

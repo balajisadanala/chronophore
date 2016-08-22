@@ -30,12 +30,12 @@ def test_signed_in_names():
 
 def test_sign_invalid():
     with pytest.raises(ValueError):
-        controller.sign(timesheet, "1234567890")
+        controller.sign("1234567890", timesheet)
 
 
 def test_sign_not_registered(timesheet):
     with pytest.raises(ValueError):
-        controller.sign(timesheet, "888888888")
+        controller.sign("888888888", timesheet)
 
 
 def test_sign_duplicates(timesheet):
@@ -45,7 +45,7 @@ def test_sign_duplicates(timesheet):
         e = Entry(duplicate_id)
         timesheet.save_entry(e)
     with pytest.raises(ValueError):
-        controller.sign(timesheet, duplicate_id)
+        controller.sign(duplicate_id, timesheet)
 
 
 def test_sign_in(monkeypatch, timesheet):
@@ -57,7 +57,7 @@ def test_sign_in(monkeypatch, timesheet):
         return '3b27d0f8-3801-4319-398f-ace18829d150'
     monkeypatch.setattr(Entry, 'make_index', mock_index)
     user_id = registered_id
-    controller.sign(timesheet, user_id)
+    controller.sign(user_id, timesheet)
     assert(
         timesheet.sheet['3b27d0f8-3801-4319-398f-ace18829d150']['User ID']
         == user_id
@@ -74,6 +74,6 @@ def test_sign_out(timesheet):
         index="2ed2be60-693a-44fe-adc1-2803a674ec9b"
     )
     timesheet.save_entry(e)
-    controller.sign(timesheet, registered_id)
+    controller.sign(registered_id, timesheet)
     assert timesheet.sheet[e.index] is not None
     assert e.index not in timesheet.signed_in
