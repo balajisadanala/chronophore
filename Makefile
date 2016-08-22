@@ -14,8 +14,11 @@ lint:
 run:
 	python -m timebook
 
-watch:
-	watch -n 1 cat $(DATADIR)$(DATE).json
+watch-data:
+	tail -f $(DATADIR)$(DATE).json
+
+watch-log:
+	tail -f debug.log
 
 loc:
 	cloc --by-file --include-lang=Python timebook/ tests/

@@ -160,11 +160,12 @@ class TestTimesheet:
 
     def test_load_sheet(self, timesheet):
         """Load a sheet from a file."""
-        timesheet.load_sheet(data_file=self.example_file)
+        with self.example_file.open() as f:
+            timesheet.load_sheet(data=f)
         loaded_sheet = timesheet.sheet
         assert loaded_sheet == self.example_sheet
 
-    def test_load_invalid_sheet(self, timesheet):
+    def test_load_invalid_sheet(self):
         """Load an invalid json file. Make sure it gets
         renamed a with a '.bak' suffix.
         """
@@ -172,9 +173,9 @@ class TestTimesheet:
         backup = invalid_file.with_suffix('.bak')
         with invalid_file.open('w') as f:
             f.write("invalid file contents")
-        timesheet.load_sheet(data_file=invalid_file)
+        Timesheet(data_file=invalid_file)
         assert backup.is_file()
-        assert (invalid_file.is_file()) is False
+        assert not invalid_file.is_file()
         backup.unlink()
 
     def test_save_sheet(self, timesheet):

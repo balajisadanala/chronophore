@@ -1,6 +1,5 @@
 import logging
-from timebook import utils
-from timebook.model import Entry
+from timebook import model, utils
 
 logger = logging.getLogger(__name__)
 
@@ -89,7 +88,7 @@ def sign(user_id, timesheet):
         if not entry:
             # sign in
             timesheet.save_entry(
-                Entry(
+                model.Entry(
                     user_id=user_id,
                     name=utils.user_name(user_id, users)
                 )
@@ -102,5 +101,4 @@ def sign(user_id, timesheet):
             timesheet.save_entry(e)
             status = "Signed out"
 
-        timesheet.save_sheet()
         return status

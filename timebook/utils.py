@@ -29,6 +29,8 @@ def validate_json(json_file):
             )
             logger.warning(message)
             raise ValueError(message)
+        else:
+            logger.debug("{} validated".format(json_file))
 
 
 def get_users(users_file=None):

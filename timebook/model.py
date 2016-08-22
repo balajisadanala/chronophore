@@ -4,7 +4,8 @@ import logging
 import os
 import uuid
 from datetime import datetime
-from timebook import config
+
+import timebook
 
 logger = logging.getLogger(__name__)
 
@@ -76,11 +77,12 @@ class Entry():
 
 class Timesheet():
     """Contains multiple entries"""
+    # TODO(amin): use magic methods. see The Python Language Reference
 
     def __init__(self, data_file=None):
         self.sheet = collections.OrderedDict()
         self.signed_in = []
-        data_dir = config.DATA_DIR
+        data_dir = timebook.config.DATA_DIR
 
         if data_file is None:
             today = datetime.strftime(datetime.today(), "%Y-%m-%d")
@@ -89,7 +91,20 @@ class Timesheet():
 
         self.data_file = data_file
 
-        self.load_sheet()
+        try:
+            timebook.utils.validate_json(self.data_file)
+        except FileNotFoundError:
+            logger.debug(
+                "{} not found. It will be created.".format(data_file)
+            )
+        except json.decoder.JSONDecodeError as e:
+            backup = data_file.with_suffix('.bak')
+            os.rename(str(data_file), str(backup))
+            logger.error("{}. {} moved to {}".format(e, data_file, backup))
+        else:
+            with data_file.open('r') as f:
+                self.load_sheet(data=f)
+
         data_dir.mkdir(exist_ok=True, parents=True)
         logger.debug("Timesheet object initialized.")
         logger.debug("Timesheet data file: {}".format(self.data_file))
@@ -131,6 +146,7 @@ class Timesheet():
         self.sheet[index] = entry_data
         logger.debug("Entry saved: {}".format(repr(entry)))
         self._update_signed_in()
+        self.save_sheet()
 
     def remove_entry(self, index):
         """Delete a single entry from the timesheet."""
@@ -138,6 +154,7 @@ class Timesheet():
         del self.sheet[str(index)]
         logger.debug("Entry removed: {}".format(removed_entry))
         self._update_signed_in()
+        self.save_sheet()
 
     def search_entries(self, search_term):
         """Look through the values of all entries.
@@ -154,35 +171,11 @@ class Timesheet():
         )
         return indices
 
-    def load_sheet(self, data_file=None):
+    def load_sheet(self, data):
         """Read the timesheet from a json file."""
-        if data_file is None:
-            data_file = self.data_file
-
-        try:
-            # TODO(amin): lift this IO out into a separate function.
-            # Make this method take a file-like-object.
-            with data_file.open('r') as data:
-                self.sheet = json.load(
-                    data, object_pairs_hook=collections.OrderedDict
-                )
-        except FileNotFoundError:
-            logger.debug(
-                "{} not found. It will be created.".format(self.data_file)
-            )
-        # TODO(amin): use utils.validate_json() for validation
-        except json.decoder.JSONDecodeError as e:
-            backup = data_file.with_suffix('.bak')
-            os.rename(str(data_file), str(backup))
-            logger.error(
-                "Invalid JSON file: {}. {} moved to {}".format(
-                    e, data_file, backup
-                )
-            )
-        else:
-            logger.debug("Sheet loaded from {}".format(data_file))
-        finally:
-            self._update_signed_in()
+        self.sheet = json.load(data, object_pairs_hook=collections.OrderedDict)
+        logger.debug("Sheet loaded")
+        self._update_signed_in()
 
     def save_sheet(self, data_file=None):
         """Write the timesheet to json file."""
