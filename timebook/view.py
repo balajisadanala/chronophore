@@ -1,7 +1,7 @@
 import contextlib
 import tkinter
 from tkinter import ttk, N, S, E, W
-from timebook import config, controller
+from timebook import config, controller, utils
 
 
 class TimebookUI():
@@ -51,7 +51,7 @@ class TimebookUI():
         self.btn_sign = ttk.Button(
             self.content,
             text="Sign In/Out",
-            command=self.sign_in_out
+            command=self._sign_in_button_press
         )
 
         # assemble grid
@@ -82,8 +82,8 @@ class TimebookUI():
         self.content.rowconfigure(2, minsize=100, weight=1)
         self.content.rowconfigure(3, weight=3)
 
-        self.root.bind('<Return>', self.sign_in_out)
-        self.root.bind('<KP_Enter>', self.sign_in_out)
+        self.root.bind('<Return>', self._sign_in_button_press)
+        self.root.bind('<KP_Enter>', self._sign_in_button_press)
         self.ent_id.focus()
 
         self._set_signed_in()
@@ -97,12 +97,14 @@ class TimebookUI():
         ]
         self.signed_in.set('\n'.join(sorted(names)))
 
-    def show_feedback(self, message, seconds=3):
+    def _show_feedback(self, message, seconds=None):
         """Display a message in lbl_feedback, which then times out
         after some number of seconds. Use after() to schedule a callback
         to hide the feedback message. This works better than using threads,
         which can cause problems in Tk.
         """
+        if seconds is None:
+            seconds = config.MESSAGE_DURATION
 
         # cancel any existing callback to clear the feedback
         # label. this prevents flickering and inconsistent
@@ -115,16 +117,17 @@ class TimebookUI():
             1000 * seconds, lambda: self.feedback.set("")
         )
 
-    def sign_in_out(self, *args):
+    def _sign_in_button_press(self, *args):
         """Validate input from ent_id, then sign in to the Timesheet."""
         user_id = self.ent_id.get().strip()
 
         try:
-            controller.sign(self.t, user_id)
+            sign_in_status = controller.sign(self.t, user_id)
         except ValueError as e:
-            self.show_feedback(e)
+            self._show_feedback(e)
         else:
-            self.show_feedback("Welcome")
+            user_name = " ".join(utils.user_name(user_id, utils.get_users()))
+            self._show_feedback("{}: {}".format(sign_in_status, user_name))
         finally:
             self._set_signed_in()
 

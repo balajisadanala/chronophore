@@ -10,7 +10,14 @@ def signed_in_names(timesheet):
 
 
 def sign(timesheet, user_id):
-    users_file = config.DATA_DIR.joinpath("users.json")
+    """
+    parameters:
+        - timesheet: timesheet object
+        - user_id: string of user's unique login ID.
+    returns:
+        - status: "Signed in", "Signed out", or "Error"
+    """
+    users_file = config.USERS_FILE
     users = utils.get_users(users_file)
 
     if not utils.is_valid(user_id):
@@ -48,7 +55,7 @@ def sign(timesheet, user_id):
             )
         )
         logger.info(
-            "Signing out of duplicate instances of user {}: {}".format(
+            "Signing out of multiple instances of user {}: {}".format(
                 user_id, duplicate_entries
             )
         )
@@ -58,7 +65,7 @@ def sign(timesheet, user_id):
             timesheet.save_entry(e)
 
         raise ValueError(
-            "Signing out of duplicate instances of user {}".format(
+            "Signing out of multiple instances of user {}".format(
                 user_id
             )
         )
@@ -72,10 +79,12 @@ def sign(timesheet, user_id):
                     name=utils.user_name(user_id, users)
                 )
             )
+            status = "Signed in"
         else:
             # sign out
             e = timesheet.load_entry(entry)
             e.sign_out()
             timesheet.save_entry(e)
-    finally:
+            status = "Signed out"
         timesheet.save_sheet()
+        return status

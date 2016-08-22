@@ -31,7 +31,10 @@ def validate_json(json_file):
             raise ValueError(message)
 
 
-def get_users(users_file):
+def get_users(users_file=None):
+    if users_file is None:
+        users_file = config.USERS_FILE
+
     validate_json(users_file)
     with users_file.open('r') as f:
         users = json.load(f)
