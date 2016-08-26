@@ -1,7 +1,7 @@
 import collections
 import json
 import logging
-from timebook import config
+from chronophore import config
 
 logger = logging.getLogger(__name__)
 

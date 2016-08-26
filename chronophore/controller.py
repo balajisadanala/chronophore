@@ -1,5 +1,5 @@
 import logging
-from timebook import model, utils
+from chronophore import model, utils
 
 logger = logging.getLogger(__name__)
 

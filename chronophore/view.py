@@ -1,11 +1,11 @@
 import contextlib
 import tkinter
 from tkinter import ttk, N, S, E, W
-from timebook import config, controller, utils
+from chronophore import config, controller, utils
 
 
-class TimebookUI():
-    """Simple Tkinter GUI for timebook:
+class ChronophoreUI():
+    """Simple Tkinter GUI for chronophore :
             - Entry for user id input
             - Button to sign in or out
             - List of currently signed in users
@@ -137,6 +137,6 @@ class TimebookUI():
 
 if __name__ == '__main__':
     # Usage example
-    from timebook.model import Timesheet
+    from chronophore.model import Timesheet
     t = Timesheet()
-    ui = TimebookUI(timesheet=t)
+    ui = ChronophoreUI(timesheet=t)

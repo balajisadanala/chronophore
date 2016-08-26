@@ -2,7 +2,7 @@ import json
 import logging
 import pathlib
 import pytest
-from timebook import utils
+from chronophore import utils
 
 logging.disable(logging.CRITICAL)
 

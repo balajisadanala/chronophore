@@ -5,12 +5,12 @@ from collections import OrderedDict
 
 
 def data_to_excel(data, title="data"):
-    """Saves data from one of Timebook's json files
+    """Saves data from one of Chronophore's json files
     to an Excel spreadsheet.
 
     Parameters:
         - data: A dictionary (preferably an OrderedDict) from
-                a json file created by Timebook.
+                a json file created by Chronophore.
         - title: The title of the output file.
     """
     try:

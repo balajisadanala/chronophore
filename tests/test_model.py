@@ -5,7 +5,7 @@ import logging
 import pathlib
 import pytest
 from datetime import datetime
-from timebook.model import Entry, Timesheet
+from chronophore.model import Entry, Timesheet
 
 logging.disable(logging.CRITICAL)
 

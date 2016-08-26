@@ -5,7 +5,7 @@ import os
 import uuid
 from datetime import datetime
 
-import timebook
+import chronophore
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +82,7 @@ class Timesheet():
     def __init__(self, data_file=None):
         self.sheet = collections.OrderedDict()
         self.signed_in = []
-        data_dir = timebook.config.DATA_DIR
+        data_dir = chronophore.config.DATA_DIR
 
         if data_file is None:
             today = datetime.strftime(datetime.today(), "%Y-%m-%d")
@@ -92,7 +92,7 @@ class Timesheet():
         self.data_file = data_file
 
         try:
-            timebook.utils.validate_json(self.data_file)
+            chronophore.utils.validate_json(self.data_file)
         except FileNotFoundError:
             logger.debug(
                 "{} not found. It will be created.".format(data_file)
