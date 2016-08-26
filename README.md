@@ -26,7 +26,7 @@ To Do
         - [x] Student registry json file
         - [x] Check whether student is registered
         - [x] Handle invalid json files
-    - [ ] Package to be a portable windows executable
+    - [x] Package to be a portable windows executable
 
 - Further Improvements:
     - [x] JSON to spreadsheet converter

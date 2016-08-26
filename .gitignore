@@ -3,8 +3,14 @@
 *.swp
 *.vim
 *.xls
+
+data/
 .coverage
 .cache/
-data/
 .reference/
 __pycache__/
+
+# PyInstaller Files
+*.spec
+build/
+dist/
