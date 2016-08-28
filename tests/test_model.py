@@ -110,7 +110,7 @@ class TestTimesheet:
         entry = timesheet.load_entry("1f4f10a4-b0c6-43bf-94f4-9ce6e3e204d2")
         expected_entry = Entry(
             user_id="889870966",
-            name="Test",
+            name="Merry Brandybuck",
             date="2016-02-17",
             time_in="10:45",
             time_out="13:30",

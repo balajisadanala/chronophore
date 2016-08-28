@@ -6,7 +6,10 @@ logger = logging.getLogger(__name__)
 
 def signed_in_names(timesheet):
     """Return list of names of currently signed in users."""
-    return [timesheet.sheet[i]['Name'] for i in timesheet.signed_in]
+    return [
+        tuple(timesheet.sheet[i]['Name'].split())
+        for i in timesheet.signed_in
+    ]
 
 
 def user_signed_in(user_id, timesheet):
@@ -29,7 +32,7 @@ def user_signed_in(user_id, timesheet):
     return entry
 
 
-def sign(user_id, timesheet):
+def sign(user_id, timesheet, users_file=None):
     """Check user id for validity, then sign user in or out
     depending on whether or not they are currently signed in.
 
@@ -40,7 +43,8 @@ def sign(user_id, timesheet):
         - ValueError if user_id is invalid. Include a
         message to be passed to the caller.
     """
-    users = utils.get_users()
+
+    users = utils.get_users(users_file)
 
     if not utils.is_valid(user_id):
         logger.debug("Invalid input: {}".format(user_id))
@@ -87,10 +91,13 @@ def sign(user_id, timesheet):
     else:
         if not entry:
             # sign in
+            user_name = ' '.join(
+                utils.user_name(user_id, utils.get_users(users_file))
+            )
             timesheet.save_entry(
                 model.Entry(
                     user_id=user_id,
-                    name=utils.user_name(user_id, users)
+                    name=user_name
                 )
             )
             status = "Signed in"
