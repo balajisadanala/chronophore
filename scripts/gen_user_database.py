@@ -21,6 +21,8 @@ LAST_NAMES = (
     "White", "Wright"
 )
 
+MAX_UNIQUE_NAMES = len(FIRST_NAMES) * len(LAST_NAMES)
+
 MAJORS = (
     "Biology",
     "Chemistry",
@@ -39,21 +41,68 @@ def random_date(lower_year_bound, upper_year_bound):
     return date
 
 
+def random_user_id():
+    """A closure that returns unique random user ids
+    in the format: 88xxxxxxx. It keeps track of which
+    ids it's already chosen.
+    """
+    used_ids = []
+
+    def unique_id():
+        while True:
+            user_id = random.randint(880000000, 889999999)
+            if user_id not in used_ids:
+                break
+        used_ids.append(user_id)
+        return user_id
+
+    return unique_id
+
+
+def random_name(firsts, lasts):
+    """A closure that returns unique random names.
+    It keeps track of which names it's already chosen.
+    """
+    used_names = []
+
+    def unique_name():
+        while True:
+            first_name = random.choice(firsts)
+            last_name = random.choice(lasts)
+            name = (first_name, last_name)
+            if name not in used_names:
+                break
+        used_names.append(name)
+        return name
+
+    return unique_name
+
+
 def generate_users(num_users):
+    if num_users > MAX_UNIQUE_NAMES:
+        raise ValueError(
+            (
+                "Number of users to generate ({}) cannot exceed "
+                "maximum possible unique user names ({})."
+            ).format(num_users, MAX_UNIQUE_NAMES)
+        )
+
     data_dir = pathlib.Path('.')
-    file_name = 'users.json'
+    file_name = 'users_sample.json'
     data_file = data_dir.joinpath(file_name)
+
+    rand_name = random_name(FIRST_NAMES, LAST_NAMES)
+    rand_id = random_user_id()
 
     users = {}
 
     for _ in range(num_users):
-        user_id = random.randint(880000000, 889999999)
+        user_id = rand_id()
         date_joined = random_date(2010, 2015)
         date_left = random_date(date_joined.year + 1, 2020)
 
         student = {}
-        student['First Name'] = random.choice(FIRST_NAMES)
-        student['Last Name'] = random.choice(LAST_NAMES)
+        student['First Name'], student['Last Name'] = rand_name()
         student['Major'] = random.choice(MAJORS)
         student['Email'] = (
             student['Last Name']
