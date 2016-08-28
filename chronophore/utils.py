@@ -11,9 +11,6 @@ def validate_json(json_file):
     try:
         with json_file.open('r') as f:
             d = json.load(f, object_pairs_hook=list)
-    except FileNotFoundError as e:
-        logger.critical(e)
-        raise
     except json.decoder.JSONDecodeError as e:
         logger.critical("Invalid json file: {}.".format(e))
         raise
@@ -40,7 +37,11 @@ def get_users(users_file=None):
     if users_file is None:
         users_file = config.USERS_FILE
 
-    validate_json(users_file)
+    try:
+        validate_json(users_file)
+    except FileNotFoundError as e:
+        logger.critical(e)
+        raise
     with users_file.open('r') as f:
         users = json.load(f)
     return users
