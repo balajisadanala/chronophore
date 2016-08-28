@@ -1,3 +1,6 @@
+#!/usr/bin/python3
+
+import argparse
 import json
 import pathlib
 import random
@@ -78,7 +81,7 @@ def random_name(firsts, lasts):
     return unique_name
 
 
-def generate_users(num_users):
+def generate_users(num_users, output_file):
     if num_users > MAX_UNIQUE_NAMES:
         raise ValueError(
             (
@@ -86,10 +89,6 @@ def generate_users(num_users):
                 "maximum possible unique user names ({})."
             ).format(num_users, MAX_UNIQUE_NAMES)
         )
-
-    data_dir = pathlib.Path('.')
-    file_name = 'users_sample.json'
-    data_file = data_dir.joinpath(file_name)
 
     rand_name = random_name(FIRST_NAMES, LAST_NAMES)
     rand_id = random_user_id()
@@ -121,9 +120,26 @@ def generate_users(num_users):
 
         users[user_id] = student
 
-    with data_file.open('w') as f:
+    with output_file.open('w') as f:
         json.dump(users, f, indent=4, sort_keys=True)
 
 
 if __name__ == '__main__':
-    generate_users(500)
+    parser = argparse.ArgumentParser(
+        description="Generate simulated Chronophore user data.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument(
+        '-o', '--output', default=pathlib.Path('.', 'users_sample.json'),
+        help="path of json file to generate"
+    )
+    parser.add_argument(
+        '-n', '--number_of_users', default=500,
+        help="number of users to generate"
+    )
+    args = parser.parse_args()
+
+    NUM_USERS = int(args.number_of_users)
+    OUTPUT_FILE = pathlib.Path(args.output)
+
+    generate_users(NUM_USERS, OUTPUT_FILE)

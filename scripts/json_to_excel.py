@@ -1,10 +1,13 @@
+#!/usr/bin/python3
+
+import argparse
 import json
 import logging
 import openpyxl
 from collections import OrderedDict
 
 
-def data_to_excel(data, title="data"):
+def data_to_excel(data, output_file):
     """Saves data from one of Chronophore's json files
     to an Excel spreadsheet.
 
@@ -30,7 +33,7 @@ def data_to_excel(data, title="data"):
         # create sheet
         wb = openpyxl.Workbook()
         sheet = wb.active
-        sheet.title = title
+        sheet.title, _ = output_file.split('.')
 
         # make headers
         sheet.cell(row=1, column=1).value = "Key"
@@ -46,15 +49,27 @@ def data_to_excel(data, title="data"):
                 col_num = header_columns[header]
                 sheet.cell(row=row_num, column=col_num).value = value
 
-        output_file = title + ".xls"
         wb.save(output_file)
         logging.info("Worksheet saved: {}".format(output_file))
 
 
 if __name__ == '__main__':
-    json_file = 'test.json'
+    parser = argparse.ArgumentParser(
+        description="Convert Chronophore data from json to xls."
+    )
+    parser.add_argument('input', help="path of json file to use as input")
+    parser.add_argument(
+        '-o', '--output',
+        help="path of excel file to generate (default: $(input_file_name).xls)"
+    )
+    args = parser.parse_args()
+
+    json_file = args.input
+    name, ext = json_file.split('.')
+
+    excel_file = args.output if args.output else (name + '.xls')
 
     with open(json_file, 'r') as f:
         data = json.load(f, object_pairs_hook=OrderedDict)
 
-    data_to_excel(data, title="Users")
+    data_to_excel(data, excel_file)
