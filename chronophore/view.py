@@ -123,7 +123,7 @@ class ChronophoreUI():
 
         try:
             sign_in_status = controller.sign(user_id, self.t)
-        except ValueError as e:
+        except (ValueError, FileNotFoundError) as e:
             self._show_feedback(e)
         else:
             user_name = " ".join(utils.user_name(user_id, utils.get_users()))
