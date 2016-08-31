@@ -55,7 +55,7 @@ def data_to_excel(data, output_file):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description="Convert Chronophore data from json to xls."
+        description="Convert Chronophore data from json to xlsx."
     )
     parser.add_argument('input', help="path of json file to use as input")
     parser.add_argument(
@@ -67,7 +67,7 @@ if __name__ == '__main__':
     json_file = args.input
     name, ext = json_file.split('.')
 
-    excel_file = args.output if args.output else (name + '.xls')
+    excel_file = args.output if args.output else (name + '.xlsx')
 
     with open(json_file, 'r') as f:
         data = json.load(f, object_pairs_hook=OrderedDict)

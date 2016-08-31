@@ -33,6 +33,7 @@ To Do
     - [x] Convert unit tests to pytest syntax
     - [x] Configuration file
     - [x] Come up with a name no one else is using (Chronophore)
+    - [x] Spreadsheet to JSON converter
     - [ ] Check for bad entries from previous days
     - [ ] Flag students that forgot to sign out
     - [ ] Documentation

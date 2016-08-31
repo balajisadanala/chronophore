@@ -3,6 +3,7 @@
 *.swp
 *.vim
 *.xls
+*.xlsx
 
 data/
 .coverage
