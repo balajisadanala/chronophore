@@ -1,6 +1,8 @@
 import collections
 import json
 import logging
+import uuid
+
 from chronophore import config
 
 logger = logging.getLogger(__name__)
@@ -63,3 +65,8 @@ def is_valid(user_id):
 def is_registered(user_id, users):
     registered_ids = list(users.keys())
     return bool(user_id in registered_ids)
+
+
+def new_key():
+    """Generate a UUID version 4 (basically random)"""
+    return str(uuid.uuid4())

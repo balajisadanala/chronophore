@@ -1,23 +1,23 @@
 {
     "2ed2be60-693a-44fe-adc1-2803a674ec9b": {
-        "User ID": "885894966",
-        "Name": "Pippin Took",
-        "Date": "2016-02-17",
-        "In": "10:45",
-        "Out": ""
+        "date": "2016-02-17",
+        "name": "Pippin Took",
+        "time_in": "10:45",
+        "time_out": null,
+        "user_id": "885894966"
     },
     "1f4f10a4-b0c6-43bf-94f4-9ce6e3e204d2": {
-        "User ID": "889870966",
-        "Name": "Merry Brandybuck",
-        "Date": "2016-02-17",
-        "In": "10:45",
-        "Out": "13:30"
+        "date": "2016-02-17",
+        "name": "Merry Brandybuck",
+        "time_in": "10:45",
+        "time_out": "13:30",
+        "user_id": "889870966"
     },
     "7b4ae0fc-3801-4412-998f-ace14829d150": {
-        "User ID": "889249566",
-        "Name": "Samwise Gamgee",
-        "Date": "2016-02-17",
-        "In": "12:45",
-        "Out": "16:44"
+        "date": "2016-02-17",
+        "name": "Samwise Gamgee",
+        "time_in": "12:45",
+        "time_out": "16:44",
+        "user_id": "889249566"
     }
 }

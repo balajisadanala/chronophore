@@ -4,6 +4,7 @@ import argparse
 import datetime as dt
 import pathlib
 import random
+import uuid
 
 from chronophore import model, utils
 
@@ -59,12 +60,13 @@ def generate_data(output_file, users_file):
         user_id = rand_user()
 
         e = model.Entry(
-            user_id,
+            date=dt.datetime.strftime(sign_in_time, "%Y-%m-%d"),
             name=' '.join(utils.user_name(user_id, users)),
             time_in=dt.datetime.strftime(sign_in_time, "%H:%M:%S"),
-            time_out=dt.datetime.strftime(sign_out_time, "%H:%M:%S")
+            time_out=dt.datetime.strftime(sign_out_time, "%H:%M:%S"),
+            user_id=user_id,
         )
-        timesheet.save_entry(e)
+        timesheet[str(uuid.uuid4())] = e
 
 
 if __name__ == '__main__':

@@ -1,4 +1,5 @@
 import logging
+
 from chronophore.view import ChronophoreUI
 from chronophore.model import Timesheet
 
