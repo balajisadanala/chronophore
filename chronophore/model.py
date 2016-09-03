@@ -41,7 +41,6 @@ class Timesheet():
             with data_file.open('r') as f:
                 self.load_sheet(data=f)
 
-        data_dir.mkdir(exist_ok=True, parents=True)
         logger.debug("Timesheet object initialized.")
         logger.debug("Timesheet data file: {}".format(self.data_file))
 
@@ -95,6 +94,7 @@ class Timesheet():
         if data_file is None:
             data_file = self.data_file
 
+        data_file.parent.mkdir(exist_ok=True, parents=True)
         with data_file.open('w') as f:
             json.dump(self.sheet, f, indent=4, sort_keys=False)
         logger.debug("Sheet saved to {}".format(data_file.resolve()))
