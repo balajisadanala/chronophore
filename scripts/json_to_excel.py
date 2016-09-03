@@ -4,7 +4,27 @@ import argparse
 import json
 import logging
 import openpyxl
+import pathlib
 from collections import OrderedDict
+
+
+def get_args():
+    parser = argparse.ArgumentParser(
+        description="Convert Chronophore data from json to xlsx."
+    )
+
+    parser.add_argument('input', help="path of json file to use as input")
+
+    parser.add_argument(
+        '-o', '--output',
+        help="path of excel file to generate (default: ./$(input_file_name).xlsx)"
+    )
+    parser.add_argument(
+        '-c', '--clobber', action="store_true",
+        help="overwrite output file if it exists"
+    )
+
+    return parser.parse_args()
 
 
 def data_to_excel(data, output_file):
@@ -33,7 +53,7 @@ def data_to_excel(data, output_file):
         # create sheet
         wb = openpyxl.Workbook()
         sheet = wb.active
-        sheet.title, _ = output_file.split('.')
+        sheet.title = output_file.name
 
         # make headers
         sheet.cell(row=1, column=1).value = "Key"
@@ -49,27 +69,30 @@ def data_to_excel(data, output_file):
                 col_num = header_columns[header]
                 sheet.cell(row=row_num, column=col_num).value = value
 
-        wb.save(output_file)
-        logging.info("Worksheet saved: {}".format(output_file))
+        return wb
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-        description="Convert Chronophore data from json to xlsx."
-    )
-    parser.add_argument('input', help="path of json file to use as input")
-    parser.add_argument(
-        '-o', '--output',
-        help="path of excel file to generate (default: $(input_file_name).xls)"
-    )
-    args = parser.parse_args()
+    args = get_args()
 
-    json_file = args.input
-    name, ext = json_file.split('.')
+    CLOBBER = args.clobber
 
-    excel_file = args.output if args.output else (name + '.xlsx')
+    JSON_FILE = pathlib.Path(args.input)
 
-    with open(json_file, 'r') as f:
+    if args.output:
+        EXCEL_FILE = pathlib.Path(args.output)
+    else:
+        EXCEL_FILE = pathlib.Path('.', JSON_FILE.stem + '.xlsx')
+
+    if not CLOBBER and EXCEL_FILE.exists():
+        logging.warning(
+            "'{}' exists. To overwrite it, use '--clobber'.".format(EXCEL_FILE)
+        )
+        raise SystemExit
+
+    with JSON_FILE.open('r') as f:
         data = json.load(f, object_pairs_hook=OrderedDict)
 
-    data_to_excel(data, excel_file)
+    wb = data_to_excel(data, EXCEL_FILE)
+    wb.save(str(EXCEL_FILE))
+    logging.info("Worksheet saved: {}".format(EXCEL_FILE))
