@@ -9,7 +9,16 @@ test:
 	py.test tests
 
 lint:
-	flake8 chronophore/*.py tests/*.py scripts/*.py
+	flake8 --max-line-length=90 chronophore/*.py tests/*.py scripts/*.py
+
+package:
+	python setup.py sdist bdist_wheel
+
+upload-test: package
+	twine upload -r test dist/*
+
+upload: package
+	twine upload dist/*
 
 run:
 	python -m chronophore
@@ -27,4 +36,4 @@ coverage:
 	py.test --verbose --cov-report term --cov=chronophore tests
 
 todo:
-	grep -FR --ignore-case --binary-file=without-match todo chronophore/ tests/
+	grep -FR --ignore-case --binary-file=without-match todo *.py chronophore/ tests/

@@ -1,8 +1,11 @@
 import collections
 import json
 import logging
+import pathlib
+import shutil
 import uuid
 
+import chronophore
 from chronophore import config
 
 logger = logging.getLogger(__name__)
@@ -42,8 +45,16 @@ def get_users(users_file=None):
     try:
         validate_json(users_file)
     except FileNotFoundError as e:
-        logger.critical(e)
-        raise
+        logger.warning('{}. Copying example users file.'.format(e))
+        default_config_dir = pathlib.Path(
+            pathlib.Path(chronophore.__file__).parent,
+            'config'
+        )
+        default_users = default_config_dir.joinpath('users.json')
+        config.DATA_DIR.mkdir(exist_ok=True, parents=True)
+        shutil.copy(str(default_users), str(config.DATA_DIR))
+        logger.info('New users file: {}'.format(users_file))
+
     with users_file.open('r') as f:
         users = json.load(f)
     return users

@@ -1,7 +1,7 @@
-import pathlib
+from pathlib import Path
 
 # Files
-DATA_DIR = pathlib.Path('.', 'data')
+DATA_DIR = Path.home() / '.local' / 'share' / 'chronophore'
 USERS_FILE = DATA_DIR.joinpath('users.json')
 
 # GUI Settings

@@ -1,17 +1,5 @@
-Chronophore
-===========
-
-![Tk Interface](docs/screenshot_program.png)
-
-Chronophore is a simple time-tracking program. It keeps track of users' hours as they sign in and out. Data is stored in a human-readable json file. 
-
-![Example Json Data](docs/screenshot_data.png)
-
-This project was started to help keep track of students signing in and out at a tutoring program in a community college, but should be adaptable to other use cases.
-
-
 To Do
------
+=====
 - Basic Features:
     - [x] Write to and read from a json file
     - [x] Format json output with nested keys
@@ -34,6 +22,7 @@ To Do
     - [x] Configuration file
     - [x] Come up with a name no one else is using (Chronophore)
     - [x] Spreadsheet to JSON converter
+    - [x] Upload to pypi
     - [ ] Check for bad entries from previous days
     - [ ] Flag students that forgot to sign out
     - [ ] Documentation

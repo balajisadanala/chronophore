@@ -3,11 +3,15 @@ import logging
 from chronophore.view import ChronophoreUI
 from chronophore.model import Timesheet
 
-logger = logging.getLogger(__name__)
 
-logger.debug("Program initialized")
+def main():
+    logger = logging.getLogger(__name__)
 
-t = Timesheet()
-ui = ChronophoreUI(timesheet=t)
+    logger.debug("Program initialized")
 
-logger.debug("Program stopping")
+    ChronophoreUI(timesheet=Timesheet())
+
+    logger.debug("Program stopping")
+
+if __name__ == '__main__':
+    main()
