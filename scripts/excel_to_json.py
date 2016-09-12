@@ -62,7 +62,9 @@ def excel_to_data(worksheet):
         entry = OrderedDict()
         key_cell, *value_cells = row
         for header, cell in zip(headers, value_cells):
-            if cell.parent is not None and cell.is_date:  # openpyxl issue #625
+            if (cell.value is not None
+                    and cell.parent is not None
+                    and cell.is_date):  # openpyxl issue #625
                 value = datetime.strftime(cell.value, "%Y-%m-%d")
             else:
                 value = cell.value

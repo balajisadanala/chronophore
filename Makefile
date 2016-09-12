@@ -11,11 +11,17 @@ test:
 lint:
 	flake8 --max-line-length=90 chronophore/*.py tests/*.py scripts/*.py
 
+freeze:
+	pyinstaller --clean -p chronophore --onefile --windowed chronophore.__main__.py
+
 package:
 	python setup.py sdist bdist_wheel
 
 upload-test: package
 	twine upload -r test dist/*
+
+install-test: upload-test
+	pip3 install --no-cache-dir -i https://testpypi.python.org/pypi chronophore --extra-index-url https://pypi.python.org/pypi
 
 upload: package
 	twine upload dist/*

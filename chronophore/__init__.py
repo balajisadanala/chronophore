@@ -11,7 +11,7 @@ import logging
 
 # Information
 __license__ = 'MIT'
-__version__ = '0.2.0'
+__version__ = '0.2.1'
 __author__ = 'Amin Mesbah'
 __email__ = 'mesbahamin@gmail.com'
 
