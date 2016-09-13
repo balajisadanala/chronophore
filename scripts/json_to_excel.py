@@ -23,6 +23,10 @@ def get_args():
         '-c', '--clobber', action="store_true",
         help="overwrite output file if it exists"
     )
+    parser.add_argument(
+        '-v', '--verbose', action="store_true",
+        help="print a detailed log"
+    )
 
     return parser.parse_args()
 
@@ -49,6 +53,7 @@ def data_to_excel(data, output_file):
             header: column for key in data
             for column, header in enumerate(headers, start=2)
         }
+        logging.debug('Header columns: {}'.format(header_columns))
 
         # create sheet
         wb = openpyxl.Workbook()
@@ -65,15 +70,31 @@ def data_to_excel(data, output_file):
         # fill in data
         for row_num, key in enumerate(data.keys(), start=2):
             sheet.cell(row=row_num, column=1).value = key
+
             for header, value in data[key].items():
                 col_num = header_columns[header]
                 sheet.cell(row=row_num, column=col_num).value = value
+                logging.debug(
+                    'Key:{}, Header:{}, Row:{}, Column:{}, Value:{}'.format(
+                        key, header, row_num, col_num, value
+                    )
+                )
 
         return wb
 
 
 if __name__ == '__main__':
     args = get_args()
+
+    if args.verbose:
+        LOGGING_LEVEL = logging.DEBUG
+    else:
+        LOGGING_LEVEL = logging.WARNING
+
+    logging.basicConfig(
+        level=LOGGING_LEVEL,
+        format='%(levelname)s:%(asctime)s:%(message)s'
+    )
 
     CLOBBER = args.clobber
 
@@ -92,7 +113,11 @@ if __name__ == '__main__':
 
     with JSON_FILE.open('r') as f:
         data = json.load(f, object_pairs_hook=OrderedDict)
+    logging.info('Json loaded: {}.'.format(JSON_FILE))
 
     wb = data_to_excel(data, EXCEL_FILE)
     wb.save(str(EXCEL_FILE))
-    logging.info("Worksheet saved: {}".format(EXCEL_FILE))
+    if CLOBBER:
+        logging.info("Worksheet saved (file overwritten): {}".format(EXCEL_FILE))
+    else:
+        logging.info("Worksheet saved: {}".format(EXCEL_FILE))

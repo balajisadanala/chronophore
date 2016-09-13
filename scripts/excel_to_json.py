@@ -36,6 +36,10 @@ def get_args():
         '-S', '--sort-keys', action="store_true",
         help="sort keys in json output"
     )
+    parser.add_argument(
+        '-v', '--verbose', action="store_true",
+        help="print a detailed log"
+    )
 
     return parser.parse_args()
 
@@ -54,7 +58,7 @@ def excel_to_data(worksheet):
     # we use next() (instead of a subscript) to get the
     # first row.
     key_header, *headers = tuple(cell.value for cell in next(worksheet.rows))
-    logging.debug("Headers: {}".format(headers))
+    logging.debug("Key Header: {}, Headers: {}".format(key_header, headers))
 
     for row_num, row in enumerate(worksheet.rows):
         if row_num == 0:
@@ -62,6 +66,11 @@ def excel_to_data(worksheet):
         entry = OrderedDict()
         key_cell, *value_cells = row
         for header, cell in zip(headers, value_cells):
+            logging.debug(
+                'Header:{}, Row:{}, Column:{}, Value:{}'.format(
+                    header, cell.row, cell.column, cell.value
+                )
+            )
             if (cell.value is not None
                     and cell.parent is not None
                     and cell.is_date):  # openpyxl issue #625
@@ -76,6 +85,16 @@ def excel_to_data(worksheet):
 
 if __name__ == '__main__':
     args = get_args()
+
+    if args.verbose:
+        LOGGING_LEVEL = logging.DEBUG
+    else:
+        LOGGING_LEVEL = logging.WARNING
+
+    logging.basicConfig(
+        level=LOGGING_LEVEL,
+        format='%(levelname)s:%(asctime)s:%(message)s'
+    )
 
     EXCEL_FILE = pathlib.Path(args.input)
     name = EXCEL_FILE.name
@@ -99,10 +118,16 @@ if __name__ == '__main__':
         read_only=True,
         data_only=True
     )
+    logging.info('Workbook loaded: {}.'.format(EXCEL_FILE))
+
     WS = wb[args.sheet] if args.sheet else wb.worksheets[0]
 
     data = excel_to_data(WS)
 
     with JSON_FILE.open('w') as f:
         json.dump(data, f, indent=4, sort_keys=SORT_KEYS)
-    logging.info("Json saved: {}".format(JSON_FILE))
+
+    if CLOBBER:
+        logging.info("Json saved (file overwritten): {}".format(JSON_FILE))
+    else:
+        logging.info("Json saved: {}".format(JSON_FILE))
