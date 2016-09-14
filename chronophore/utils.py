@@ -1,12 +1,13 @@
 import collections
 import json
 import logging
+import os
 import pathlib
 import shutil
 import uuid
 
 import chronophore
-from chronophore import config
+from chronophore import config, compat
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +17,7 @@ def validate_json(json_file):
     try:
         with json_file.open('r') as f:
             d = json.load(f, object_pairs_hook=list)
-    except json.decoder.JSONDecodeError as e:
+    except compat.InvalidJSONError as e:
         logger.critical("Invalid json file: {}.".format(e))
         raise
     else:
@@ -51,7 +52,12 @@ def get_users(users_file=None):
             'config'
         )
         default_users = default_config_dir.joinpath('users.json')
-        config.DATA_DIR.mkdir(exist_ok=True, parents=True)
+
+        if compat.VERSION >= (3, 5):
+            config.DATA_DIR.mkdir(exist_ok=True, parents=True)
+        else:
+            os.makedirs(str(config.DATA_DIR), exist_ok=True)
+
         shutil.copy(str(default_users), str(config.DATA_DIR))
         logger.info('New users file: {}'.format(users_file))
 

@@ -1,7 +1,8 @@
-from pathlib import Path
+from chronophore import compat
+
 
 # Files
-DATA_DIR = Path.home() / '.local' / 'share' / 'chronophore'
+DATA_DIR = compat.HOME_FOLDER / '.local' / 'share' / 'chronophore'
 USERS_FILE = DATA_DIR.joinpath('users.json')
 
 # GUI Settings

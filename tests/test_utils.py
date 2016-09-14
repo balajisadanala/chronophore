@@ -1,8 +1,8 @@
-import json
 import logging
 import pathlib
 import pytest
-from chronophore import utils
+
+from chronophore import compat, utils
 
 logging.disable(logging.CRITICAL)
 
@@ -13,7 +13,7 @@ def test_invalid_json():
     )
     with invalid_file.open('w') as f:
         f.write("asdfasdfasdf")
-    with pytest.raises(json.decoder.JSONDecodeError):
+    with pytest.raises(compat.InvalidJSONError):
         utils.validate_json(invalid_file)
     invalid_file.unlink()
 

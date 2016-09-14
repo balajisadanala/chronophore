@@ -24,6 +24,8 @@ To Do
     - [x] Spreadsheet to JSON converter
     - [x] Upload to pypi
     - [x] Make gui font size configurable
+    - [x] Support python 3.4
+    - [ ] Use tox for tests
     - [ ] INI configuration file
     - [ ] Check for bad entries from previous days
     - [ ] Flag students that forgot to sign out

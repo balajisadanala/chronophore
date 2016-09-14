@@ -4,6 +4,7 @@ import json
 import logging
 import pathlib
 import pytest
+
 from chronophore.model import Entry, Timesheet
 
 logging.disable(logging.CRITICAL)

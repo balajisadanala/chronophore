@@ -1,8 +1,9 @@
 import logging
 import pathlib
 import pytest
-from chronophore.model import Entry, Timesheet
+
 from chronophore import controller, utils
+from chronophore.model import Entry, Timesheet
 
 logging.disable(logging.CRITICAL)
 

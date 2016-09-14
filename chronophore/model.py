@@ -4,7 +4,7 @@ import logging
 import os
 from datetime import datetime
 
-import chronophore
+from chronophore import config, compat, utils
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ class Timesheet():
     def __init__(self, data_file=None):
         self.sheet = collections.OrderedDict()
         self.signed_in = []
-        data_dir = chronophore.config.DATA_DIR
+        data_dir = config.DATA_DIR
 
         if data_file is None:
             today = datetime.strftime(datetime.today(), "%Y-%m-%d")
@@ -28,12 +28,12 @@ class Timesheet():
         self.data_file = data_file
 
         try:
-            chronophore.utils.validate_json(self.data_file)
+            utils.validate_json(self.data_file)
         except FileNotFoundError:
             logger.debug(
                 "{} not found. It will be created.".format(data_file)
             )
-        except json.decoder.JSONDecodeError as e:
+        except compat.InvalidJSONError as e:
             backup = data_file.with_suffix('.bak')
             os.rename(str(data_file), str(backup))
             logger.error("{}. {} moved to {}".format(e, data_file, backup))
@@ -94,7 +94,11 @@ class Timesheet():
         if data_file is None:
             data_file = self.data_file
 
-        data_file.parent.mkdir(exist_ok=True, parents=True)
+        if compat.VERSION >= (3, 5):
+            data_file.parent.mkdir(exist_ok=True, parents=True)
+        else:
+            os.makedirs(str(data_file.parent), exist_ok=True)
+
         with data_file.open('w') as f:
             json.dump(self.sheet, f, indent=4, sort_keys=False)
         logger.debug("Sheet saved to {}".format(data_file.resolve()))
