@@ -23,6 +23,8 @@ To Do
     - [x] Come up with a name no one else is using (Chronophore)
     - [x] Spreadsheet to JSON converter
     - [x] Upload to pypi
+    - [x] Make gui font size configurable
+    - [ ] INI configuration file
     - [ ] Check for bad entries from previous days
     - [ ] Flag students that forgot to sign out
     - [ ] Documentation
