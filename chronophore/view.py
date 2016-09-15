@@ -66,7 +66,7 @@ class ChronophoreUI():
         )
         self.lbl_id = ttk.Label(
             self.content,
-            text="Enter Student ID",
+            text="Enter Student ID:",
         )
         self.ent_id = ttk.Entry(
             self.content,
@@ -76,7 +76,6 @@ class ChronophoreUI():
         self.lbl_feedback = ttk.Label(
             self.content,
             textvar=self.feedback,
-            font=self.tiny_header
         )
         self.btn_sign = ttk.Button(
             self.content,
