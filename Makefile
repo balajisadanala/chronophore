@@ -1,5 +1,6 @@
 DATADIR = ~/.local/share/chronophore/
 DATE = `date +%Y-%m-%d`
+SEPARATOR = "==================================================================================="
 
 init:
 	pip install -r requirements.txt
@@ -39,4 +40,8 @@ coverage:
 	py.test --verbose --cov-report term --cov=chronophore tests
 
 todo:
-	grep -FR --ignore-case --binary-file=without-match todo *.py chronophore/ tests/
+	@echo $(SEPARATOR)
+	@cat TODO.md
+	@echo $(SEPARATOR)
+	@grep -FR --ignore-case --binary-file=without-match todo *.py chronophore/ tests/
+	@echo $(SEPARATOR)

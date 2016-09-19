@@ -12,6 +12,7 @@ data/
 .reference/
 __pycache__/
 *.egg-info/
+*.tox/
 
 # PyInstaller Files
 *.spec

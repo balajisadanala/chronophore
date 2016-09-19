@@ -25,16 +25,17 @@ To Do
     - [x] Upload to pypi
     - [x] Make gui font size configurable
     - [x] Support python 3.4
+    - [x] Use tox for tests
     - Windows:
         - [ ] Save data in standard location (APPDATA folder)
     - [ ] Allow different kinds of user (like 'employee' vs 'student') to be logged and validated separately.
     - [ ] INI configuration file
-    - [ ] Use tox for tests
     - [ ] Concatenate/combine multiple json files
     - [ ] Check for bad entries from previous days
     - [ ] Flag students that forgot to sign out
     - [ ] Documentation
     - [ ] Access database over local wireless network
+    - [ ] Enable files to be safely accessed by multiple instances of Chronophore
     - [ ] Admin UI
     - [ ] Encrypt/decrypt database
     - [ ] Change unit tests to use [file-like objects](http://stackoverflow.com/questions/3942820/how-to-do-unit-testing-of-functions-writing-files-using-python-unittest) instead of files
