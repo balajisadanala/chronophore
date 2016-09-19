@@ -58,25 +58,31 @@ def excel_to_data(worksheet):
     # we use next() (instead of a subscript) to get the
     # first row.
     key_header, *headers = tuple(cell.value for cell in next(worksheet.rows))
-    logging.debug("Key Header: {}, Headers: {}".format(key_header, headers))
+    logging.debug("Key Header: '{}', Headers: {}".format(key_header, headers))
 
-    for row_num, row in enumerate(worksheet.rows):
-        if row_num == 0:
-            continue
+    # We continue by iterating over all the remaining rows.
+    for row_num, row in enumerate(worksheet.rows, 2):
         entry = OrderedDict()
         key_cell, *value_cells = row
         for header, cell in zip(headers, value_cells):
-            logging.debug(
-                'Header:{}, Row:{}, Column:{}, Value:{}'.format(
-                    header, cell.row, cell.column, cell.value
+            if (cell.value is not None):  # openpyxl issue #625
+                logging.debug(
+                    'Header:{}, Row:{}, Column:{}, Value:{}'.format(
+                        header, cell.row, cell.column, cell.value
+                    )
                 )
-            )
-            if (cell.value is not None
-                    and cell.parent is not None
-                    and cell.is_date):  # openpyxl issue #625
-                value = datetime.strftime(cell.value, "%Y-%m-%d")
+                if (cell.is_date):
+                    value = datetime.strftime(cell.value, "%Y-%m-%d")
+                else:
+                    value = cell.value
             else:
-                value = cell.value
+                logging.debug(
+                    'Header:{}, Row:{}, Value:{}'.format(
+                        header, row_num, cell.value
+                    )
+                )
+                value = None
+
             entry[header] = value
         data[key_cell.value] = entry
 

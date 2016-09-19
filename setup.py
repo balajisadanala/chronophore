@@ -81,7 +81,7 @@ setup(
 
     scripts=['scripts/excel_to_json.py', 'scripts/json_to_excel.py'],
     package_data={'chronophore': ['config/*']},
-    install_requires=['openpyxl'],
+    install_requires=['openpyxl>=2.3.5'],
 
     extras_require={
         'dev': ['flake8'],

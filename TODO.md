@@ -25,8 +25,12 @@ To Do
     - [x] Upload to pypi
     - [x] Make gui font size configurable
     - [x] Support python 3.4
-    - [ ] Use tox for tests
+    - Windows:
+        - [ ] Save data in standard location (APPDATA folder)
+    - [ ] Allow different kinds of user (like 'employee' vs 'student') to be logged and validated separately.
     - [ ] INI configuration file
+    - [ ] Use tox for tests
+    - [ ] Concatenate/combine multiple json files
     - [ ] Check for bad entries from previous days
     - [ ] Flag students that forgot to sign out
     - [ ] Documentation
