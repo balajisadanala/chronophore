@@ -46,6 +46,7 @@ def get_users(users_file=None):
     try:
         validate_json(users_file)
     except FileNotFoundError as e:
+        # TODO(amin): make the file from a simple dict instead of copying a file
         logger.warning('{}. Copying example users file.'.format(e))
         default_config_dir = pathlib.Path(
             pathlib.Path(chronophore.__file__).parent,

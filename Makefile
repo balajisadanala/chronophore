@@ -1,18 +1,29 @@
+CONFIGDIR = ~/.config/chronophore/
 DATADIR = ~/.local/share/chronophore/
+LOGDIR = ~/.cache/chronophore/log/
 DATE = `date +%Y-%m-%d`
 SEPARATOR = "==================================================================================="
+
+clean:
+	rm -rf $(CONFIGDIR)
+	rm -rf $(DATADIR)
+	rm -rf $(LOGDIR)
+	rm -rf .tox/
 
 init:
 	pip install -r requirements.txt
 
-test:
+test: clean
 	# To run individual tests, use "py.test -k the_test_path"
 	py.test tests
 
 lint:
 	flake8 --max-line-length=90 chronophore/*.py tests/*.py scripts/*.py
 
-package: test lint
+tox: clean
+	tox
+
+package: tox lint
 	python setup.py sdist bdist_wheel
 
 upload-test: package
@@ -31,7 +42,7 @@ watch-data:
 	tail -f $(DATADIR)$(DATE).json
 
 watch-log:
-	tail -f debug.log
+	tail -f $(LOGDIR)debug.log
 
 loc:
 	cloc --by-file --include-lang=Python chronophore/ tests/
