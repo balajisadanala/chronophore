@@ -75,13 +75,12 @@ setup(
     packages=['chronophore'],
     entry_points={
         'gui_scripts': [
-            'chronophore=chronophore.__main__:main',
+            'chronophore=chronophore.chronophore:main',
         ],
     },
 
     scripts=['scripts/excel_to_json.py', 'scripts/json_to_excel.py'],
-    package_data={'chronophore': ['config/*']},
-    install_requires=['openpyxl>=2.3.5'],
+    install_requires=['appdirs>=1.4.0', 'openpyxl>=2.3.5'],
 
     extras_require={
         'dev': ['flake8'],

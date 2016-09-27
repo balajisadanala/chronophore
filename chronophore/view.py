@@ -1,7 +1,9 @@
 import contextlib
 import tkinter
 from tkinter import font, ttk, N, S, E, W
-from chronophore import config, controller, utils
+
+from chronophore import controller, utils
+from chronophore.config import CONFIG
 
 
 class ChronophoreUI():
@@ -19,10 +21,10 @@ class ChronophoreUI():
         self.content = ttk.Frame(self.root, padding=(5, 5, 10, 10))
 
         # custom fonts
-        self.large_font = font.Font(family='Helvetica', size=config.LARGE_FONT_SIZE)
-        self.medium_font = font.Font(family='Helvetica', size=config.MEDIUM_FONT_SIZE)
-        self.small_font = font.Font(family='Helvetica', size=config.SMALL_FONT_SIZE)
-        self.tiny_font = font.Font(family='Helvetica', size=config.TINY_FONT_SIZE)
+        self.large_font = font.Font(family='Helvetica', size=CONFIG['LARGE_FONT_SIZE'])
+        self.medium_font = font.Font(family='Helvetica', size=CONFIG['MEDIUM_FONT_SIZE'])
+        self.small_font = font.Font(family='Helvetica', size=CONFIG['SMALL_FONT_SIZE'])
+        self.tiny_font = font.Font(family='Helvetica', size=CONFIG['TINY_FONT_SIZE'])
 
         self.large_header = self.large_font.copy()
         self.large_header.configure(weight='bold')
@@ -61,7 +63,7 @@ class ChronophoreUI():
         )
         self.lbl_welcome = ttk.Label(
             self.content,
-            text=config.GUI_WELCOME_LABLE,
+            text=CONFIG['GUI_WELCOME_LABLE'],
             font=self.large_header
         )
         self.lbl_id = ttk.Label(
@@ -122,6 +124,7 @@ class ChronophoreUI():
 
     def _set_signed_in(self):
         names = [
+            # TODO(amin): Remove assumptions about names
             " ".join([first, last])
             for first, last in controller.signed_in_names(self.t)
         ]
@@ -134,7 +137,7 @@ class ChronophoreUI():
         which can cause problems in Tk.
         """
         if seconds is None:
-            seconds = config.MESSAGE_DURATION
+            seconds = CONFIG['MESSAGE_DURATION']
 
         # cancel any existing callback to clear the feedback
         # label. this prevents flickering and inconsistent
@@ -156,7 +159,9 @@ class ChronophoreUI():
         except (ValueError, FileNotFoundError) as e:
             self._show_feedback(e)
         else:
-            user_name = " ".join(utils.user_name(user_id, utils.get_users()))
+            user_name = " ".join(
+                utils.user_name(user_id, utils.get_users(self.t.users_file))
+            )
             self._show_feedback("{}: {}".format(sign_in_status, user_name))
         finally:
             self._set_signed_in()

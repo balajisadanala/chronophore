@@ -2,9 +2,8 @@ import collections
 import json
 import logging
 import os
-from datetime import datetime
 
-from chronophore import config, compat, utils
+from chronophore import compat, utils
 
 logger = logging.getLogger(__name__)
 
@@ -15,17 +14,12 @@ Entry = collections.namedtuple('Entry', 'date name time_in time_out user_id')
 class Timesheet():
     """Contains multiple entries"""
 
-    def __init__(self, data_file=None):
+    def __init__(self, data_file, users_file):
         self.sheet = collections.OrderedDict()
         self.signed_in = []
-        data_dir = config.DATA_DIR
-
-        if data_file is None:
-            today = datetime.strftime(datetime.today(), "%Y-%m-%d")
-            file_name = today + ".json"
-            data_file = data_dir.joinpath(file_name)
 
         self.data_file = data_file
+        self.users_file = users_file
 
         try:
             utils.validate_json(self.data_file)

@@ -2,6 +2,7 @@ import logging
 from datetime import datetime
 
 from chronophore import model, utils
+from chronophore.config import CONFIG
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +64,7 @@ def sign_out(entry, time_out=None):
     return signed_out_entry
 
 
-def sign(user_id, timesheet, users_file=None):
+def sign(user_id, timesheet):
     """Check user id for validity, then sign user in or out
     depending on whether or not they are currently signed in.
 
@@ -75,9 +76,9 @@ def sign(user_id, timesheet, users_file=None):
         message to be passed to the caller.
     """
 
-    users = utils.get_users(users_file)
+    users = utils.get_users(timesheet.users_file)
 
-    if not utils.is_valid(user_id):
+    if not utils.is_valid(user_id, CONFIG['USER_ID_LENGTH']):
         logger.debug("Invalid input: {}".format(user_id))
         raise ValueError(
             "Invalid Input: {}".format(user_id)
@@ -120,7 +121,7 @@ def sign(user_id, timesheet, users_file=None):
     else:
         if not key:
             user_name = ' '.join(
-                utils.user_name(user_id, utils.get_users(users_file))
+                utils.user_name(user_id, utils.get_users(timesheet.users_file))
             )
             key = utils.new_key()
             timesheet[key] = sign_in(user_id, user_name)

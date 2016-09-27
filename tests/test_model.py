@@ -12,14 +12,15 @@ logging.disable(logging.CRITICAL)
 
 @pytest.fixture()
 def timesheet(request):
-    test_file = pathlib.Path('.', 'tests', 'test.json')
+    test_data = pathlib.Path('.', 'tests', 'test.json')
+    test_users = pathlib.Path('.', 'tests', 'test_users.json')
 
     def tearDown():
-        if test_file.exists():
-            test_file.unlink()
+        if test_data.exists():
+            test_data.unlink()
 
     request.addfinalizer(tearDown)
-    return Timesheet(data_file=test_file)
+    return Timesheet(data_file=test_data, users_file=test_users)
 
 
 class TestTimesheet:
@@ -140,7 +141,10 @@ class TestTimesheet:
         backup = invalid_file.with_suffix('.bak')
         with invalid_file.open('w') as f:
             f.write("invalid file contents")
-        Timesheet(data_file=invalid_file)
+        Timesheet(
+            data_file=invalid_file,
+            users_file=pathlib.Path('./tests/test_users.json')
+        )
         assert backup.is_file()
         assert not invalid_file.is_file()
         backup.unlink()

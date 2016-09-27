@@ -14,17 +14,21 @@ REGISTERED_ID = "876543210"
 
 @pytest.fixture()
 def timesheet(request):
-    test_file = pathlib.Path('.', 'tests', 'test.json')
+    test_data = pathlib.Path('.', 'tests', 'test.json')
+    test_users = pathlib.Path('.', 'tests', 'test_users.json')
 
     def tearDown():
-        if test_file.exists():
-            test_file.unlink()
+        if test_data.exists():
+            test_data.unlink()
     request.addfinalizer(tearDown)
-    return Timesheet(data_file=test_file)
+    return Timesheet(data_file=test_data, users_file=test_users)
 
 
 def test_signed_in_names():
-    timesheet = Timesheet(data_file=pathlib.Path('.', 'tests', 'example.json'))
+    timesheet = Timesheet(
+        data_file=pathlib.Path('.', 'tests', 'example.json'),
+        users_file=pathlib.Path('./tests/test_users.json')
+    )
     expected = [("Pippin", "Took")]
     assert controller.signed_in_names(timesheet) == expected
 
@@ -59,14 +63,14 @@ def test_sign_out():
     assert signed_out_entry == e._replace(time_out="13:08:25")
 
 
-def test_sign_invalid():
+def test_sign_invalid(timesheet):
     with pytest.raises(ValueError):
-        controller.sign("1234567890", timesheet, users_file)
+        controller.sign("1234567890", timesheet)
 
 
 def test_sign_not_registered(timesheet):
     with pytest.raises(ValueError):
-        controller.sign("888888888", timesheet, users_file)
+        controller.sign("888888888", timesheet)
 
 
 def test_sign_duplicates(timesheet):
@@ -82,7 +86,7 @@ def test_sign_duplicates(timesheet):
         )
         timesheet[utils.new_key()] = e
     with pytest.raises(ValueError):
-        controller.sign(duplicate_id, timesheet, users_file)
+        controller.sign(duplicate_id, timesheet)
 
 
 def test_sign_user_in(monkeypatch, timesheet):
@@ -98,7 +102,7 @@ def test_sign_user_in(monkeypatch, timesheet):
     monkeypatch.setattr('chronophore.utils.new_key', mock_new_key)
     k = utils.new_key()
     print(k)
-    controller.sign(user_id, timesheet, users_file)
+    controller.sign(user_id, timesheet)
     assert(
         timesheet['3b27d0f8-3801-4319-398f-ace18829d150'].user_id
         == user_id
@@ -116,6 +120,6 @@ def test_sign_user_out(timesheet):
         user_id=REGISTERED_ID,
     )
     timesheet[key] = e
-    controller.sign(REGISTERED_ID, timesheet, users_file)
+    controller.sign(REGISTERED_ID, timesheet)
     assert timesheet[key] is not None
     assert key not in timesheet.signed_in

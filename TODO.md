@@ -27,9 +27,9 @@ To Do
     - [x] Support python 3.4
     - [x] Use tox for tests
     - Windows:
-        - [ ] Save data in standard location (APPDATA folder)
+        - [x] Save data in standard location (APPDATA folder)
+    - [x] INI configuration file
     - [ ] Allow different kinds of user (like 'employee' vs 'student') to be logged and validated separately.
-    - [ ] INI configuration file
     - [ ] Concatenate/combine multiple json files
     - [ ] Check for bad entries from previous days
     - [ ] Flag students that forgot to sign out

@@ -6,6 +6,8 @@ from chronophore import compat, utils
 
 logging.disable(logging.CRITICAL)
 
+VALID_LENGTH = 9
+
 
 def test_invalid_json():
     invalid_file = pathlib.Path(
@@ -31,16 +33,16 @@ def test_key_collision():
 
 
 def test_is_valid():
-    assert not utils.is_valid("12")
-    assert not utils.is_valid("1234567890")
-    assert not utils.is_valid("1234 56789")
-    assert not utils.is_valid("")
-    assert not utils.is_valid(" ")
-    assert not utils.is_valid("123abc")
-    assert not utils.is_valid('\n')
-    assert not utils.is_valid(" 123456789")
-    assert not utils.is_valid("123456789 ")
-    assert utils.is_valid("123456789")
+    assert not utils.is_valid("12", VALID_LENGTH)
+    assert not utils.is_valid("1234567890", VALID_LENGTH)
+    assert not utils.is_valid("1234 56789", VALID_LENGTH)
+    assert not utils.is_valid("", VALID_LENGTH)
+    assert not utils.is_valid(" ", VALID_LENGTH)
+    assert not utils.is_valid("123abc", VALID_LENGTH)
+    assert not utils.is_valid('\n', VALID_LENGTH)
+    assert not utils.is_valid(" 123456789", VALID_LENGTH)
+    assert not utils.is_valid("123456789 ", VALID_LENGTH)
+    assert utils.is_valid("123456789", VALID_LENGTH)
 
 
 def test_is_registered():

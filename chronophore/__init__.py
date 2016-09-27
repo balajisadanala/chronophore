@@ -7,9 +7,7 @@ and out at a tutoring program in a community college, but should be
 adaptable to other use cases.
 """
 
-# TODO(amin): Consider choosing whether to use pathlib or os only
-
-__title__ = 'Chronophore'
+__title__ = 'chronophore'
 __version__ = '0.3.0'
 __license__ = 'MIT'
 __author__ = 'Amin Mesbah'
