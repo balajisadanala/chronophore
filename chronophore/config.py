@@ -76,6 +76,11 @@ def _use_default(config_file):
     parser = configparser.ConfigParser()
     parser.read_dict(default_config)
 
+    if config_file.exists():
+        backup = config_file.with_suffix('.bak')
+        os.rename(str(config_file), str(backup))
+        logger.info('{} moved to {}.'.format(config_file, backup))
+
     with config_file.open('w') as f:
         parser.write(f)
 

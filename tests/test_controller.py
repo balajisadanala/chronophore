@@ -1,32 +1,17 @@
-import logging
 import pathlib
 import pytest
 
 from chronophore import controller, utils
 from chronophore.model import Entry, Timesheet
 
-logging.disable(logging.CRITICAL)
-
 DATA_DIR = pathlib.Path(__file__).resolve().parent / 'data'
 EXAMPLE_DATA = DATA_DIR.joinpath('data.json')
 EXAMPLE_USERS = DATA_DIR.joinpath('users.json')
-TEST_DATA = DATA_DIR.joinpath('test.json')
-
 REGISTERED_ID = "876543210"
 
 
-@pytest.fixture()
-def timesheet(request):
-
-    def tearDown():
-        if TEST_DATA.exists():
-            TEST_DATA.unlink()
-
-    request.addfinalizer(tearDown)
-    return Timesheet(data_file=TEST_DATA, users_file=EXAMPLE_USERS)
-
-
 def test_signed_in_names():
+    """List all signed in users."""
     timesheet = Timesheet(
         data_file=EXAMPLE_DATA,
         users_file=EXAMPLE_USERS
@@ -54,6 +39,8 @@ def test_sign_in():
 
 
 def test_sign_out():
+    """Sign out an entry, and verify that the entry's
+    time_out value is appropriately updated."""
     e = Entry(
         date="2016-08-31",
         name="Frodo Baggins",
@@ -66,17 +53,24 @@ def test_sign_out():
 
 
 def test_sign_invalid(timesheet):
+    """Assert that ValueError is raised when someone
+    signs in with an invalid id.
+    """
     with pytest.raises(ValueError):
         controller.sign("1234567890", timesheet)
 
 
 def test_sign_not_registered(timesheet):
+    """Assert that ValueError is raised when someone
+    signs in with an id that, though valid,  isn't
+    in the user file.
+    """
     with pytest.raises(ValueError):
         controller.sign("888888888", timesheet)
 
 
 def test_sign_duplicates(timesheet):
-    """Sign in with multiple instances of being signed in."""
+    """Sign in with an id that is already signed in."""
     duplicate_id = REGISTERED_ID
     for _ in range(2):
         e = Entry(

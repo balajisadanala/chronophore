@@ -3,7 +3,6 @@ import filecmp
 import json
 import logging
 import pathlib
-import pytest
 
 from chronophore.model import Entry, Timesheet
 
@@ -12,18 +11,6 @@ logging.disable(logging.CRITICAL)
 DATA_DIR = pathlib.Path(__file__).resolve().parent / 'data'
 EXAMPLE_DATA = DATA_DIR.joinpath('data.json')
 EXAMPLE_USERS = DATA_DIR.joinpath('users.json')
-TEST_DATA = DATA_DIR.joinpath('test.json')
-
-
-@pytest.fixture()
-def timesheet(request):
-
-    def tearDown():
-        if TEST_DATA.exists():
-            TEST_DATA.unlink()
-
-    request.addfinalizer(tearDown)
-    return Timesheet(data_file=TEST_DATA, users_file=EXAMPLE_USERS)
 
 
 class TestTimesheet:
@@ -32,6 +19,9 @@ class TestTimesheet:
         example_sheet = json.load(f, object_pairs_hook=collections.OrderedDict)
 
     def test_getitem(self, timesheet):
+        """Retrieve an entry from a Timesheet object
+        using the index operator and the entry's uuid.
+        """
         timesheet.sheet = self.example_sheet
         key = "2ed2be60-693a-44fe-adc1-2803a674ec9b"
         assert timesheet[key] == Entry(
@@ -43,6 +33,9 @@ class TestTimesheet:
         )
 
     def test_setitem(self, timesheet):
+        """Assign an entry to a Timesheet object using
+        the index operator.
+        """
         e = Entry(
             date="2016-02-17",
             name="Frodo Baggins",
@@ -54,11 +47,17 @@ class TestTimesheet:
         assert timesheet.sheet["test_key"] == e._asdict()
 
     def test_contains(self, timesheet):
+        """Use membership operators to determine whether
+        a Timesheet object has certain entries.
+        """
         timesheet.sheet = self.example_sheet
         assert "2ed2be60-693a-44fe-adc1-2803a674ec9b" in timesheet
         assert "i don't exist" not in timesheet
 
     def test_len(self, timesheet):
+        """Use len() to find out how many entries
+        a Timesheet object has.
+        """
         timesheet.sheet = self.example_sheet
         assert len(timesheet) == 3
 
@@ -135,14 +134,11 @@ class TestTimesheet:
         loaded_sheet = timesheet.sheet
         assert loaded_sheet == self.example_sheet
 
-    def test_load_invalid_sheet(self):
+    def test_load_invalid_sheet(self, invalid_file):
         """Load an invalid json file. Make sure it gets
         renamed a with a '.bak' suffix.
         """
-        invalid_file = DATA_DIR.joinpath('invalid.json')
         backup = invalid_file.with_suffix('.bak')
-        with invalid_file.open('w') as f:
-            f.write("invalid file contents")
         Timesheet(
             data_file=invalid_file,
             users_file=EXAMPLE_USERS
