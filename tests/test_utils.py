@@ -56,4 +56,9 @@ def test_is_registered():
     assert utils.is_registered(registered_id, users)
 
 
-# TODO(amin): def test_no_users_file():
+def test_no_users_file(nonexistent_file):
+    """Create a default users file when none exists."""
+    test_users = nonexistent_file
+    users = utils.get_users(test_users)
+    assert set(['876543210', '880000000']) == set(users.keys())
+    assert test_users.is_file()

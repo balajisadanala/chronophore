@@ -29,20 +29,20 @@ def timesheet(request):
 
 
 @pytest.fixture()
-def test_config(request):
+def nonexistent_file(request):
     """Return a path to an empty config file.
     Remove the file when a test is finished with it.
     """
-    test_config = DATA_DIR.joinpath('config.ini')
-    if test_config.exists():
-        test_config.unlink()
+    nonexistent = DATA_DIR.joinpath('nonexistent')
+    if nonexistent.exists():
+        nonexistent.unlink()
 
     def tearDown():
-        if test_config.exists():
-            test_config.unlink()
+        if nonexistent.exists():
+            nonexistent.unlink()
 
     request.addfinalizer(tearDown)
-    return test_config
+    return nonexistent
 
 
 @pytest.fixture()
