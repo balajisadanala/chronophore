@@ -9,6 +9,9 @@ clean:
 	rm -rf $(DATADIR)
 	rm -rf $(LOGDIR)
 	rm -rf .tox/
+	rm -rf build/
+	rm -rf dist/
+	rm -rf chronophore.egg-info/
 
 init:
 	pip install -r requirements.txt

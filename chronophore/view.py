@@ -124,9 +124,8 @@ class ChronophoreUI():
 
     def _set_signed_in(self):
         names = [
-            # TODO(amin): Remove assumptions about names
-            " ".join([first, last])
-            for first, last in controller.signed_in_names(self.t)
+            " ".join([first, ' '.join(rest)])
+            for first, *rest in controller.signed_in_names(self.t)
         ]
         self.signed_in.set('\n'.join(sorted(names)))
 

@@ -8,7 +8,7 @@ adaptable to other use cases.
 """
 
 __title__ = 'chronophore'
-__version__ = '0.3.0'
+__version__ = '0.4.0'
 __license__ = 'MIT'
 __author__ = 'Amin Mesbah'
 __email__ = 'mesbahamin@gmail.com'
