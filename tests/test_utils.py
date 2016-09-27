@@ -6,6 +6,9 @@ from chronophore import compat, utils
 
 logging.disable(logging.CRITICAL)
 
+DATA_DIR = pathlib.Path(__file__).resolve().parent / 'data'
+EXAMPLE_USERS = DATA_DIR.joinpath('users.json')
+
 VALID_LENGTH = 9
 
 
@@ -47,7 +50,9 @@ def test_is_valid():
 
 def test_is_registered():
     registered_id = "876543210"
-    users_file = pathlib.Path('.', 'tests', 'users.json')
-    users = utils.get_users(users_file)
+    users = utils.get_users(EXAMPLE_USERS)
     assert not utils.is_registered("888888888", users)
     assert utils.is_registered(registered_id, users)
+
+
+# TODO(amin): def test_no_users_file():

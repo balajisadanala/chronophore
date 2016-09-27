@@ -7,27 +7,29 @@ from chronophore.model import Entry, Timesheet
 
 logging.disable(logging.CRITICAL)
 
+DATA_DIR = pathlib.Path(__file__).resolve().parent / 'data'
+EXAMPLE_DATA = DATA_DIR.joinpath('data.json')
+EXAMPLE_USERS = DATA_DIR.joinpath('users.json')
+TEST_DATA = DATA_DIR.joinpath('test.json')
 
-users_file = pathlib.Path('.', 'tests', 'users.json')
 REGISTERED_ID = "876543210"
 
 
 @pytest.fixture()
 def timesheet(request):
-    test_data = pathlib.Path('.', 'tests', 'test.json')
-    test_users = pathlib.Path('.', 'tests', 'test_users.json')
 
     def tearDown():
-        if test_data.exists():
-            test_data.unlink()
+        if TEST_DATA.exists():
+            TEST_DATA.unlink()
+
     request.addfinalizer(tearDown)
-    return Timesheet(data_file=test_data, users_file=test_users)
+    return Timesheet(data_file=TEST_DATA, users_file=EXAMPLE_USERS)
 
 
 def test_signed_in_names():
     timesheet = Timesheet(
-        data_file=pathlib.Path('.', 'tests', 'example.json'),
-        users_file=pathlib.Path('./tests/test_users.json')
+        data_file=EXAMPLE_DATA,
+        users_file=EXAMPLE_USERS
     )
     expected = [("Pippin", "Took")]
     assert controller.signed_in_names(timesheet) == expected

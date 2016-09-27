@@ -9,24 +9,26 @@ from chronophore.model import Entry, Timesheet
 
 logging.disable(logging.CRITICAL)
 
+DATA_DIR = pathlib.Path(__file__).resolve().parent / 'data'
+EXAMPLE_DATA = DATA_DIR.joinpath('data.json')
+EXAMPLE_USERS = DATA_DIR.joinpath('users.json')
+TEST_DATA = DATA_DIR.joinpath('test.json')
+
 
 @pytest.fixture()
 def timesheet(request):
-    test_data = pathlib.Path('.', 'tests', 'test.json')
-    test_users = pathlib.Path('.', 'tests', 'test_users.json')
 
     def tearDown():
-        if test_data.exists():
-            test_data.unlink()
+        if TEST_DATA.exists():
+            TEST_DATA.unlink()
 
     request.addfinalizer(tearDown)
-    return Timesheet(data_file=test_data, users_file=test_users)
+    return Timesheet(data_file=TEST_DATA, users_file=EXAMPLE_USERS)
 
 
 class TestTimesheet:
 
-    example_file = pathlib.Path('.', 'tests', 'example.json')
-    with example_file.open() as f:
+    with EXAMPLE_DATA.open() as f:
         example_sheet = json.load(f, object_pairs_hook=collections.OrderedDict)
 
     def test_getitem(self, timesheet):
@@ -128,7 +130,7 @@ class TestTimesheet:
 
     def test_load_sheet(self, timesheet):
         """Load a sheet from a file."""
-        with self.example_file.open() as f:
+        with EXAMPLE_DATA.open() as f:
             timesheet.load_sheet(data=f)
         loaded_sheet = timesheet.sheet
         assert loaded_sheet == self.example_sheet
@@ -137,13 +139,13 @@ class TestTimesheet:
         """Load an invalid json file. Make sure it gets
         renamed a with a '.bak' suffix.
         """
-        invalid_file = pathlib.Path('.', 'tests', 'invalid.json')
+        invalid_file = DATA_DIR.joinpath('invalid.json')
         backup = invalid_file.with_suffix('.bak')
         with invalid_file.open('w') as f:
             f.write("invalid file contents")
         Timesheet(
             data_file=invalid_file,
-            users_file=pathlib.Path('./tests/test_users.json')
+            users_file=EXAMPLE_USERS
         )
         assert backup.is_file()
         assert not invalid_file.is_file()
@@ -153,4 +155,4 @@ class TestTimesheet:
         """Save a sheet to a file."""
         timesheet.sheet = self.example_sheet
         timesheet.save_sheet()
-        assert filecmp.cmp(str(timesheet.data_file), str(self.example_file))
+        assert filecmp.cmp(str(timesheet.data_file), str(EXAMPLE_DATA))
