@@ -17,7 +17,7 @@ class ChronophoreUI():
         self.t = timesheet
 
         self.root = tkinter.Tk()
-        self.root.title("STEM Sign In")
+        self.root.title("Chronophore")
         self.content = ttk.Frame(self.root, padding=(5, 5, 10, 10))
 
         # custom fonts

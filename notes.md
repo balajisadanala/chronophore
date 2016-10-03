@@ -1,7 +1,27 @@
 Notes
 =====
 
+Some new considerations
+-----------------------
+- Is human readable data sufficiently important to justify not using a proper database?
+    - schemaless storage
+    - relational db
+        - Couchdb
+        - sqllite
+- Remove some responsibilities from Timesheet into other classes
+    - Persistence calls (loading, saving)
+    - Tracking signed in users
+- UI
+    - Add an undo option in case someone mistakenly signs in as the wrong person
+    - Use names rather than ids to sign in? Solve name collisions with unique images?
+    - Button for tutors to choose to log in as tutors or students
+- Privacy/Security
+    - Remove list of names signed in
+    - Transfer data securely
+- Get rid of utils
 
+
+- Security
 Requirements
 ------------
 - Gui
@@ -36,7 +56,7 @@ Security
 - Admin interface is password protected 
 
 
-Database Fields 
+Database Fields
 ---------------
 - Student time sheet
     - UUID
@@ -44,7 +64,7 @@ Database Fields
         - Student id
         - Time in
         - Time out
-    
+
 - Student registry
     - Student id
         - Date joined STEM

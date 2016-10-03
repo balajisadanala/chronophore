@@ -6,6 +6,8 @@ from chronophore.config import CONFIG
 
 logger = logging.getLogger(__name__)
 
+# TODO(amin): Make this back into a class!
+
 
 def signed_in_names(timesheet):
     """Return list of names of currently signed in users."""
