@@ -11,6 +11,7 @@ from chronophore import __title__
 logger = logging.getLogger(__name__)
 
 
+# TODO(amin): Update the available settings
 def _load_config(config_file):
     """Load settings from config file and return them as
     a dict.
@@ -33,6 +34,7 @@ def _load_config(config_file):
             USER_ID_LENGTH=parser.getint('validation', 'user_id_length'),
             MESSAGE_DURATION=parser.getint('gui', 'message_duration'),
             GUI_WELCOME_LABLE=parser.get('gui', 'gui_welcome_label'),
+            FULL_USER_NAMES=parser.getboolean('gui', 'full_user_names'),
             LARGE_FONT_SIZE=parser.getint('gui', 'large_font_size'),
             MEDIUM_FONT_SIZE=parser.getint('gui', 'medium_font_size'),
             SMALL_FONT_SIZE=parser.getint('gui', 'small_font_size'),
@@ -64,6 +66,7 @@ def _use_default(config_file):
                 (
                     ('message_duration', 5),
                     ('gui_welcome_label', 'Welcome to the STEM Learning Center!'),
+                    ('full_user_names', True),
                     ('large_font_size', 30),
                     ('medium_font_size', 18),
                     ('small_font_size', 15),

@@ -21,7 +21,7 @@ test: clean
 	py.test tests
 
 lint:
-	flake8 --max-line-length=90 chronophore/*.py tests/*.py scripts/*.py
+	flake8 --max-line-length=90 chronophore/*.py tests/*.py scripts/*.py setup.py
 
 tox: clean
 	tox

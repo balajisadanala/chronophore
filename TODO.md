@@ -29,7 +29,7 @@ To Do
     - Windows:
         - [x] Save data in standard location (APPDATA folder)
     - [x] INI configuration file
-    - [ ] Use database instead of json files
+    - [x] Use database instead of json files
     - [ ] Add undo button in case of mistaken improper login
     - [ ] Allow different kinds of user (like 'employee' vs 'student') to be logged and validated separately.
     - [ ] Concatenate/combine multiple json files

@@ -8,6 +8,7 @@ adaptable to other use cases.
 """
 
 __title__ = 'chronophore'
+# TODO(amin): increment version
 __version__ = '0.4.0'
 __license__ = 'MIT'
 __author__ = 'Amin Mesbah'

@@ -1,0 +1,157 @@
+import appdirs
+import logging
+import os
+import pathlib
+
+from sqlalchemy import create_engine, event, Boolean, Column, ForeignKey, String
+from sqlalchemy.engine import Engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship, sessionmaker
+
+logger = logging.getLogger(__name__)
+
+
+# TODO(amin): move this to chronophore.py ?
+DATA_DIR = pathlib.Path(appdirs.user_data_dir('chronophore'))
+os.makedirs(str(DATA_DIR), exist_ok=True)
+DATABASE_FILE = DATA_DIR.joinpath('chronophore.sqlite')
+
+engine = create_engine('sqlite:///{}'.format(str(DATABASE_FILE)))
+Session = sessionmaker(bind=engine)
+Base = declarative_base()
+
+
+class User(Base):
+    """This class defines the schema for the 'users'
+    table. Each row of 'users' is an instance of
+    User().
+    """
+    __tablename__ = 'users'
+
+    user_id = Column(String, primary_key=True, unique=True)
+
+    date_joined = Column(String)
+    date_left = Column(String, nullable=True)
+    education_plan = Column(Boolean)
+    email = Column(String, nullable=True)
+    first_name = Column(String)
+    forgot_sign_out = Column(Boolean)
+    last_name = Column(String)
+    major = Column(String, nullable=True)
+    user_type = Column(String)
+
+    # TODO(amin): use this relationship to simplify controller code
+    entries = relationship('Entry', back_populates='user')
+
+    def __repr__(self):
+        return (
+            'User('
+            + 'user_id="{}",'.format(self.user_id)
+            + ' date_joined={},'.format(self.date_joined)
+            + ' date_left={},'.format(self.date_left)
+            + ' education_plan={},'.format(self.education_plan)
+            + ' email={},'.format(self.email)
+            + ' first_name={},'.format(self.first_name)
+            + ' forgot_sign_out={},'.format(self.forgot_sign_out)
+            + ' last_name={},'.format(self.last_name)
+            + ' major={},'.format(self.major)
+            + ' user_type={}'.format(self.user_type)
+            + ')'
+        )
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
+
+class Entry(Base):
+    """This class defines the schema for the 'timesheet'
+    table. Each row of 'timesheet' is an instance of
+    Entry().
+    """
+    __tablename__ = 'timesheet'
+
+    uuid = Column(String, primary_key=True, unique=True)
+
+    date = Column(String)
+    time_in = Column(String)
+    time_out = Column(String)
+    user_id = Column(String, ForeignKey('users.user_id'))
+
+    # TODO(amin): use this relationship to simplify controller code
+    user = relationship('User', back_populates='entries')
+
+    def __repr__(self):
+        return (
+            'Entry('
+            + 'uuid={},'.format(self.uuid)
+            + ' date={},'.format(self.date)
+            + ' time_in={},'.format(self.time_in)
+            + ' time_out={},'.format(self.time_out)
+            + ' user_id={}'.format(self.user_id)
+            + ')'
+        )
+
+
+@event.listens_for(Engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    """Upon every db connection, issue a command
+    to ensure foreign key constraints are enforced.
+
+    This is a sqlite-specific issue:
+    http://stackoverflow.com/questions/2614984/sqlite-sqlalchemy-how-to-enforce-foreign-keys
+    http://docs.sqlalchemy.org/en/latest/dialects/sqlite.html#foreign-key-support
+    """
+    cursor = dbapi_connection.cursor()
+    cursor.execute("PRAGMA foreign_keys=ON")
+    cursor.close()
+
+
+# TODO(amin): add an option to use these test users (command line flag?)
+def add_test_users(session):
+    """Add two hobbits and a wizard to the
+    users table for testing purposes. These
+    are not necessarily the same test users
+    as in the unit tests.
+    """
+    session.add_all([
+        User(
+            user_id='000000000',
+            date_joined='2014-12-11',
+            date_left=None,
+            education_plan=False,
+            email='baggins.frodo@gmail.com',
+            first_name='Frodo',
+            forgot_sign_out=False,
+            last_name='Baggins',
+            major='Medicine',
+            user_type='Tutor',
+        ),
+        User(
+            user_id='000111111',
+            date_joined='2015-02-16',
+            date_left=None,
+            education_plan=True,
+            email='gamgee.samwise@gmail.com',
+            first_name='Sam',
+            forgot_sign_out=False,
+            last_name='Gamgee',
+            major='Agriculture',
+            user_type='Student',
+        ),
+        User(
+            user_id='000222222',
+            date_joined='2010-10-10',
+            date_left=None,
+            education_plan=False,
+            email='mithrandir@gmail.com',
+            first_name='Gandalf',
+            forgot_sign_out=False,
+            last_name='the Grey',
+            major='Computer Science',
+            user_type='Tutor',
+        ),
+    ])
+    session.commit()
+
+
+Base.metadata.create_all(engine)

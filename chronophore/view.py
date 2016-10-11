@@ -1,9 +1,12 @@
 import contextlib
+import logging
 import tkinter
 from tkinter import font, ttk, N, S, E, W
 
-from chronophore import controller, utils
+from chronophore import controller
 from chronophore.config import CONFIG
+
+logger = logging.getLogger(__name__)
 
 
 class ChronophoreUI():
@@ -13,11 +16,9 @@ class ChronophoreUI():
             - List of currently signed in users
     """
 
-    def __init__(self, timesheet):
-        self.t = timesheet
-
+    def __init__(self):
         self.root = tkinter.Tk()
-        self.root.title("Chronophore")
+        self.root.title('Chronophore')
         self.content = ttk.Frame(self.root, padding=(5, 5, 10, 10))
 
         # custom fonts
@@ -93,10 +94,7 @@ class ChronophoreUI():
         )
         self.lbl_signedin_list.grid(column=0, row=0, columnspan=1, rowspan=4)
         self.lbl_welcome.grid(column=2, row=1, columnspan=1)
-        # TODO(amin): figure out why lbl_id and btn_sign wiggle
-        # when lbl_signedin_list updates
         self.lbl_id.grid(column=2, row=2, columnspan=1, sticky=(N))
-        # TODO(amin): add select all shortcuts to this entry
         self.ent_id.grid(column=2, row=2, columnspan=1)
         self.lbl_feedback.grid(column=2, row=3)
         self.btn_sign.grid(column=2, row=4, columnspan=1, sticky=(N))
@@ -123,10 +121,7 @@ class ChronophoreUI():
         self.root.mainloop()
 
     def _set_signed_in(self):
-        names = [
-            " ".join([first, ' '.join(rest)])
-            for first, *rest in controller.signed_in_names(self.t)
-        ]
+        names = controller.signed_in_names(full_name=CONFIG['FULL_USER_NAMES'])
         self.signed_in.set('\n'.join(sorted(names)))
 
     def _show_feedback(self, message, seconds=None):
@@ -152,25 +147,15 @@ class ChronophoreUI():
     def _sign_in_button_press(self, *args):
         """Validate input from ent_id, then sign in to the Timesheet."""
         user_id = self.ent_id.get().strip()
-
         try:
-            sign_in_status = controller.sign(user_id, self.t)
-        except (ValueError, FileNotFoundError) as e:
+            sign_in_status = controller.sign(user_id)
+        except Exception as e:
+            logger.error(e, exc_info=True)
             self._show_feedback(e)
         else:
-            user_name = " ".join(
-                utils.user_name(user_id, utils.get_users(self.t.users_file))
-            )
-            self._show_feedback("{}: {}".format(sign_in_status, user_name))
+            self._show_feedback(sign_in_status)
+            logger.debug('Feedback: "{}"'.format(sign_in_status))
         finally:
             self._set_signed_in()
-
-        self.ent_id.delete(0, 'end')
-        self.ent_id.focus()
-
-
-if __name__ == '__main__':
-    # Usage example
-    from chronophore.model import Timesheet
-    t = Timesheet()
-    ui = ChronophoreUI(timesheet=t)
+            self.ent_id.delete(0, 'end')
+            self.ent_id.focus()
