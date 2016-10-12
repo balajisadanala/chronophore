@@ -1,3 +1,4 @@
+from datetime import date, time
 from chronophore import controller
 from chronophore.models import Entry
 
@@ -71,15 +72,15 @@ def test_sign_duplicates(db_session):
     db_session.add_all([
         Entry(
             uuid='781d8a2a-104b-480c-baba-98c55f11e80b',
-            date='2016-01-10',
-            time_in='10:25:07',
+            date=date(2016, 1, 10),
+            time_in=time(10, 25, 7),
             time_out=None,
             user_id=sam_id
         ),
         Entry(
             uuid='621d98db-92e0-46d1-9cd5-55013777a7d9',
-            date='2016-01-11',
-            time_in='13:55:00',
+            date=date(2016, 1, 11),
+            time_in=time(13, 55, 00),
             time_out=None,
             user_id=sam_id
         ),
@@ -93,6 +94,43 @@ def test_sign_duplicates(db_session):
                 Entry.user_id == sam_id).filter(
                 Entry.time_out.is_(None)).one_or_none()
     ) is None
+
+
+def test_auto_sign_out(db_session):
+    """Frodo and sam forgot to sign out yesterday. Their
+    entries are signed out and flagged automatically.
+    """
+    frodo_id = '888000000'
+    sam_id = '888111111'
+    today = date(2016, 2, 17)
+    yesterday = date(2016, 2, 16)
+
+    db_session.add_all([
+        Entry(
+            uuid='f0030733-b216-430b-be34-79fa26cbf87d',
+            date=yesterday,
+            forgot_sign_out=False,
+            time_in=time(14, 5, 2),
+            time_out=None,
+            user_id=frodo_id,
+        ),
+        Entry(
+            uuid='ffac853d-12ac-4a85-8b6f-7c9793479633',
+            date=yesterday,
+            forgot_sign_out=False,
+            time_in=time(10, 45, 3),
+            time_out=None,
+            user_id=sam_id,
+        ),
+    ])
+    db_session.commit()
+
+    controller.auto_sign_out(db_session, today)
+
+    flagged = db_session.query(Entry).filter(Entry.date == yesterday)
+    for entry in flagged:
+        assert entry.time_out == time(0, 0)
+        assert entry.forgot_sign_out is True
 
 
 def test_get_user_name(db_session):

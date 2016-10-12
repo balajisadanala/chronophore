@@ -5,7 +5,9 @@ import os
 import pathlib
 from sqlalchemy import create_engine
 
-from chronophore import __description__, __title__, __version__, Session
+from chronophore import (
+    __description__, __title__, __version__, controller, Session
+)
 from chronophore.models import Base, add_test_users
 from chronophore.view import ChronophoreUI
 
@@ -76,6 +78,8 @@ def main():
 
     if args.testdb:
         add_test_users(session=Session())
+
+    controller.auto_sign_out(session=Session())
 
     ChronophoreUI()
 

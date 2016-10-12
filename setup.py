@@ -81,7 +81,7 @@ setup(
         ],
     },
 
-    # TODO(amin): update scripts
+    # TODO(amin): remove scripts
     scripts=['scripts/excel_to_json.py', 'scripts/json_to_excel.py'],
     install_requires=['appdirs>=1.4.0', 'openpyxl>=2.3.5', 'sqlalchemy>=1.0.15'],
 

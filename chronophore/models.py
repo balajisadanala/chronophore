@@ -1,5 +1,9 @@
 import logging
-from sqlalchemy import event, Boolean, Column, ForeignKey, String
+from datetime import date
+from sqlalchemy import (
+    event, Boolean, Column, Date, ForeignKey, String
+)
+from sqlalchemy.dialects.sqlite import TIME
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
@@ -7,6 +11,7 @@ from sqlalchemy.orm import relationship
 logger = logging.getLogger(__name__)
 
 Base = declarative_base()
+SQLite_Time = TIME(storage_format='%(hour)02d:%(minute)02d:%(second)02d')
 
 
 class User(Base):
@@ -18,12 +23,11 @@ class User(Base):
 
     user_id = Column(String, primary_key=True, unique=True)
 
-    date_joined = Column(String)
-    date_left = Column(String, nullable=True)
+    date_joined = Column(Date)
+    date_left = Column(Date, nullable=True)
     education_plan = Column(Boolean)
     email = Column(String, nullable=True)
     first_name = Column(String)
-    forgot_sign_out = Column(Boolean)
     last_name = Column(String)
     major = Column(String, nullable=True)
     user_type = Column(String)
@@ -40,7 +44,6 @@ class User(Base):
             + ' education_plan={},'.format(self.education_plan)
             + ' email={},'.format(self.email)
             + ' first_name={},'.format(self.first_name)
-            + ' forgot_sign_out={},'.format(self.forgot_sign_out)
             + ' last_name={},'.format(self.last_name)
             + ' major={},'.format(self.major)
             + ' user_type={}'.format(self.user_type)
@@ -60,9 +63,10 @@ class Entry(Base):
 
     uuid = Column(String, primary_key=True, unique=True)
 
-    date = Column(String)
-    time_in = Column(String)
-    time_out = Column(String)
+    date = Column(Date)
+    forgot_sign_out = Column(Boolean, default=False)
+    time_in = Column(SQLite_Time)
+    time_out = Column(SQLite_Time)
     user_id = Column(String, ForeignKey('users.user_id'))
 
     # TODO(amin): use this relationship to simplify controller code
@@ -73,6 +77,7 @@ class Entry(Base):
             'Entry('
             + 'uuid={},'.format(self.uuid)
             + ' date={},'.format(self.date)
+            + ' forgot_sign_out={},'.format(self.forgot_sign_out)
             + ' time_in={},'.format(self.time_in)
             + ' time_out={},'.format(self.time_out)
             + ' user_id={}'.format(self.user_id)
@@ -105,36 +110,33 @@ def add_test_users(session):
     test_users = [
         User(
             user_id='000000000',
-            date_joined='2014-12-11',
+            date_joined=date(2014, 12, 11),
             date_left=None,
             education_plan=False,
             email='baggins.frodo@gmail.com',
             first_name='Frodo',
-            forgot_sign_out=False,
             last_name='Baggins',
             major='Medicine',
             user_type='Tutor',
         ),
         User(
             user_id='000111111',
-            date_joined='2015-02-16',
+            date_joined=date(2015, 2, 16),
             date_left=None,
             education_plan=True,
             email='gamgee.samwise@gmail.com',
             first_name='Sam',
-            forgot_sign_out=False,
             last_name='Gamgee',
             major='Agriculture',
             user_type='Student',
         ),
         User(
             user_id='000222222',
-            date_joined='2010-10-10',
+            date_joined=date(2010, 10, 10),
             date_left=None,
             education_plan=False,
             email='mithrandir@gmail.com',
             first_name='Gandalf',
-            forgot_sign_out=False,
             last_name='the Grey',
             major='Computer Science',
             user_type='Tutor',
