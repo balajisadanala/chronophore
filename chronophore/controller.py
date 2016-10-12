@@ -4,7 +4,8 @@ import sqlalchemy
 import uuid
 from datetime import datetime
 
-from chronophore.models import Entry, Session, User
+from chronophore import Session
+from chronophore.models import Entry, User
 
 logger = logging.getLogger(__name__)
 

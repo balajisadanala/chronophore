@@ -34,7 +34,7 @@ setup(
     version=find_version("chronophore", "__init__.py"),
 
     description=(
-        'Simple desktop app for tracking sign-ins and sign-outs in a tutoring center.'
+        'Desktop app for tracking sign-ins and sign-outs in a tutoring center.'
     ),
 
     long_description=long_description,

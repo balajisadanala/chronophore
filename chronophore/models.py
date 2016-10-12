@@ -1,23 +1,11 @@
-import appdirs
 import logging
-import os
-import pathlib
-
-from sqlalchemy import create_engine, event, Boolean, Column, ForeignKey, String
+from sqlalchemy import event, Boolean, Column, ForeignKey, String
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy.orm import relationship
 
 logger = logging.getLogger(__name__)
 
-
-# TODO(amin): move this to chronophore.py ?
-DATA_DIR = pathlib.Path(appdirs.user_data_dir('chronophore'))
-os.makedirs(str(DATA_DIR), exist_ok=True)
-DATABASE_FILE = DATA_DIR.joinpath('chronophore.sqlite')
-
-engine = create_engine('sqlite:///{}'.format(str(DATABASE_FILE)))
-Session = sessionmaker(bind=engine)
 Base = declarative_base()
 
 
@@ -106,14 +94,15 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
     cursor.close()
 
 
-# TODO(amin): add an option to use these test users (command line flag?)
 def add_test_users(session):
     """Add two hobbits and a wizard to the
     users table for testing purposes. These
     are not necessarily the same test users
     as in the unit tests.
+
+    This function is idempotent.
     """
-    session.add_all([
+    test_users = [
         User(
             user_id='000000000',
             date_joined='2014-12-11',
@@ -150,8 +139,19 @@ def add_test_users(session):
             major='Computer Science',
             user_type='Tutor',
         ),
-    ])
+    ]
+
+    registered_ids = {
+        user_id for (user_id, )
+        in session.query(User.user_id).all()
+    }
+
+    for user in test_users:
+        if user.user_id not in registered_ids:
+            session.add(user)
+            name = ' '.join([user.first_name, user.last_name])
+            logger.info(
+                'Adding test user: {} ({}).'.format(user.user_id, name)
+            )
+
     session.commit()
-
-
-Base.metadata.create_all(engine)
