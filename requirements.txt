@@ -9,5 +9,6 @@ pycodestyle==2.0.0
 pyflakes==1.2.3
 pytest==2.9.2
 pytest-cov==2.3.0
+SQLAlchemy==1.0.15
 six==1.10.0
 with-fixture==0.1

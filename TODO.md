@@ -29,15 +29,14 @@ To Do
     - Windows:
         - [x] Save data in standard location (APPDATA folder)
     - [x] INI configuration file
-    - [ ] Use database instead of json files
+    - [x] Use database instead of json files
+    - [x] Check for bad entries from previous days
+    - [x] Flag entries of students that forgot to sign out
     - [ ] Add undo button in case of mistaken improper login
     - [ ] Allow different kinds of user (like 'employee' vs 'student') to be logged and validated separately.
     - [ ] Concatenate/combine multiple json files
-    - [ ] Check for bad entries from previous days
-    - [ ] Flag students that forgot to sign out
     - [ ] Documentation
     - [ ] Access database over local wireless network
     - [ ] Enable files to be safely accessed by multiple instances of Chronophore
     - [ ] Admin UI
     - [ ] Encrypt/decrypt database
-    - [ ] Change unit tests to use [file-like objects](http://stackoverflow.com/questions/3942820/how-to-do-unit-testing-of-functions-writing-files-using-python-unittest) instead of files

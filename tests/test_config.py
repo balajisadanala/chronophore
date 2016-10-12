@@ -17,7 +17,7 @@ def test_use_default(nonexistent_file):
     instead.
     """
     parser = _use_default(nonexistent_file)
-    sections = ('gui', 'validation')
+    sections = ('gui',)
     assert set(sections) == set(parser.sections())
 
 

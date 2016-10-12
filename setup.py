@@ -33,7 +33,9 @@ setup(
     name='chronophore',
     version=find_version("chronophore", "__init__.py"),
 
-    description='Simple desktop app for tracking sign-ins and sign-outs in a tutoring center.',
+    description=(
+        'Desktop app for tracking sign-ins and sign-outs in a tutoring center.'
+    ),
 
     long_description=long_description,
 
@@ -79,8 +81,9 @@ setup(
         ],
     },
 
+    # TODO(amin): remove scripts
     scripts=['scripts/excel_to_json.py', 'scripts/json_to_excel.py'],
-    install_requires=['appdirs>=1.4.0', 'openpyxl>=2.3.5'],
+    install_requires=['appdirs>=1.4.0', 'openpyxl>=2.3.5', 'sqlalchemy>=1.0.15'],
 
     extras_require={
         'dev': ['flake8'],

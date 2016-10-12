@@ -1,121 +1,165 @@
-import pathlib
-import pytest
-
-from chronophore import controller, utils
-from chronophore.model import Entry, Timesheet
-
-DATA_DIR = pathlib.Path(__file__).resolve().parent / 'data'
-EXAMPLE_DATA = DATA_DIR.joinpath('data.json')
-EXAMPLE_USERS = DATA_DIR.joinpath('users.json')
-REGISTERED_ID = "876543210"
+from datetime import date, time
+from chronophore import controller
+from chronophore.models import Entry
 
 
-def test_signed_in_names():
-    """List all signed in users."""
-    timesheet = Timesheet(
-        data_file=EXAMPLE_DATA,
-        users_file=EXAMPLE_USERS
+def test_signed_in_names(db_session):
+    """List all signed in user names."""
+    expected = ['Pippin Took', 'Merry Brandybuck']
+    assert set(controller.signed_in_names(db_session)) == set(expected)
+
+
+def test_signed_in_first_names(db_session):
+    """List all signed in user first names."""
+    expected = ['Pippin', 'Merry']
+    assert (
+        set(controller.signed_in_names(db_session, full_name=False))
+        == set(expected)
     )
-    expected = [("Pippin", "Took")]
-    assert controller.signed_in_names(timesheet) == expected
 
 
-def test_sign_in():
-    """Test that the proper Entry object is returned."""
-    signed_in_entry = controller.sign_in(
-        "883406720",
-        "Frodo Baggins",
-        date="2016-08-31",
-        time_in="13:08:25",
+def test_sign_starting(db_session):
+    """Frodo, who is registered, signs in."""
+    frodo_id = '888000000'
+    status = controller.sign(frodo_id, db_session)
+
+    assert status == 'Signed in: Frodo Baggins'
+    assert (
+        db_session.query(Entry).filter(
+                Entry.user_id == frodo_id).filter(
+                Entry.time_out.is_(None)).one()
     )
-    expected = Entry(
-        date="2016-08-31",
-        name="Frodo Baggins",
-        time_in="13:08:25",
-        time_out=None,
-        user_id="883406720",
-    )
-    assert signed_in_entry == expected
 
 
-def test_sign_out():
-    """Sign out an entry, and verify that the entry's
-    time_out value is appropriately updated."""
-    e = Entry(
-        date="2016-08-31",
-        name="Frodo Baggins",
-        time_in="13:08:25",
-        time_out=None,
-        user_id="883406720",
-    )
-    signed_out_entry = controller.sign_out(e, time_out="13:08:25")
-    assert signed_out_entry == e._replace(time_out="13:08:25")
+def test_sign_finishing(db_session):
+    """Merry is done. He signs out."""
+    merry_id = '888222222'
+    status = controller.sign(merry_id, db_session)
+
+    assert status == 'Signed out: Merry Brandybuck'
+    assert (
+        db_session.query(Entry).filter(
+                Entry.user_id == merry_id).filter(
+                Entry.time_out.is_(None)).one_or_none()
+    ) is None
 
 
-def test_sign_invalid(timesheet):
-    """Assert that ValueError is raised when someone
-    signs in with an invalid id.
+def test_sign_not_registered(db_session):
+    """Someone tries to sign in with an unregistered
+    ID. They are told to register at the front desk.
+    The entry is not added to the database.
     """
-    with pytest.raises(ValueError):
-        controller.sign("1234567890", timesheet)
+    unregistered_id = '000000000'
+    status = controller.sign(unregistered_id, db_session)
+
+    expected = '{} not registered. Please register at the front desk'.format(
+        unregistered_id
+    )
+    assert status == expected
+    assert (
+        db_session.query(Entry).filter(
+                Entry.user_id == unregistered_id).one_or_none()
+    ) is None
 
 
-def test_sign_not_registered(timesheet):
-    """Assert that ValueError is raised when someone
-    signs in with an id that, though valid,  isn't
-    in the user file.
+def test_sign_duplicates(db_session):
+    """Somehow, Sam has 2 signed in entries in the
+    database. When he tries to sign in, a message is
+    displayed and the duplicate entries are all signed
+    out.
     """
-    with pytest.raises(ValueError):
-        controller.sign("888888888", timesheet)
-
-
-def test_sign_duplicates(timesheet):
-    """Sign in with an id that is already signed in."""
-    duplicate_id = REGISTERED_ID
-    for _ in range(2):
-        e = Entry(
-            date="2016-08-31",
-            name="Hildegard Jensen",
-            time_in="10:00",
+    sam_id = '888111111'
+    db_session.add_all([
+        Entry(
+            uuid='781d8a2a-104b-480c-baba-98c55f11e80b',
+            date=date(2016, 1, 10),
+            time_in=time(10, 25, 7),
             time_out=None,
-            user_id=duplicate_id,
-        )
-        timesheet[utils.new_key()] = e
-    with pytest.raises(ValueError):
-        controller.sign(duplicate_id, timesheet)
+            user_id=sam_id
+        ),
+        Entry(
+            uuid='621d98db-92e0-46d1-9cd5-55013777a7d9',
+            date=date(2016, 1, 11),
+            time_in=time(13, 55, 00),
+            time_out=None,
+            user_id=sam_id
+        ),
+    ])
+    status = controller.sign(sam_id, db_session)
+
+    expected = 'Signing out of multiple instances of user Sam Gamgee'
+    assert status == expected
+    assert (
+        db_session.query(Entry).filter(
+                Entry.user_id == sam_id).filter(
+                Entry.time_out.is_(None)).one_or_none()
+    ) is None
 
 
-def test_sign_user_in(monkeypatch, timesheet):
-    """Sign in with a new ID."""
-    # NOTE(amin): remember that time you spent 40 minutes trying to
-    # figure out why this test was failing, only to realize with horror
-    # that there is a difference between "882870192" and "882870l92"?
-    user_id = REGISTERED_ID
+def test_auto_sign_out(db_session):
+    """Frodo and sam forgot to sign out yesterday. Their
+    entries are signed out and flagged automatically.
+    """
+    frodo_id = '888000000'
+    sam_id = '888111111'
+    today = date(2016, 2, 17)
+    yesterday = date(2016, 2, 16)
 
-    def mock_new_key():
-        return '3b27d0f8-3801-4319-398f-ace18829d150'
+    db_session.add_all([
+        Entry(
+            uuid='f0030733-b216-430b-be34-79fa26cbf87d',
+            date=yesterday,
+            forgot_sign_out=False,
+            time_in=time(14, 5, 2),
+            time_out=None,
+            user_id=frodo_id,
+        ),
+        Entry(
+            uuid='ffac853d-12ac-4a85-8b6f-7c9793479633',
+            date=yesterday,
+            forgot_sign_out=False,
+            time_in=time(10, 45, 3),
+            time_out=None,
+            user_id=sam_id,
+        ),
+    ])
+    db_session.commit()
 
-    monkeypatch.setattr('chronophore.utils.new_key', mock_new_key)
-    k = utils.new_key()
-    print(k)
-    controller.sign(user_id, timesheet)
-    assert(
-        timesheet['3b27d0f8-3801-4319-398f-ace18829d150'].user_id
-        == user_id
-    )
+    controller.auto_sign_out(db_session, today)
+
+    flagged = db_session.query(Entry).filter(Entry.date == yesterday)
+    for entry in flagged:
+        assert entry.time_out == time(0, 0)
+        assert entry.forgot_sign_out is True
 
 
-def test_sign_user_out(timesheet):
-    """Sign out with an ID that's currently signed in."""
-    key = "2ed2be60-693a-44fe-adc1-2803a674ec9b"
-    e = Entry(
-        date="2016-02-17",
-        name="Hildegard Jensen",
-        time_in="10:45",
-        time_out=None,
-        user_id=REGISTERED_ID,
-    )
-    timesheet[key] = e
-    controller.sign(REGISTERED_ID, timesheet)
-    assert timesheet[key] is not None
-    assert key not in timesheet.signed_in
+def test_get_user_name(db_session):
+    """Look up Sam's name from his ID."""
+    sam_id = '888111111'
+    name = controller.get_user_name(sam_id, db_session)
+    assert name == 'Sam Gamgee'
+
+
+def test_get_user_first_name(db_session):
+    """Look up Sam's first name from his ID."""
+    sam_id = '888111111'
+    name = controller.get_user_name(sam_id, db_session, full_name=False)
+    assert name == 'Sam'
+
+
+def test_get_multi_word_user_name(db_session):
+    """Get Gandalf's full name, which has more than
+    just 2 words.
+    """
+    gandalf_id = '888444444'
+    name = controller.get_user_name(gandalf_id, db_session)
+    assert name == 'Gandalf the Grey'
+
+
+def test_no_user_name(db_session):
+    """Try to look up the name associated an
+    unregistered ID. Return None.
+    """
+    unregistered_id = '000000000'
+    name = controller.get_user_name(unregistered_id, db_session)
+    assert name is None

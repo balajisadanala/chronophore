@@ -1,135 +1,153 @@
 import logging
-from datetime import datetime
+import sqlalchemy
+import uuid
+from datetime import date, datetime, time
 
-from chronophore import model, utils
-from chronophore.config import CONFIG
+from chronophore import Session
+from chronophore.models import Entry, User
 
 logger = logging.getLogger(__name__)
 
-# TODO(amin): Make this back into a class!
 
-
-def signed_in_names(timesheet):
-    """Return list of names of currently signed in users."""
-    return [
-        tuple(timesheet[k].name.split())
-        for k in timesheet.signed_in
-    ]
-
-
-def user_signed_in(user_id, timesheet):
-    """Check whether a given user is signed in.
-
-    Return:
-        - None if 0 instances of user_id signed in
-        - Key if 1 instance of user_id signed in
-
-    Raise:
-        - ValueError if >1 instance of user_id signed in
+def auto_sign_out(session, today=None):
+    """Check for any entries from previous days
+    where users forgot to sign out on previous days.
+    Sign out and flag those entries.
     """
-    [key] = (
-        [
-            k for k in timesheet.signed_in
-            if timesheet.sheet[k]['user_id'] == user_id
-        ]
-        or [None]
-    )
-    return key
+    today = date.today() if today is None else today
+
+    stale = session.query(Entry).filter(
+            Entry.time_out.is_(None)).filter(
+            Entry.date < today)
+
+    for entry in stale:
+        sign_out(entry, session, time_out=time.min, forgot=True)
+
+    session.commit()
 
 
-def sign_in(user_id, name, date=None, time_in=None):
+def signed_in_names(session=None, full_name=True):
+    """Return list of names of currently signed in users.
+    Full names by default.
+    """
+    if session is None:
+        session = Session()
+    else:
+        session = session
+
+    signed_in_users = session.query(User.user_id).filter(
+            User.user_id == Entry.user_id).filter(
+            Entry.time_out.is_(None))
+
+    names = [
+        get_user_name(user_id, session, full_name=full_name)
+        for (user_id, ) in signed_in_users
+    ]
+    session.close()
+    return names
+
+
+def get_user_name(user_id, session, full_name=True):
+    """Given a user_id, return the user's name as
+    a string, or None if there is no such user.
+    Full names by default.
+    """
+    name = None
+
+    user_name = session.query(User.first_name, User.last_name).filter(
+            User.user_id == user_id).one_or_none()
+
+    if user_name:
+        first, last = user_name
+        if full_name:
+            name = ' '.join([first, last])
+        else:
+            name = first
+
+    return name
+
+
+def sign_in(user_id, session, date=None, time_in=None):
+    """Add a new entry to the timesheet."""
     now = datetime.today()
     if date is None:
-        date = datetime.strftime(now, "%Y-%m-%d")
+        date = now.date()
     if time_in is None:
-        time_in = datetime.strftime(now, "%H:%M:%S")
+        time_in = now.time()
 
-    signed_in_entry = model.Entry(
+    new_entry = Entry(
+        uuid=str(uuid.uuid4()),
         date=date,
-        name=name,
         time_in=time_in,
         time_out=None,
         user_id=user_id,
     )
 
-    logger.debug("Entry object initialized: {}".format(repr(signed_in_entry)))
-    return signed_in_entry
+    session.add(new_entry)
+    logger.debug("Signed in: {}".format(repr(new_entry)))
 
 
-def sign_out(entry, time_out=None):
+def sign_out(entry, session, time_out=None, forgot=False):
+    """Sign out of an existing entry in the timesheet.
+    If the user forgot to sign out, flag the entry.
+    """
     if time_out is None:
-        time_out = datetime.strftime(datetime.today(), "%H:%M:%S")
+        time_out = datetime.today().time()
 
-    signed_out_entry = entry._replace(time_out=time_out)
+    entry.time_out = time_out
 
-    logger.info("Entry signed out: {}".format(repr(signed_out_entry)))
-    return signed_out_entry
+    if forgot:
+        entry.forgot_sign_out = True
+        logger.info('{} forgot to sign out.'.format(entry.user_id))
+
+    session.add(entry)
+    logger.info("Signed out: {}".format(repr(entry)))
 
 
-def sign(user_id, timesheet):
+def sign(user_id, session=None):
     """Check user id for validity, then sign user in or out
     depending on whether or not they are currently signed in.
 
     Return:
-        - status: "Signed in", "Signed out"
-
-    Raise:
-        - ValueError if user_id is invalid. Include a
-        message to be passed to the caller.
+        - status: A string reporting the result of the sign
+        attempt.
     """
-
-    users = utils.get_users(timesheet.users_file)
-
-    if not utils.is_valid(user_id, CONFIG['USER_ID_LENGTH']):
-        logger.debug("Invalid input: {}".format(user_id))
-        raise ValueError(
-            "Invalid Input: {}".format(user_id)
-        )
-
-    elif not utils.is_registered(user_id, users):
-        logger.debug("User not registered: {}".format(user_id))
-        raise ValueError(
-            "{} not registered. Please register at the front desk.".format(
-                user_id
-            )
-        )
-
-    try:
-        key = user_signed_in(user_id, timesheet)
-    except ValueError:
-        # handle duplicates
-        duplicate_entry_keys = [
-            k for k in timesheet.signed_in
-            if timesheet.sheet[k]['user_id'] == user_id
-        ]
-        logger.warning(
-            "Multiple signed in instances of user {}: {}".format(
-                user_id, duplicate_entry_keys
-            )
-        )
-        logger.info(
-            "Signing out of multiple instances of user {}: {}".format(
-                user_id, duplicate_entry_keys
-            )
-        )
-        for key in duplicate_entry_keys:
-            timesheet[key] = sign_out(timesheet[key])
-
-        raise ValueError(
-            "Signing out of multiple instances of user {}".format(
-                user_id
-            )
-        )
+    if session is None:
+        session = Session()
     else:
-        if not key:
-            user_name = ' '.join(
-                utils.user_name(user_id, utils.get_users(timesheet.users_file))
-            )
-            key = utils.new_key()
-            timesheet[key] = sign_in(user_id, user_name)
-            status = "Signed in"
-        else:
-            timesheet[key] = sign_out(timesheet[key])
-            status = "Signed out"
+        session = session
 
-        return status
+    user_name = get_user_name(user_id, session)
+    if user_name:
+        try:
+            entry = session.query(Entry).filter(
+                    Entry.user_id == user_id).filter(
+                    Entry.time_out.is_(None)).one()
+
+        except sqlalchemy.orm.exc.NoResultFound:
+            sign_in(user_id, session)
+            status = 'Signed in: {}'.format(user_name)
+
+        except sqlalchemy.orm.exc.MultipleResultsFound:
+            duplicates = session.query(Entry).filter(
+                    Entry.user_id == user_id).filter(
+                    Entry.time_out.is_(None)).all()
+            for entry in duplicates:
+                sign_out(entry, session)
+            status = 'Signing out of multiple instances of user {}'.format(
+                user_name
+            )
+
+        else:
+            sign_out(entry, session)
+            status = 'Signed out: {}'.format(user_name)
+
+        finally:
+            session.commit()
+            logger.debug('Database written to.')
+    else:
+        status = '{} not registered. Please register at the front desk'.format(
+            user_id
+        )
+
+    return status
