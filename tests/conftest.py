@@ -10,15 +10,14 @@ from chronophore.models import Base, Entry, User
 
 logging.disable(logging.CRITICAL)
 
-DATA_DIR = pathlib.Path(__file__).resolve().parent / 'data'
-
 
 @pytest.fixture()
-def nonexistent_file(request):
+def nonexistent_file(tmpdir, request):
     """Return a path to an empty config file.
     Remove the file when a test is finished with it.
     """
-    nonexistent = DATA_DIR.joinpath('nonexistent')
+    data_dir = pathlib.Path(str(tmpdir))
+    nonexistent = data_dir.joinpath('nonexistent')
     if nonexistent.exists():
         nonexistent.unlink()
 
@@ -31,11 +30,12 @@ def nonexistent_file(request):
 
 
 @pytest.fixture()
-def invalid_file(request):
+def invalid_file(tmpdir, request):
     """Return a path to an invalid config file.
     Remove the file when a test is finished with it.
     """
-    invalid_file = DATA_DIR.joinpath('invalid')
+    data_dir = pathlib.Path(str(tmpdir))
+    invalid_file = data_dir.joinpath('invalid')
     with invalid_file.open('w') as f:
         f.write('this is invalid')
 
