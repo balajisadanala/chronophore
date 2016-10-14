@@ -48,7 +48,7 @@ def invalid_file(tmpdir, request):
 
 
 @pytest.fixture()
-def db_session(request):
+def db_session(request, test_users, test_entries):
     """Create an in-memory sqlite database, add
     some test users and entries, and return an
     sqlalchemy session to it.
@@ -59,9 +59,8 @@ def db_session(request):
     Base.metadata.create_all(engine)
 
     session = Session()
-
-    add_test_users(session)
-    add_test_entries(session)
+    session.add_all([user for user in test_users.values()])
+    session.add_all(test_entries)
 
     def tearDown():
         session.close()
@@ -70,9 +69,10 @@ def db_session(request):
     return session
 
 
-def add_test_users(session):
-    session.add_all([
-        User(
+@pytest.fixture()
+def test_users():
+    test_users = dict(
+        frodo=User(
             user_id='888000000',
             date_joined=date(2014, 12, 11),
             date_left=None,
@@ -83,7 +83,7 @@ def add_test_users(session):
             major='Medicine',
             user_type='Tutor',
         ),
-        User(
+        sam=User(
             user_id='888111111',
             date_joined=date(2015, 2, 16),
             date_left=None,
@@ -94,7 +94,7 @@ def add_test_users(session):
             major='Agriculture',
             user_type='Student',
         ),
-        User(
+        merry=User(
             user_id='888222222',
             date_joined=date(2015, 4, 12),
             date_left=date(2016, 3, 24),
@@ -105,7 +105,7 @@ def add_test_users(session):
             major='Physics',
             user_type='Tutor',
         ),
-        User(
+        pippin=User(
             user_id='888333333',
             date_joined=date(2015, 2, 16),
             date_left=None,
@@ -116,7 +116,7 @@ def add_test_users(session):
             major='Botany',
             user_type='Student',
         ),
-        User(
+        gandalf=User(
             user_id='888444444',
             date_joined=date(2010, 10, 10),
             date_left=None,
@@ -127,12 +127,14 @@ def add_test_users(session):
             major='Computer Science',
             user_type='Tutor',
         ),
-    ])
-    session.commit()
+    )
+
+    return test_users
 
 
-def add_test_entries(session):
-    session.add_all([
+@pytest.fixture()
+def test_entries():
+    test_entries = [
         Entry(
             uuid='4407d790-a05f-45cb-bcd5-6023ce9500bf',
             date=date(2016, 2, 17),
@@ -161,5 +163,6 @@ def add_test_entries(session):
             time_out=None,
             user_id='888222222'
         ),
-    ])
-    session.commit()
+    ]
+
+    return test_entries

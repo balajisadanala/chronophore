@@ -1,52 +1,30 @@
 Notes
 =====
 
+Sign-in Dialogue
+----------------
+- When a user sign's in, a dialogue box appears with options
+depending on the user's type(s):
+    - For all users:
+        - Cancel
+    - For students:
+        - "I'm here to study"
+        - "I'm here to see an academic counsellor"
+    - For tutors:
+        - "I'm here to tutor"
+
+
 Some new considerations
 -----------------------
-- Is human readable data sufficiently important to justify not using a proper database?
-    - schemaless storage
-    - relational db
-        - Couchdb
-        - sqllite
 - Remove some responsibilities from Timesheet into other classes
     - Persistence calls (loading, saving)
     - Tracking signed in users
 - UI
     - Add an undo option in case someone mistakenly signs in as the wrong person
     - Use names rather than ids to sign in? Solve name collisions with unique images?
-    - Button for tutors to choose to log in as tutors or students
 - Privacy/Security
     - Remove list of names signed in
     - Transfer data securely
-- Get rid of utils
-
-
-- Security
-Requirements
-------------
-- Gui
-    - Panes
-        - Currently signed in
-        - Sign-in form
-        - Current tutors
-        - Admin
-- Run on windows (.exe)
-- Portable (no installation, no unincluded dependencies)
-- Human readable data files
-- Store data files in hierarchical folders: year, month
-- Check student login against student registry, prompt for registration if entry not found
-- Admin interface
-    - Generate report within date range
-    - Add/Remove/Flag students in student registry
-- Fail gracefully
-    - Auto save
-    - Detect corrupt files
-- Handle bad data
-    - Detect when someone has forgotten to sign out
-    - Omit bad entries in final report
-    - Flag bad entries in raw data
-    - Flag students that forget to sign out
-        - Display reminder for student next time they sign in
 
 
 Security
@@ -74,16 +52,6 @@ Database Fields
         - Forgot to sign in (bool)
         - Major
         - Name
-
-
-Report
-------
-- Portable, flexible format (csv?)
-- Omit bad entries (incomplete, no sign out time)
-- List of dates within range
-    - Date
-        - Total student hours per date
-        - Total bad entries per date
 
 
 Lessons Learned

@@ -14,11 +14,16 @@ Base = declarative_base()
 SQLite_Time = TIME(storage_format='%(hour)02d:%(minute)02d:%(second)02d')
 
 
+# TODO(amin): Add support for multiple usertypes.
+# class Usertype(Base):
+#     __tablename__ = 'usertypes'
+#
+#     user_id = Column(String, ForeignKey('users.user_id'))
+#     usertype = Column(String)
+
+
 class User(Base):
-    """This class defines the schema for the 'users'
-    table. Each row of 'users' is an instance of
-    User().
-    """
+    """Schema for the 'users' table."""
     __tablename__ = 'users'
 
     user_id = Column(String, primary_key=True, unique=True)
@@ -32,13 +37,13 @@ class User(Base):
     major = Column(String, nullable=True)
     user_type = Column(String)
 
-    # TODO(amin): use this relationship to simplify controller code
-    entries = relationship('Entry', back_populates='user')
+    entries = relationship('Entry', back_populates='user', lazy='dynamic')
+    # usertypes = relationship('Usertype', back_populates='user')
 
     def __repr__(self):
         return (
             'User('
-            + 'user_id="{}",'.format(self.user_id)
+            + 'user_id={},'.format(self.user_id)
             + ' date_joined={},'.format(self.date_joined)
             + ' date_left={},'.format(self.date_left)
             + ' education_plan={},'.format(self.education_plan)
@@ -50,15 +55,9 @@ class User(Base):
             + ')'
         )
 
-    def __eq__(self, other):
-        return self.__dict__ == other.__dict__
-
 
 class Entry(Base):
-    """This class defines the schema for the 'timesheet'
-    table. Each row of 'timesheet' is an instance of
-    Entry().
-    """
+    """Schema for the 'timesheet' table."""
     __tablename__ = 'timesheet'
 
     uuid = Column(String, primary_key=True, unique=True)
@@ -67,9 +66,8 @@ class Entry(Base):
     forgot_sign_out = Column(Boolean, default=False)
     time_in = Column(SQLite_Time)
     time_out = Column(SQLite_Time)
-    user_id = Column(String, ForeignKey('users.user_id'))
+    user_id = Column(String, ForeignKey('users.user_id'), nullable=False)
 
-    # TODO(amin): use this relationship to simplify controller code
     user = relationship('User', back_populates='entries')
 
     def __repr__(self):

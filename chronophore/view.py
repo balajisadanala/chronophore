@@ -121,9 +121,13 @@ class ChronophoreUI():
         self.root.mainloop()
 
     def _set_signed_in(self):
-        names = controller.signed_in_names(full_name=CONFIG['FULL_USER_NAMES'])
+        names = [
+            controller.get_user_name(user, full_name=CONFIG['FULL_USER_NAMES'])
+            for user in controller.signed_in_users()
+        ]
         self.signed_in.set('\n'.join(sorted(names)))
 
+    # TODO(amin): Add 'undo' button that appears with the feedback
     def _show_feedback(self, message, seconds=None):
         """Display a message in lbl_feedback, which then times out
         after some number of seconds. Use after() to schedule a callback
@@ -144,6 +148,8 @@ class ChronophoreUI():
             1000 * seconds, lambda: self.feedback.set("")
         )
 
+    # TODO(amin): Add student/tutor option dialogue for people
+    # who are both students and tutors.
     def _sign_in_button_press(self, *args):
         """Validate input from ent_id, then sign in to the Timesheet."""
         user_id = self.ent_id.get().strip()

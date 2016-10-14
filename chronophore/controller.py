@@ -1,5 +1,4 @@
 import logging
-import sqlalchemy
 import uuid
 from datetime import date, datetime, time
 
@@ -20,13 +19,14 @@ def auto_sign_out(session, today=None):
             Entry.time_out.is_(None)).filter(
             Entry.date < today)
 
+    # TODO(amin): replace time.min with a configurable value
     for entry in stale:
         sign_out(entry, session, time_out=time.min, forgot=True)
 
     session.commit()
 
 
-def signed_in_names(session=None, full_name=True):
+def signed_in_users(session=None, full_name=True):
     """Return list of names of currently signed in users.
     Full names by default.
     """
@@ -35,39 +35,30 @@ def signed_in_names(session=None, full_name=True):
     else:
         session = session
 
-    signed_in_users = session.query(User.user_id).filter(
+    signed_in_users = session.query(User).filter(
             User.user_id == Entry.user_id).filter(
-            Entry.time_out.is_(None))
+            Entry.time_out.is_(None)).all()
 
-    names = [
-        get_user_name(user_id, session, full_name=full_name)
-        for (user_id, ) in signed_in_users
-    ]
     session.close()
-    return names
+    return signed_in_users
 
 
-def get_user_name(user_id, session, full_name=True):
-    """Given a user_id, return the user's name as
-    a string, or None if there is no such user.
+def get_user_name(user, full_name=True):
+    """Return the user's name as a string.
     Full names by default.
     """
-    name = None
-
-    user_name = session.query(User.first_name, User.last_name).filter(
-            User.user_id == user_id).one_or_none()
-
-    if user_name:
-        first, last = user_name
+    try:
         if full_name:
-            name = ' '.join([first, last])
+            name = ' '.join([user.first_name, user.last_name])
         else:
-            name = first
+            name = user.first_name
+    except AttributeError:
+        name = None
 
     return name
 
 
-def sign_in(user_id, session, date=None, time_in=None):
+def sign_in(user, session, date=None, time_in=None):
     """Add a new entry to the timesheet."""
     now = datetime.today()
     if date is None:
@@ -80,7 +71,8 @@ def sign_in(user_id, session, date=None, time_in=None):
         date=date,
         time_in=time_in,
         time_out=None,
-        user_id=user_id,
+        user_id=user.user_id,
+        user=user,
     )
 
     session.add(new_entry)
@@ -117,34 +109,23 @@ def sign(user_id, session=None):
     else:
         session = session
 
-    user_name = get_user_name(user_id, session)
-    if user_name:
-        try:
-            entry = session.query(Entry).filter(
-                    Entry.user_id == user_id).filter(
-                    Entry.time_out.is_(None)).one()
+    user = session.query(User).filter(User.user_id == user_id).one_or_none()
 
-        except sqlalchemy.orm.exc.NoResultFound:
-            sign_in(user_id, session)
-            status = 'Signed in: {}'.format(user_name)
+    if user:
+        signed_in_entries = user.entries.filter(Entry.time_out.is_(None)).all()
 
-        except sqlalchemy.orm.exc.MultipleResultsFound:
-            duplicates = session.query(Entry).filter(
-                    Entry.user_id == user_id).filter(
-                    Entry.time_out.is_(None)).all()
-            for entry in duplicates:
-                sign_out(entry, session)
-            status = 'Signing out of multiple instances of user {}'.format(
-                user_name
-            )
+        if not signed_in_entries:
+            sign_in(user, session)
+            status = 'Signed in: {}'.format(get_user_name(user, session))
 
         else:
-            sign_out(entry, session)
-            status = 'Signed out: {}'.format(user_name)
+            for entry in signed_in_entries:
+                sign_out(entry, session)
+            status = 'Signed out: {}'.format(get_user_name(user, session))
 
-        finally:
-            session.commit()
-            logger.debug('Database written to.')
+        session.commit()
+        logger.debug('Commit to database.')
+
     else:
         status = '{} not registered. Please register at the front desk'.format(
             user_id
