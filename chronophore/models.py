@@ -1,8 +1,6 @@
 import logging
 from datetime import date
-from sqlalchemy import (
-    event, Boolean, Column, Date, ForeignKey, String
-)
+from sqlalchemy import event, Boolean, Column, Date, ForeignKey, String
 from sqlalchemy.dialects.sqlite import TIME
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -12,14 +10,6 @@ logger = logging.getLogger(__name__)
 
 Base = declarative_base()
 SQLite_Time = TIME(storage_format='%(hour)02d:%(minute)02d:%(second)02d')
-
-
-# TODO(amin): Add support for multiple usertypes.
-# class Usertype(Base):
-#     __tablename__ = 'usertypes'
-#
-#     user_id = Column(String, ForeignKey('users.user_id'))
-#     usertype = Column(String)
 
 
 class User(Base):
@@ -35,10 +25,10 @@ class User(Base):
     first_name = Column(String)
     last_name = Column(String)
     major = Column(String, nullable=True)
-    user_type = Column(String)
+    is_student = Column(Boolean, default=True)
+    is_tutor = Column(Boolean, default=False)
 
     entries = relationship('Entry', back_populates='user', lazy='dynamic')
-    # usertypes = relationship('Usertype', back_populates='user')
 
     def __repr__(self):
         return (
@@ -51,7 +41,8 @@ class User(Base):
             + ' first_name={},'.format(self.first_name)
             + ' last_name={},'.format(self.last_name)
             + ' major={},'.format(self.major)
-            + ' user_type={}'.format(self.user_type)
+            + ' is_student={}'.format(self.is_student)
+            + ' is_tutor={}'.format(self.is_tutor)
             + ')'
         )
 
@@ -115,7 +106,8 @@ def add_test_users(session):
             first_name='Frodo',
             last_name='Baggins',
             major='Medicine',
-            user_type='Tutor',
+            is_student=True,
+            is_tutor=True,
         ),
         User(
             user_id='000111111',
@@ -126,7 +118,8 @@ def add_test_users(session):
             first_name='Sam',
             last_name='Gamgee',
             major='Agriculture',
-            user_type='Student',
+            is_student=True,
+            is_tutor=False,
         ),
         User(
             user_id='000222222',
@@ -137,7 +130,8 @@ def add_test_users(session):
             first_name='Gandalf',
             last_name='the Grey',
             major='Computer Science',
-            user_type='Tutor',
+            is_student=False,
+            is_tutor=True,
         ),
     ]
 

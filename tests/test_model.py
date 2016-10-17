@@ -47,7 +47,6 @@ class TestUser:
                 first_name='Smeagol',
                 last_name='',
                 major='Conservation',
-                user_type='Student',
             ),
         )
         with pytest.raises(sqlalchemy.exc.IntegrityError):

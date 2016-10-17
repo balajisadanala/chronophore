@@ -66,6 +66,8 @@ def sign_in(user, session, date=None, time_in=None):
     if time_in is None:
         time_in = now.time()
 
+    # TODO(amin): Detect usertype and open dialogue if needed
+
     new_entry = Entry(
         uuid=str(uuid.uuid4()),
         date=date,

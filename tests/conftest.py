@@ -81,7 +81,8 @@ def test_users():
             first_name='Frodo',
             last_name='Baggins',
             major='Medicine',
-            user_type='Tutor',
+            is_student=True,
+            is_tutor=True,
         ),
         sam=User(
             user_id='888111111',
@@ -92,7 +93,8 @@ def test_users():
             first_name='Sam',
             last_name='Gamgee',
             major='Agriculture',
-            user_type='Student',
+            is_student=True,
+            is_tutor=False,
         ),
         merry=User(
             user_id='888222222',
@@ -103,7 +105,8 @@ def test_users():
             first_name='Merry',
             last_name='Brandybuck',
             major='Physics',
-            user_type='Tutor',
+            is_student=False,
+            is_tutor=True,
         ),
         pippin=User(
             user_id='888333333',
@@ -114,7 +117,8 @@ def test_users():
             first_name='Pippin',
             last_name='Took',
             major='Botany',
-            user_type='Student',
+            is_student=True,
+            is_tutor=False,
         ),
         gandalf=User(
             user_id='888444444',
@@ -125,7 +129,8 @@ def test_users():
             first_name='Gandalf',
             last_name='the Grey',
             major='Computer Science',
-            user_type='Tutor',
+            is_student=False,
+            is_tutor=True,
         ),
     )
 
