@@ -145,28 +145,32 @@ def test_entries():
             date=date(2016, 2, 17),
             time_in=time(10, 45, 23),
             time_out=None,
-            user_id='888333333'
+            user_id='888333333',
+            user_type='student',
         ),
         Entry(
             uuid='1f4f10a4-b0c6-43bf-94f4-9ce6e3e204d2',
             date=date(2016, 2, 17),
             time_in=time(10, 45, 48),
             time_out=time(13, 30, 18),
-            user_id='888222222'
+            user_id='888222222',
+            user_type='tutor',
         ),
         Entry(
             uuid='7b4ae0fc-3801-4412-998f-ace14829d150',
             date=date(2016, 2, 17),
             time_in=time(12, 45, 9),
             time_out=time(16, 44, 56),
-            user_id='888111111'
+            user_id='888111111',
+            user_type='student',
         ),
         Entry(
             uuid='42a1eab2-cb94-4d05-9bab-e1a021f7f949',
             date=date(2016, 2, 17),
             time_in=time(10, 45, 48),
             time_out=None,
-            user_id='888222222'
+            user_id='888222222',
+            user_type='tutor',
         ),
     ]
 

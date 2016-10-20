@@ -26,14 +26,13 @@ To Do
     - [x] Make gui font size configurable
     - [x] Support python 3.4
     - [x] Use tox for tests
-    - Windows:
-        - [x] Save data in standard location (APPDATA folder)
+    - [x] Save data in standard location (APPDATA folder)
     - [x] INI configuration file
     - [x] Use database instead of json files
     - [x] Check for bad entries from previous days
     - [x] Flag entries of students that forgot to sign out
+    - [x] Allow different kinds of user (like 'employee' vs 'student') to be logged and validated separately.
     - [ ] Add undo button in case of mistaken improper login
-    - [ ] Allow different kinds of user (like 'employee' vs 'student') to be logged and validated separately.
     - [ ] Concatenate/combine multiple json files
     - [ ] Documentation
     - [ ] Access database over local wireless network

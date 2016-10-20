@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+# TODO(amin): remove or update this script
+
 import argparse
 import datetime as dt
 import pathlib

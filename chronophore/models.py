@@ -41,8 +41,8 @@ class User(Base):
             + ' first_name={},'.format(self.first_name)
             + ' last_name={},'.format(self.last_name)
             + ' major={},'.format(self.major)
-            + ' is_student={}'.format(self.is_student)
-            + ' is_tutor={}'.format(self.is_tutor)
+            + ' is_student={},'.format(self.is_student)
+            + ' is_tutor={},'.format(self.is_tutor)
             + ')'
         )
 
@@ -58,6 +58,7 @@ class Entry(Base):
     time_in = Column(SQLite_Time)
     time_out = Column(SQLite_Time)
     user_id = Column(String, ForeignKey('users.user_id'), nullable=False)
+    user_type = Column(String, nullable=False)
 
     user = relationship('User', back_populates='entries')
 
@@ -69,7 +70,8 @@ class Entry(Base):
             + ' forgot_sign_out={},'.format(self.forgot_sign_out)
             + ' time_in={},'.format(self.time_in)
             + ' time_out={},'.format(self.time_out)
-            + ' user_id={}'.format(self.user_id)
+            + ' user_id={},'.format(self.user_id)
+            + ' user_type={},'.format(self.user_type)
             + ')'
         )
 

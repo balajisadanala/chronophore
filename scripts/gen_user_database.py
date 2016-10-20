@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+# TODO(amin): Remove or update this script
+
 import argparse
 import json
 import pathlib

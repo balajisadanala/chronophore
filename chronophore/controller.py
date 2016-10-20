@@ -8,6 +8,15 @@ from chronophore.models import Entry, User
 logger = logging.getLogger(__name__)
 
 
+class AmbiguousUserType(Exception):
+    """This exception is raised when a user
+    with multiple user types tries to sign in.
+    """
+    def __init__(self, message):
+        super().__init__(message)
+        self.message = message
+
+
 def auto_sign_out(session, today=None):
     """Check for any entries from previous days
     where users forgot to sign out on previous days.
@@ -15,13 +24,16 @@ def auto_sign_out(session, today=None):
     """
     today = date.today() if today is None else today
 
+    logger.info('Signing out and flagging forgotten entries.')
+
     stale = session.query(Entry).filter(
             Entry.time_out.is_(None)).filter(
             Entry.date < today)
 
     # TODO(amin): replace time.min with a configurable value
     for entry in stale:
-        sign_out(entry, session, time_out=time.min, forgot=True)
+        e = sign_out(entry, time_out=time.min, forgot=True)
+        session.add(e)
 
     session.commit()
 
@@ -58,15 +70,22 @@ def get_user_name(user, full_name=True):
     return name
 
 
-def sign_in(user, session, date=None, time_in=None):
+def sign_in(user, user_type=None, date=None, time_in=None):
     """Add a new entry to the timesheet."""
     now = datetime.today()
     if date is None:
         date = now.date()
     if time_in is None:
         time_in = now.time()
-
-    # TODO(amin): Detect usertype and open dialogue if needed
+    if user_type is None:
+        if user.is_student and user.is_tutor:
+            raise AmbiguousUserType('User is both a student and a tutor.')
+        elif user.is_student:
+            user_type = 'student'
+        elif user.is_tutor:
+            user_type = 'tutor'
+        else:
+            raise ValueError('Unknown user type.')
 
     new_entry = Entry(
         uuid=str(uuid.uuid4()),
@@ -74,14 +93,14 @@ def sign_in(user, session, date=None, time_in=None):
         time_in=time_in,
         time_out=None,
         user_id=user.user_id,
+        user_type=user_type,
         user=user,
     )
 
-    session.add(new_entry)
-    logger.debug("Signed in: {}".format(repr(new_entry)))
+    return new_entry
 
 
-def sign_out(entry, session, time_out=None, forgot=False):
+def sign_out(entry, time_out=None, forgot=False):
     """Sign out of an existing entry in the timesheet.
     If the user forgot to sign out, flag the entry.
     """
@@ -94,11 +113,10 @@ def sign_out(entry, session, time_out=None, forgot=False):
         entry.forgot_sign_out = True
         logger.info('{} forgot to sign out.'.format(entry.user_id))
 
-    session.add(entry)
-    logger.info("Signed out: {}".format(repr(entry)))
+    return entry
 
 
-def sign(user_id, session=None):
+def sign(user_id, user_type=None, session=None):
     """Check user id for validity, then sign user in or out
     depending on whether or not they are currently signed in.
 
@@ -117,13 +135,19 @@ def sign(user_id, session=None):
         signed_in_entries = user.entries.filter(Entry.time_out.is_(None)).all()
 
         if not signed_in_entries:
-            sign_in(user, session)
-            status = 'Signed in: {}'.format(get_user_name(user, session))
+            new_entry = sign_in(user, user_type=user_type)
+            session.add(new_entry)
+            status = 'Signed in: {}'.format(
+                get_user_name(user, session), repr(new_entry)
+            )
 
         else:
             for entry in signed_in_entries:
-                sign_out(entry, session)
-            status = 'Signed out: {}'.format(get_user_name(user, session))
+                signed_out_entry = sign_out(entry)
+                session.add(signed_out_entry)
+                status = 'Signed out: {}'.format(
+                    get_user_name(user, session), repr(signed_out_entry)
+                )
 
         session.commit()
         logger.debug('Commit to database.')

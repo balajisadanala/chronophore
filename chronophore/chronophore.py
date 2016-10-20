@@ -21,6 +21,7 @@ def get_args():
         '--testdb', action='store_true',
         help='Create and use a database with test users.'
     )
+    # TODO(amin): Add verbose and debug options
     parser.add_argument(
         '-V', '--version', action='store_true',
         help='Print version info and exit.'

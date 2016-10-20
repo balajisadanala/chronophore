@@ -56,5 +56,5 @@ todo:
 	@echo $(SEPARATOR)
 	@cat TODO.md
 	@echo $(SEPARATOR)
-	@grep -FR --ignore-case --binary-file=without-match todo *.py chronophore/ tests/
+	@grep -FR --ignore-case --binary-file=without-match todo *.py chronophore/ scripts/ tests/
 	@echo $(SEPARATOR)
