@@ -2,6 +2,7 @@
 *.json
 *.log
 *.swp
+*.sqlite
 *.vim
 *.xls
 *.xlsx

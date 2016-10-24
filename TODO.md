@@ -32,8 +32,8 @@ To Do
     - [x] Check for bad entries from previous days
     - [x] Flag entries of students that forgot to sign out
     - [x] Allow different kinds of user (like 'employee' vs 'student') to be logged and validated separately.
+    - [x] Migrate json data to sqlite database
     - [ ] Add undo button in case of mistaken improper login
-    - [ ] Concatenate/combine multiple json files
     - [ ] Documentation
     - [ ] Access database over local wireless network
     - [ ] Enable files to be safely accessed by multiple instances of Chronophore

@@ -41,7 +41,7 @@ upload: package
 	twine upload dist/*
 
 run:
-	python -m chronophore --testdb
+	python -m chronophore --testdb --debug
 
 log:
 	tail -f $(LOGDIR)debug.log
