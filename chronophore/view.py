@@ -96,6 +96,8 @@ class ChronophoreUI:
         self.lbl_welcome.grid(column=2, row=1, columnspan=1)
         self.lbl_id.grid(column=2, row=2, columnspan=1, sticky=(N))
         self.ent_id.grid(column=2, row=2, columnspan=1)
+        # TODO(amin): Make feedback closer to the entry
+        # or replace with a message box
         self.lbl_feedback.grid(column=2, row=3)
         self.btn_sign.grid(column=2, row=4, columnspan=1, sticky=(N))
 

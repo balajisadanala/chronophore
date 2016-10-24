@@ -33,6 +33,7 @@ def auto_sign_out(session, today=None):
     # TODO(amin): replace time.min with a configurable value
     for entry in stale:
         e = sign_out(entry, time_out=time.min, forgot=True)
+        logger.debug('Signing out forgotten entry: {}'.format(e))
         session.add(e)
 
     session.commit()

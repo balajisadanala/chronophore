@@ -19,23 +19,30 @@ def get_args():
     )
     parser.add_argument(
         '--testdb', action='store_true',
-        help='Create and use a database with test users.'
+        help='create and use a database with test users'
     )
-    # TODO(amin): Add verbose and debug options
+    parser.add_argument(
+        '-v', '--verbose', action='store_true',
+        help='print a detailed log'
+    )
+    parser.add_argument(
+        '--debug', action='store_true',
+        help='print debug log'
+    )
     parser.add_argument(
         '-V', '--version', action='store_true',
-        help='Print version info and exit.'
+        help='print version info and exit'
     )
     return parser.parse_args()
 
 
-def set_up_logging(log_file):
+def set_up_logging(log_file, console_log_level):
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
     fh = logging.FileHandler(str(log_file))
     fh.setLevel(logging.DEBUG)
     ch = logging.StreamHandler()
-    ch.setLevel(logging.WARNING)
+    ch.setLevel(console_log_level)
     formatter = logging.Formatter(
         "{asctime} {levelname} ({name}): {message}", style='{'
     )
@@ -60,7 +67,14 @@ def main():
         print('{} {}'.format(__title__, __version__))
         raise SystemExit
 
-    logger = set_up_logging(LOG_FILE)
+    if args.debug:
+        CONSOLE_LOG_LEVEL = logging.DEBUG
+    elif args.verbose:
+        CONSOLE_LOG_LEVEL = logging.INFO
+    else:
+        CONSOLE_LOG_LEVEL = logging.WARNING
+
+    logger = set_up_logging(LOG_FILE, CONSOLE_LOG_LEVEL)
     logger.debug('-'*80)
     logger.debug('{} {}'.format(__title__, __version__))
     logger.debug('Log File: {}'.format(LOG_FILE))
