@@ -20,8 +20,9 @@ class User(Base):
 
     date_joined = Column(Date)
     date_left = Column(Date, nullable=True)
-    education_plan = Column(Boolean)
-    email = Column(String, nullable=True)
+    education_plan = Column(Boolean, default=False)
+    school_email = Column(String, nullable=True)
+    personal_email = Column(String, nullable=True)
     first_name = Column(String)
     last_name = Column(String)
     major = Column(String, nullable=True)
@@ -37,7 +38,8 @@ class User(Base):
             + ' date_joined={},'.format(self.date_joined)
             + ' date_left={},'.format(self.date_left)
             + ' education_plan={},'.format(self.education_plan)
-            + ' email={},'.format(self.email)
+            + ' school_email={},'.format(self.school_email)
+            + ' personal_email={},'.format(self.personal_email)
             + ' first_name={},'.format(self.first_name)
             + ' last_name={},'.format(self.last_name)
             + ' major={},'.format(self.major)
@@ -104,7 +106,7 @@ def add_test_users(session):
             date_joined=date(2014, 12, 11),
             date_left=None,
             education_plan=False,
-            email='baggins.frodo@gmail.com',
+            personal_email='baggins.frodo@gmail.com',
             first_name='Frodo',
             last_name='Baggins',
             major='Medicine',
@@ -116,7 +118,7 @@ def add_test_users(session):
             date_joined=date(2015, 2, 16),
             date_left=None,
             education_plan=True,
-            email='gamgee.samwise@gmail.com',
+            personal_email='gamgee.samwise@gmail.com',
             first_name='Sam',
             last_name='Gamgee',
             major='Agriculture',
@@ -128,7 +130,7 @@ def add_test_users(session):
             date_joined=date(2010, 10, 10),
             date_left=None,
             education_plan=False,
-            email='mithrandir@gmail.com',
+            personal_email='mithrandir@gmail.com',
             first_name='Gandalf',
             last_name='the Grey',
             major='Computer Science',

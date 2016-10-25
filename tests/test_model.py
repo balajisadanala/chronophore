@@ -3,7 +3,7 @@ import pytest
 import sqlalchemy
 from datetime import date, time
 
-from chronophore.models import Entry, User
+from chronophore.models import Entry, User, add_test_users
 
 logging.disable(logging.CRITICAL)
 
@@ -43,7 +43,7 @@ class TestUser:
                 date_joined=date(2014, 12, 12),
                 date_left=None,
                 education_plan=False,
-                email='smeagol@gmail.com',
+                personal_email='smeagol@gmail.com',
                 first_name='Smeagol',
                 last_name='',
                 major='Conservation',
@@ -51,3 +51,11 @@ class TestUser:
         )
         with pytest.raises(sqlalchemy.exc.IntegrityError):
             db_session.commit()
+
+
+def test_add_test_users(db_session):
+    """Add test users multiple times to ensure
+    idempotent behavior.
+    """
+    add_test_users(db_session)
+    add_test_users(db_session)
