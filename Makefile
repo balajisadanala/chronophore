@@ -35,7 +35,7 @@ upload-test: package
 	twine upload -r test dist/*
 
 install-test:
-	pip3 install --no-cache-dir -i https://testpypi.python.org/pypi chronophore --extra-index-url https://pypi.python.org/pypi
+	pip3 install --no-cache-dir -i https://testpypi.python.org/pypi --pre chronophore --extra-index-url https://pypi.python.org/pypi
 
 upload: package
 	twine upload dist/*

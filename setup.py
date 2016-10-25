@@ -72,7 +72,7 @@ setup(
         'Programming Language :: Python :: Implementation :: CPython',
     ],
 
-    keywords='database desktop education json kiosk sign-in time',
+    keywords='database desktop education sqlite kiosk sign-in time',
 
     packages=['chronophore'],
     entry_points={
@@ -87,7 +87,7 @@ setup(
         'scripts/json_to_excel.py',
         'scripts/json_to_sqlite.py'
     ],
-    install_requires=['appdirs>=1.4.0', 'openpyxl>=2.3.5', 'sqlalchemy>=1.0.15'],
+    install_requires=['appdirs>=1.4.0', 'openpyxl>=2.3.5', 'SQLAlchemy>=1.1.2'],
 
     extras_require={
         'dev': ['flake8'],
