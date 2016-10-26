@@ -38,7 +38,7 @@ def auto_sign_out(session, today=None):
     session.commit()
 
 
-def signed_in_users(session=None, full_name=True):
+def signed_in_users(session=None, today=None, full_name=True):
     """Return list of names of currently signed in users.
     Full names by default.
     """
@@ -47,9 +47,15 @@ def signed_in_users(session=None, full_name=True):
     else:
         session = session
 
+    if today is None:
+        today = date.today()
+    else:
+        today = today
+
     signed_in_users = session.query(User).filter(
-            User.user_id == Entry.user_id).filter(
-            Entry.time_out.is_(None)).all()
+            Entry.date == today).filter(
+            Entry.time_out.is_(None)).filter(
+            User.user_id == Entry.user_id).all()
 
     session.close()
     return signed_in_users
@@ -117,7 +123,7 @@ def sign_out(entry, time_out=None, forgot=False):
     return entry
 
 
-def sign(user_id, user_type=None, session=None):
+def sign(user_id, user_type=None, today=None, session=None):
     """Check user id for validity, then sign user in or out
     depending on whether or not they are currently signed in.
 
@@ -130,10 +136,17 @@ def sign(user_id, user_type=None, session=None):
     else:
         session = session
 
+    if today is None:
+        today = date.today()
+    else:
+        today = today
+
     user = session.query(User).filter(User.user_id == user_id).one_or_none()
 
     if user:
-        signed_in_entries = user.entries.filter(Entry.time_out.is_(None)).all()
+        signed_in_entries = user.entries.filter(
+                Entry.date == today).filter(
+                Entry.time_out.is_(None)).all()
 
         if not signed_in_entries:
             new_entry = sign_in(user, user_type=user_type)
