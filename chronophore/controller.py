@@ -1,6 +1,6 @@
 import logging
 import uuid
-from datetime import date, datetime, time
+from datetime import date, datetime
 
 from chronophore import Session
 from chronophore.models import Entry, User
@@ -30,9 +30,8 @@ def auto_sign_out(session, today=None):
             Entry.time_out.is_(None)).filter(
             Entry.date < today)
 
-    # TODO(amin): replace time.min with a configurable value
     for entry in stale:
-        e = sign_out(entry, time_out=time.min, forgot=True)
+        e = sign_out(entry, forgot=True)
         logger.debug('Signing out forgotten entry: {}'.format(e))
         session.add(e)
 
@@ -108,11 +107,12 @@ def sign_out(entry, time_out=None, forgot=False):
     if time_out is None:
         time_out = datetime.today().time()
 
-    entry.time_out = time_out
-
     if forgot:
         entry.forgot_sign_out = True
         logger.info('{} forgot to sign out.'.format(entry.user_id))
+
+    else:
+        entry.time_out = time_out
 
     return entry
 

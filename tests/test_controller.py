@@ -129,7 +129,7 @@ def test_auto_sign_out(db_session, test_users):
 
     flagged = db_session.query(Entry).filter(Entry.date == yesterday)
     for entry in flagged:
-        assert entry.time_out == time(0, 0)
+        assert entry.time_out == None
         assert entry.forgot_sign_out is True
 
 
