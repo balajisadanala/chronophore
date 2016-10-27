@@ -1,7 +1,7 @@
 import contextlib
 import logging
 import tkinter
-from tkinter import font, ttk, N, S, E, W
+from tkinter import font, messagebox, ttk, N, S, E, W
 
 from chronophore import __title__, controller
 from chronophore.config import CONFIG
@@ -96,8 +96,6 @@ class ChronophoreUI:
         self.lbl_welcome.grid(column=2, row=1, columnspan=1)
         self.lbl_id.grid(column=2, row=2, columnspan=1, sticky=(N))
         self.ent_id.grid(column=2, row=2, columnspan=1)
-        # TODO(amin): Make feedback closer to the entry
-        # or replace with a message box
         self.lbl_feedback.grid(column=2, row=3)
         self.btn_sign.grid(column=2, row=4, columnspan=1, sticky=(N))
 
@@ -132,8 +130,7 @@ class ChronophoreUI:
         ]
         self.signed_in.set('\n'.join(sorted(names)))
 
-    # TODO(amin): Add 'undo' button that appears with the feedback
-    def _show_feedback(self, message, seconds=None):
+    def _show_feedback_label(self, message, seconds=None):
         """Display a message in lbl_feedback, which then times out
         after some number of seconds. Use after() to schedule a callback
         to hide the feedback message. This works better than using threads,
@@ -148,27 +145,70 @@ class ChronophoreUI:
         with contextlib.suppress(AttributeError):
             self.root.after_cancel(self.clear_feedback)
 
+        logger.debug('Label feedback: "{}"'.format(message))
         self.feedback.set(message)
         self.clear_feedback = self.root.after(
             1000 * seconds, lambda: self.feedback.set("")
         )
 
+    def _show_feedback_window(self, message):
+        logger.debug('Window feedback: "{}"'.format(message))
+        # TODO(amin): Change to askyesno
+        ok_pressed = messagebox.askokcancel(
+            message=message,
+            title='{} notification'.format(__title__),
+            icon='info',
+            default='ok',
+            parent=self.root,
+        )
+        undo = not ok_pressed
+        logger.debug('Undo: {}'.format(undo))
+        return undo
+
     def _sign_in_button_press(self, *args):
         """Validate input from ent_id, then sign in to the Timesheet."""
         user_id = self.ent_id.get().strip()
+
         try:
-            sign_in_status = controller.sign(user_id)
+            status = controller.sign(user_id)
+
+        # ERROR: User type is unknown
+        except ValueError as e:
+            logger.error(e, exc_info=True)
+            messagebox.showerror(message=e)
+
+        # ERROR: User is unregistered
+        except controller.UnregisteredUser as e:
+            logger.info(e)
+            messagebox.showerror(message=e)
+
+        # User needs to select type
         except controller.AmbiguousUserType as e:
             logger.info(e)
             user_type = UserTypeSelectionDialog(self).show()
-            if user_type is not None:
-                sign_in_status = controller.sign(user_id, user_type=user_type)
-        except ValueError as e:
-            logger.error(e, exc_info=True)
-            self._show_feedback(e)
+            if user_type:
+                status = controller.sign(user_id, user_type=user_type)
+                self._show_feedback_label(
+                    'Signed {}: {}'.format(status.in_or_out, status.user_name)
+                )
+
+        # User has signed in or out normally
+        else:
+            undo = self._show_feedback_window(
+                'Sign {}: {}?'.format(status.in_or_out, status.user_name)
+            )
+
+            if undo:
+                if status.in_or_out == 'in':
+                    controller.undo_sign_in(status.entry)
+                elif status.in_or_out == 'out':
+                    controller.undo_sign_out(status.entry)
+            else:
+                self._show_feedback_label(
+                    'Signed {}: {}'.format(status.in_or_out, status.user_name)
+                )
+
         finally:
-            self._show_feedback(sign_in_status)
-            logger.debug('Feedback: "{}"'.format(sign_in_status))
             self._set_signed_in()
             self.ent_id.delete(0, 'end')
             self.ent_id.focus()

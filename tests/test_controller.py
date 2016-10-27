@@ -40,7 +40,11 @@ def test_sign_starting(db_session, test_users):
         today=date(2016, 2, 17),
         session=db_session,
     )
-    assert status == 'Signed in: Frodo Baggins'
+
+    assert status.valid
+    assert status.in_or_out == 'in'
+    assert status.user_name == 'Frodo Baggins'
+    assert status.user_type == 'student'
     assert (
         db_session.query(Entry).filter(
                 Entry.user_id == test_users['frodo'].user_id).filter(
@@ -54,7 +58,10 @@ def test_sign_finishing(db_session, test_users):
 
     status = controller.sign(merry_id, today=date(2016, 2, 17), session=db_session)
 
-    assert status == 'Signed out: Merry Brandybuck'
+    assert status.valid
+    assert status.in_or_out == 'out'
+    assert status.user_name == 'Merry Brandybuck'
+    assert status.user_type == 'tutor'
     assert (
         db_session.query(Entry).filter(
                 Entry.user_id == merry_id).filter(
@@ -67,12 +74,9 @@ def test_sign_not_registered(db_session, test_users):
     ID. They are told to register at the front desk.
     The entry is not added to the database.
     """
-    status = controller.sign(UNREGISTERED_ID, session=db_session)
+    with pytest.raises(controller.UnregisteredUser):
+        controller.sign(UNREGISTERED_ID, session=db_session)
 
-    expected = '{} not registered. Please register at the front desk'.format(
-        UNREGISTERED_ID
-    )
-    assert status == expected
     assert (
         db_session.query(Entry).filter(
                 Entry.user_id == UNREGISTERED_ID).one_or_none()
@@ -111,7 +115,10 @@ def test_sign_duplicates(db_session, test_users):
         sam_id, today=date(2016, 2, 17), session=db_session
     )
 
-    assert status == 'Signed out: Sam Gamgee'
+    assert status.valid
+    assert status.in_or_out == 'out'
+    assert status.user_name == 'Sam Gamgee'
+    assert status.user_type == 'student'
     assert (
         db_session.query(Entry).filter(
                 Entry.user_id == sam_id).filter(
@@ -139,7 +146,17 @@ def test_sign_in_previously_forgot_sign_out(db_session, test_users):
     db_session.commit()
 
     status = controller.sign(gandalf_id, session=db_session)
-    assert status == 'Signed in: Gandalf the Grey'
+
+    assert status.valid
+    assert status.in_or_out == 'in'
+    assert status.user_name == 'Gandalf the Grey'
+    assert status.user_type == 'tutor'
+    assert (
+        db_session.query(Entry).filter(
+                Entry.forgot_sign_out.is_(False)).filter(
+                Entry.user_id == test_users['gandalf'].user_id).filter(
+                Entry.time_out.is_(None)).one()
+    )
 
 
 def test_auto_sign_out(db_session, test_users):
@@ -176,7 +193,7 @@ def test_auto_sign_out(db_session, test_users):
     flagged = db_session.query(Entry).filter(Entry.date == yesterday)
     for entry in flagged:
         assert entry.time_out is None
-        assert entry.forgot_sign_out is True
+        assert entry.forgot_sign_out
 
 
 def test_sign_in_student(test_users):
@@ -198,6 +215,52 @@ def test_sign_in_ambiguous(test_users):
     """
     with pytest.raises(controller.AmbiguousUserType):
         controller.sign_in(test_users['frodo'])
+
+
+def test_undo_sign_in(test_users, db_session):
+    """Pippin signs in, but then presses 'cancel'.
+    His entry is deleted.
+    """
+    signed_in_entry = Entry(
+        uuid='781d8a2a-104b-480c-baba-98c55f11e80b',
+        date=date(2016, 2, 10),
+        forgot_sign_out=True,
+        time_in=time(10, 25, 7),
+        time_out=None,
+        user_id=test_users['pippin'].user_id,
+        user_type='student',
+    )
+    db_session.add(signed_in_entry)
+
+    controller.undo_sign_in(signed_in_entry, db_session)
+
+    deleted = db_session.query(Entry).filter(
+            Entry.uuid == signed_in_entry.uuid).one_or_none()
+
+    assert deleted is None
+
+
+def test_undo_sign_out(test_users, db_session):
+    """Pippin signs out, but then presses 'cancel'.
+    He is signed back in.
+    """
+    signed_out_entry = Entry(
+        uuid='781d8a2a-104b-480c-baba-98c55f11e80b',
+        date=date(2016, 2, 10),
+        forgot_sign_out=True,
+        time_in=time(10, 25, 7),
+        time_out=time(11, 30, 10),
+        user_id=test_users['pippin'].user_id,
+        user_type='student',
+    )
+
+    db_session.add(signed_out_entry)
+    controller.undo_sign_out(signed_out_entry, db_session)
+
+    signed_back_in = db_session.query(Entry).filter(
+            Entry.uuid == signed_out_entry.uuid).one()
+
+    assert signed_back_in.time_out is None
 
 
 def test_get_user_name(test_users):

@@ -1,3 +1,4 @@
+import collections
 import logging
 import uuid
 from datetime import date, datetime
@@ -15,6 +16,29 @@ class AmbiguousUserType(Exception):
     def __init__(self, message):
         super().__init__(message)
         self.message = message
+
+
+class UnregisteredUser(Exception):
+    """This exception is raised when a user
+    id doesn't match any user in the database.
+    """
+    def __init__(self, message):
+        super().__init__(message)
+        self.message = message
+
+
+# Status is used by the sign() function to
+# return relevant information to the gui.
+Status = collections.namedtuple(
+    'Status',
+    [
+        'valid',
+        'in_or_out',
+        'user_name',
+        'user_type',
+        'entry',
+    ]
+)
 
 
 def auto_sign_out(session, today=None):
@@ -123,6 +147,47 @@ def sign_out(entry, time_out=None, forgot=False):
     return entry
 
 
+def undo_sign_in(entry, session=None):
+    """Delete a signed in entry."""
+    if session is None:
+        session = Session()
+    else:
+        session = session
+
+    entry_to_delete = session.query(Entry).filter(
+            Entry.uuid == entry.uuid).one_or_none()
+
+    if entry_to_delete:
+        logger.debug('Undo sign in: {}'.format(entry_to_delete))
+        session.delete(entry_to_delete)
+        session.commit()
+    else:
+        error_message = 'Entry not found: {}'.format(entry)
+        logger.error(error_message)
+        raise ValueError(error_message)
+
+
+def undo_sign_out(entry, session=None):
+    """Sign in a signed out entry."""
+    if session is None:
+        session = Session()
+    else:
+        session = session
+
+    entry_to_sign_in = session.query(Entry).filter(
+            Entry.uuid == entry.uuid).one_or_none()
+
+    if entry_to_sign_in:
+        logger.debug('Undo sign out: {}'.format(entry_to_sign_in))
+        entry_to_sign_in.time_out = None
+        session.add(entry_to_sign_in)
+        session.commit()
+    else:
+        error_message = 'Entry not found: {}'.format(entry)
+        logger.error(error_message)
+        raise ValueError(error_message)
+
+
 def sign(user_id, user_type=None, today=None, session=None):
     """Check user id for validity, then sign user in or out
     depending on whether or not they are currently signed in.
@@ -151,24 +216,37 @@ def sign(user_id, user_type=None, today=None, session=None):
         if not signed_in_entries:
             new_entry = sign_in(user, user_type=user_type)
             session.add(new_entry)
-            status = 'Signed in: {}'.format(
-                get_user_name(user, session), repr(new_entry)
+            status = Status(
+                valid=True,
+                in_or_out='in',
+                user_name=get_user_name(user),
+                user_type=new_entry.user_type,
+                entry=new_entry
             )
+            logger.debug(repr(status))
 
         else:
             for entry in signed_in_entries:
                 signed_out_entry = sign_out(entry)
                 session.add(signed_out_entry)
-                status = 'Signed out: {}'.format(
-                    get_user_name(user, session), repr(signed_out_entry)
+                status = Status(
+                    valid=True,
+                    in_or_out='out',
+                    user_name=get_user_name(user),
+                    user_type=signed_out_entry.user_type,
+                    entry=signed_out_entry
                 )
+                logger.debug(repr(status))
 
         session.commit()
         logger.debug('Commit to database.')
 
     else:
-        status = '{} not registered. Please register at the front desk'.format(
-            user_id
+        raise UnregisteredUser(
+            '{} not registered. Please register at the front desk.'.format(
+                user_id
+            )
         )
 
+    logger.debug(status)
     return status

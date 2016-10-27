@@ -11,6 +11,22 @@ logger = logging.getLogger(__name__)
 Base = declarative_base()
 SQLite_Time = TIME(storage_format='%(hour)02d:%(minute)02d:%(second)02d')
 
+# TODO(amin): add event listener that logs every time a session is commited
+
+
+@event.listens_for(Engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    """Upon every db connection, issue a command
+    to ensure foreign key constraints are enforced.
+
+    This is a sqlite-specific issue:
+    http://stackoverflow.com/questions/2614984/sqlite-sqlalchemy-how-to-enforce-foreign-keys
+    http://docs.sqlalchemy.org/en/latest/dialects/sqlite.html#foreign-key-support
+    """
+    cursor = dbapi_connection.cursor()
+    cursor.execute("PRAGMA foreign_keys=ON")
+    cursor.close()
+
 
 class User(Base):
     """Schema for the 'users' table."""
@@ -76,20 +92,6 @@ class Entry(Base):
             + ' user_type={},'.format(self.user_type)
             + ')'
         )
-
-
-@event.listens_for(Engine, "connect")
-def set_sqlite_pragma(dbapi_connection, connection_record):
-    """Upon every db connection, issue a command
-    to ensure foreign key constraints are enforced.
-
-    This is a sqlite-specific issue:
-    http://stackoverflow.com/questions/2614984/sqlite-sqlalchemy-how-to-enforce-foreign-keys
-    http://docs.sqlalchemy.org/en/latest/dialects/sqlite.html#foreign-key-support
-    """
-    cursor = dbapi_connection.cursor()
-    cursor.execute("PRAGMA foreign_keys=ON")
-    cursor.close()
 
 
 def add_test_users(session):
