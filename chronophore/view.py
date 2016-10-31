@@ -3,7 +3,7 @@ import logging
 import tkinter
 from tkinter import font, messagebox, ttk, N, S, E, W
 
-from chronophore import __title__, controller
+from chronophore import __title__, __version__, controller
 from chronophore.config import CONFIG
 
 logger = logging.getLogger(__name__)
@@ -18,7 +18,7 @@ class ChronophoreUI:
 
     def __init__(self):
         self.root = tkinter.Tk()
-        self.root.title(__title__)
+        self.root.title('{} {}'.format(__title__, __version__))
         self.content = ttk.Frame(self.root, padding=(5, 5, 10, 10))
 
         # custom fonts
@@ -36,7 +36,8 @@ class ChronophoreUI:
         # default widget fonts
         ttk.Style().configure('TLabel', font=self.medium_font)
         ttk.Style().configure('TButton', font=self.medium_font)
-        # The following won't work for mysterious reasons internal to tk:
+        # NOTE(amin): The following won't work for mysterious
+        # reasons internal to tk:
         # ttk.Style().configure('TEntry', font=self.medium_font)
 
         # variables
@@ -151,19 +152,17 @@ class ChronophoreUI:
             1000 * seconds, lambda: self.feedback.set("")
         )
 
-    def _show_feedback_window(self, message):
+    def _show_confirm_window(self, message):
         logger.debug('Window feedback: "{}"'.format(message))
-        # TODO(amin): Change to askyesno
-        ok_pressed = messagebox.askokcancel(
+        yes_pressed = messagebox.askyesno(
             message=message,
             title='{} notification'.format(__title__),
-            icon='info',
-            default='ok',
+            icon='question',
+            default='yes',
             parent=self.root,
         )
-        undo = not ok_pressed
-        logger.debug('Undo: {}'.format(undo))
-        return undo
+        logger.debug('Sign in confirmed: {}'.format(yes_pressed))
+        return yes_pressed
 
     def _sign_in_button_press(self, *args):
         """Validate input from ent_id, then sign in to the Timesheet."""
@@ -194,11 +193,12 @@ class ChronophoreUI:
 
         # User has signed in or out normally
         else:
-            undo = self._show_feedback_window(
+            sign_choice_is_confirmed = self._show_confirm_window(
                 'Sign {}: {}?'.format(status.in_or_out, status.user_name)
             )
 
-            if undo:
+            if not sign_choice_is_confirmed:
+                # Undo sign-in or sign-out
                 if status.in_or_out == 'in':
                     controller.undo_sign_in(status.entry)
                 elif status.in_or_out == 'out':
@@ -223,14 +223,12 @@ class UserTypeSelectionDialog:
     def __init__(self, parent):
         self.toplevel = tkinter.Toplevel(parent.root)
         self.toplevel.transient(parent.root)
-        self.parent = parent
         self.toplevel.title('User Type Selection')
+        self.parent = parent
         self.frame = ttk.Frame(self.toplevel, padding=(5, 5, 10, 10))
 
         # variables
         self.user_type = tkinter.StringVar()
-
-        # TODO(amin): Figure out fonts
 
         # widgets
         self.lbl_message = ttk.Label(
