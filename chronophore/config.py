@@ -17,30 +17,40 @@ def _load_config(config_file):
     logger.debug('Config file: {}'.format(config_file))
 
     parser = configparser.ConfigParser()
-
     try:
         with config_file.open('r') as f:
             parser.read_file(f)
+
     except FileNotFoundError as e:
         logger.warning('Config file not found')
         parser = _use_default(config_file)
+
     except configparser.ParsingError as e:
         logger.warning('Error in config file: {}'.format(e))
         parser = _use_default(config_file)
-    # TODO(amin): handle configparser.NoOptionError
-    finally:
-        config = dict(
-            MESSAGE_DURATION=parser.getint('gui', 'message_duration'),
-            GUI_WELCOME_LABLE=parser.get('gui', 'gui_welcome_label'),
-            FULL_USER_NAMES=parser.getboolean('gui', 'full_user_names'),
-            LARGE_FONT_SIZE=parser.getint('gui', 'large_font_size'),
-            MEDIUM_FONT_SIZE=parser.getint('gui', 'medium_font_size'),
-            SMALL_FONT_SIZE=parser.getint('gui', 'small_font_size'),
-            TINY_FONT_SIZE=parser.getint('gui', 'tiny_font_size'),
-        )
-        logger.debug('Config loaded: {}'.format(config_file))
 
+    finally:
+        try:
+            config = _load_options(parser)
+        except (configparser.NoOptionError):
+            parser = _use_default(config_file)
+            config = _load_options(parser)
+
+        logger.debug('Config loaded: {}'.format(config_file))
         return config
+
+
+def _load_options(parser):
+    config = dict(
+        MESSAGE_DURATION=parser.getint('gui', 'message_duration'),
+        GUI_WELCOME_LABLE=parser.get('gui', 'gui_welcome_label'),
+        FULL_USER_NAMES=parser.getboolean('gui', 'full_user_names'),
+        LARGE_FONT_SIZE=parser.getint('gui', 'large_font_size'),
+        MEDIUM_FONT_SIZE=parser.getint('gui', 'medium_font_size'),
+        SMALL_FONT_SIZE=parser.getint('gui', 'small_font_size'),
+        TINY_FONT_SIZE=parser.getint('gui', 'tiny_font_size'),
+    )
+    return config
 
 
 def _use_default(config_file):
