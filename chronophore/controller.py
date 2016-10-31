@@ -48,8 +48,7 @@ def auto_sign_out(session, today=None):
     """
     today = date.today() if today is None else today
 
-    logger.info('Signing out and flagging forgotten entries.')
-
+    # TODO(amin): Restrict this to entries not already flagged
     stale = session.query(Entry).filter(
             Entry.time_out.is_(None)).filter(
             Entry.date < today)
@@ -127,6 +126,7 @@ def sign_in(user, user_type=None, date=None, time_in=None):
         user=user,
     )
 
+    logger.info('{} ({}) signed in.'.format(new_entry.user_id, new_entry.user_type))
     return new_entry
 
 
@@ -139,11 +139,14 @@ def sign_out(entry, time_out=None, forgot=False):
 
     if forgot:
         entry.forgot_sign_out = True
-        logger.info('{} forgot to sign out.'.format(entry.user_id))
+        logger.info(
+            '{} forgot to sign out on {}.'.format(entry.user_id, entry.date)
+        )
 
     else:
         entry.time_out = time_out
 
+    logger.info('{} ({}) signed out.'.format(entry.user_id, entry.user_type))
     return entry
 
 
@@ -158,6 +161,7 @@ def undo_sign_in(entry, session=None):
             Entry.uuid == entry.uuid).one_or_none()
 
     if entry_to_delete:
+        logger.info('Undo sign in: {}'.format(entry_to_delete.user_id))
         logger.debug('Undo sign in: {}'.format(entry_to_delete))
         session.delete(entry_to_delete)
         session.commit()
@@ -178,6 +182,7 @@ def undo_sign_out(entry, session=None):
             Entry.uuid == entry.uuid).one_or_none()
 
     if entry_to_sign_in:
+        logger.info('Undo sign out: {}'.format(entry_to_sign_in.user_id))
         logger.debug('Undo sign out: {}'.format(entry_to_sign_in))
         entry_to_sign_in.time_out = None
         session.add(entry_to_sign_in)
@@ -223,7 +228,6 @@ def sign(user_id, user_type=None, today=None, session=None):
                 user_type=new_entry.user_type,
                 entry=new_entry
             )
-            logger.debug(repr(status))
 
         else:
             for entry in signed_in_entries:
@@ -236,10 +240,8 @@ def sign(user_id, user_type=None, today=None, session=None):
                     user_type=signed_out_entry.user_type,
                     entry=signed_out_entry
                 )
-                logger.debug(repr(status))
 
         session.commit()
-        logger.debug('Commit to database.')
 
     else:
         raise UnregisteredUser(

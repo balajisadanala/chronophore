@@ -178,12 +178,12 @@ class ChronophoreUI:
 
         # ERROR: User is unregistered
         except controller.UnregisteredUser as e:
-            logger.info(e)
+            logger.debug(e)
             messagebox.showerror(message=e)
 
         # User needs to select type
         except controller.AmbiguousUserType as e:
-            logger.info(e)
+            logger.debug(e)
             user_type = UserTypeSelectionDialog(self).show()
             if user_type:
                 status = controller.sign(user_id, user_type=user_type)

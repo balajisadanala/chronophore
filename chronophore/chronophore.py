@@ -76,7 +76,7 @@ def main():
 
     logger = set_up_logging(LOG_FILE, CONSOLE_LOG_LEVEL)
     logger.debug('-'*80)
-    logger.debug('{} {}'.format(__title__, __version__))
+    logger.info('{} {}'.format(__title__, __version__))
     logger.debug('Log File: {}'.format(LOG_FILE))
     logger.debug('Data Directory: {}'.format(DATA_DIR))
 
@@ -90,6 +90,9 @@ def main():
     engine = create_engine('sqlite:///{}'.format(str(DATABASE_FILE)))
     Base.metadata.create_all(engine)
     Session.configure(bind=engine)
+
+    if args.debug:
+        logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
     if args.testdb:
         add_test_users(session=Session())

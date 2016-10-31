@@ -11,8 +11,6 @@ logger = logging.getLogger(__name__)
 Base = declarative_base()
 SQLite_Time = TIME(storage_format='%(hour)02d:%(minute)02d:%(second)02d')
 
-# TODO(amin): add event listener that logs every time a session is commited
-
 
 @event.listens_for(Engine, "connect")
 def set_sqlite_pragma(dbapi_connection, connection_record):

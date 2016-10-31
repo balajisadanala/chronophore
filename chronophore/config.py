@@ -27,6 +27,7 @@ def _load_config(config_file):
     except configparser.ParsingError as e:
         logger.warning('Error in config file: {}'.format(e))
         parser = _use_default(config_file)
+    # TODO(amin): handle configparser.NoOptionError
     finally:
         config = dict(
             MESSAGE_DURATION=parser.getint('gui', 'message_duration'),
