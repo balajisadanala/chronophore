@@ -48,9 +48,9 @@ def auto_sign_out(session, today=None):
     """
     today = date.today() if today is None else today
 
-    # TODO(amin): Restrict this to entries not already flagged
     stale = session.query(Entry).filter(
             Entry.time_out.is_(None)).filter(
+            Entry.forgot_sign_out.is_(False)).filter(
             Entry.date < today)
 
     for entry in stale:
