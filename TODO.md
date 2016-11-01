@@ -34,7 +34,7 @@ To Do
     - [x] Allow different kinds of user (like 'employee' vs 'student') to be logged and validated separately.
     - [x] Migrate json data to sqlite database
     - [x] Add cancel button in case of mistaken improper login
-    - [ ] Database migration script w/ tests
+    - [x] Database migration script
     - [ ] Documentation
     - [ ] Access database over local wireless network
     - [ ] Enable files to be safely accessed by multiple instances of Chronophore

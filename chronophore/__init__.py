@@ -9,6 +9,7 @@ adaptable to other use cases.
 from sqlalchemy.orm import sessionmaker
 
 __title__ = 'chronophore'
+# TODO(amin): increment version
 __version__ = '0.5.0'
 __license__ = 'MIT'
 __author__ = 'Amin Mesbah'

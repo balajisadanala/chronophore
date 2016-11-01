@@ -81,7 +81,10 @@ setup(
         ],
     },
 
-    scripts=['scripts/json_to_sqlite.py'],
+    scripts=[
+        'scripts/json_to_sqlite.py',
+        'scripts/chronophore_migrate.py',
+    ],
 
     install_requires=['appdirs>=1.4.0', 'openpyxl>=2.3.5', 'SQLAlchemy>=1.1.2'],
 

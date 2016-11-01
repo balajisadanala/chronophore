@@ -41,6 +41,7 @@ Status = collections.namedtuple(
 )
 
 
+# TODO(amin): Rename to 'flag_forgotten_entries'
 def auto_sign_out(session, today=None):
     """Check for any entries from previous days
     where users forgot to sign out on previous days.
