@@ -97,7 +97,7 @@ def main():
     if args.testdb:
         add_test_users(session=Session())
 
-    controller.auto_sign_out(session=Session())
+    controller.flag_forgotten_entries(session=Session())
 
     ChronophoreUI()
 

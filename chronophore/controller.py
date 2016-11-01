@@ -41,20 +41,18 @@ Status = collections.namedtuple(
 )
 
 
-# TODO(amin): Rename to 'flag_forgotten_entries'
-def auto_sign_out(session, today=None):
-    """Check for any entries from previous days
-    where users forgot to sign out on previous days.
-    Sign out and flag those entries.
+def flag_forgotten_entries(session, today=None):
+    """Flag any entries from previous days where
+    users forgot to sign out.
     """
     today = date.today() if today is None else today
 
-    stale = session.query(Entry).filter(
+    forgotten = session.query(Entry).filter(
             Entry.time_out.is_(None)).filter(
             Entry.forgot_sign_out.is_(False)).filter(
             Entry.date < today)
 
-    for entry in stale:
+    for entry in forgotten:
         e = sign_out(entry, forgot=True)
         logger.debug('Signing out forgotten entry: {}'.format(e))
         session.add(e)

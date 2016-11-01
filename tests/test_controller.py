@@ -159,9 +159,9 @@ def test_sign_in_previously_forgot_sign_out(db_session, test_users):
     )
 
 
-def test_auto_sign_out(db_session, test_users):
+def test_flag_forgotten_entries(db_session, test_users):
     """Frodo and sam forgot to sign out yesterday. Their
-    entries are signed out and flagged automatically.
+    entries are flagged automatically.
     """
     today = date(2016, 2, 17)
     yesterday = date(2016, 2, 16)
@@ -188,7 +188,7 @@ def test_auto_sign_out(db_session, test_users):
     ])
     db_session.commit()
 
-    controller.auto_sign_out(db_session, today)
+    controller.flag_forgotten_entries(db_session, today)
 
     flagged = db_session.query(Entry).filter(Entry.date == yesterday)
     for entry in flagged:
