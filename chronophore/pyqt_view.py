@@ -1,13 +1,15 @@
 # TODO(amin):
 # - [x] display all widgets in main window
 # - [x] make a proper layout
-# - [ ] enable sign in
-# - [ ] display currently signed in
+# - [x] enable sign in
+# - [x] display currently signed in
 # - [ ] display feedback label
 # - [ ] display confirmation windows
 # - [ ] use fonts from config
 # - [ ] keybindings
 
+import contextlib
+import logging
 import sys
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QIcon
@@ -26,9 +28,10 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
-__title__ = 'Chronophore'
-__version__ = '0.5.1'
+from chronophore import __title__, __version__, controller
+from chronophore.config import CONFIG
 
+logger = logging.getLogger(__name__)
 
 
 class ChronophoreUI(QWidget):
@@ -52,7 +55,7 @@ class ChronophoreUI(QWidget):
         self.lbl_signedin_list = QLabel(self.signed_in, frm_signed_in)
 
 
-        lbl_welcome = QLabel('Welcome to the Stem Center', self)
+        lbl_welcome = QLabel(CONFIG['GUI_WELCOME_LABLE'], self)
         #lbl_welcome.setFont(QFont('SansSerif', CONFIG['LARGE_FONT_SIZE']))
         lbl_id = QLabel('Enter Student ID:', self)
         self.ent_id = QLineEdit(self)
@@ -60,7 +63,8 @@ class ChronophoreUI(QWidget):
         btn_sign = QPushButton('Sign In/Out', self)
         btn_sign.setToolTip('Sign in or out from the tutoring center')
         btn_sign.resize(btn_sign.sizeHint())
-        btn_sign.clicked.connect(self._show_user_type_dialogue)
+        #btn_sign.clicked.connect(self._show_user_type_dialogue)
+        btn_sign.clicked.connect(self._sign_button_press)
 
         grid = QGridLayout()
         grid.setSpacing(10)
@@ -95,6 +99,7 @@ class ChronophoreUI(QWidget):
         self.setLayout(grid)
         self._center()
         self.setWindowTitle('{} {}'.format(__title__, __version__))
+        self._set_signed_in()
         self.show()
 
     def _show_user_type_dialogue(self, event):
@@ -121,7 +126,69 @@ class ChronophoreUI(QWidget):
         qr.moveCenter(cp)
         self.move(qr.topLeft())
 
+    def _set_signed_in(self):
+        """Populate the signed_in list with the names of
+        currently signed in users.
+        """
+        names = [
+            controller.get_user_name(user, full_name=CONFIG['FULL_USER_NAMES'])
+            for user in controller.signed_in_users()
+        ]
+        self.lbl_signedin_list.setText('\n'.join(sorted(names)))
 
+
+    def _sign_button_press(self):
+        """Validate input from ent_id, then sign in to the Timesheet."""
+        user_id = self.ent_id.text().strip()
+
+        try:
+            status = controller.sign(user_id)
+
+        # ERROR: User type is unknown
+        except ValueError as e:
+            logger.error(e, exc_info=True)
+            #messagebox.showerror(message=e)
+
+        # ERROR: User is unregistered
+        except controller.UnregisteredUser as e:
+            logger.debug(e)
+            #messagebox.showerror(message=e)
+
+        # User needs to select type
+        except controller.AmbiguousUserType as e:
+            logger.debug(e)
+            #user_type = UserTypeSelectionDialog(self).show()
+            #if user_type:
+            #    status = controller.sign(user_id, user_type=user_type)
+            #    self._show_feedback_label(
+            #        'Signed {}: {}'.format(status.in_or_out, status.user_name)
+            #    )
+
+        # User has signed in or out normally
+        #else:
+            # TODO(amin): bind KP_Enter here
+            # self.root.bind('<KP_Enter>', self._sign_in_button_press)
+            # http://effbot.org/tkinterbook/tkinter-events-and-bindings.htm
+            #sign_choice_is_confirmed = self._show_confirm_window(
+            #    'Sign {}: {}?'.format(status.in_or_out, status.user_name)
+            #)
+
+            #if not sign_choice_is_confirmed:
+            #    # Undo sign-in or sign-out
+            #    if status.in_or_out == 'in':
+            #        controller.undo_sign_in(status.entry)
+            #    elif status.in_or_out == 'out':
+            #        controller.undo_sign_out(status.entry)
+            #else:
+            #    self._show_feedback_label(
+            #        'Signed {}: {}'.format(status.in_or_out, status.user_name)
+            #    )
+
+        finally:
+            self._set_signed_in()
+            # TODO(amin): Clear entry and reset focus.
+            #self.ent_id.delete(0, 'end')
+            #self.ent_id.focus()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

@@ -3,10 +3,12 @@ import argparse
 import logging
 import os
 import pathlib
+import sys
+from PyQt5.QtWidgets import QApplication
 from sqlalchemy import create_engine
 
 from chronophore import (
-    __description__, __title__, __version__, controller, Session
+    __description__, __title__, __version__, controller, Session, pyqt_view
 )
 from chronophore.models import Base, add_test_users
 from chronophore.view import ChronophoreUI
@@ -32,6 +34,11 @@ def get_args():
     parser.add_argument(
         '-V', '--version', action='store_true',
         help='print version info and exit'
+    )
+    # TODO(amin): Remove this option.
+    parser.add_argument(
+        '--tk', action='store_true',
+        help='use old tk interface'
     )
     return parser.parse_args()
 
@@ -99,6 +106,12 @@ def main():
 
     controller.flag_forgotten_entries(session=Session())
 
-    ChronophoreUI()
+    if args.tk:
+        ChronophoreUI()
+    else:
+        app = QApplication(sys.argv)
+        chrono_ui = pyqt_view.ChronophoreUI()
+        # TODO(amin): Figure out how to properly handle exiting.
+        sys.exit(app.exec_())
 
     logger.debug('{} stopping'.format(__title__))
