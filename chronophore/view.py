@@ -161,6 +161,8 @@ class ChronophoreUI:
             default='yes',
             parent=self.root,
         )
+        # TODO(amin): Bind KP_Enter here
+        # self.root.bind('<KP_Enter>', self._sign_in_button_press)
         logger.debug('Sign in confirmed: {}'.format(yes_pressed))
         return yes_pressed
 
