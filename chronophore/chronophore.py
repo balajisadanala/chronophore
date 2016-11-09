@@ -32,6 +32,10 @@ def get_args():
         help='print debug log'
     )
     parser.add_argument(
+        '--log-sql', action='store_true',
+        help='log sql transactions'
+    )
+    parser.add_argument(
         '-V', '--version', action='store_true',
         help='print version info and exit'
     )
@@ -98,7 +102,7 @@ def main():
     Base.metadata.create_all(engine)
     Session.configure(bind=engine)
 
-    if args.debug:
+    if args.log_sql:
         logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
     if args.testdb:

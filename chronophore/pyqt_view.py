@@ -206,7 +206,6 @@ class ChronophoreUI(QWidget):
                 buttons=QMessageBox.Yes | QMessageBox.No,
                 defaultButton=QMessageBox.Yes,
             )
-            logger.debug('sign_choice_confirmed: {}'.format(sign_choice_confirmed))
 
             if sign_choice_confirmed == QMessageBox.No:
                 # Undo sign-in or sign-out
