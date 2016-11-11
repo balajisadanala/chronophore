@@ -10,20 +10,21 @@
 
 import logging
 from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtGui import QFont, QIcon
+from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (
-    qApp,
-    QApplication,
     QDesktopWidget,
+    QDialog,
     QFrame,
+    QHBoxLayout,
     QGridLayout,
     QLabel,
     QLineEdit,
-    QMainWindow,
     QMessageBox,
     QPushButton,
+    QRadioButton,
     QSizePolicy,
     QToolTip,
+    QVBoxLayout,
     QWidget,
 )
 
@@ -48,7 +49,7 @@ class ChronophoreUI(QWidget):
         self.lbl_signedin_list = QLabel(self.signed_in, frm_signed_in)
 
         lbl_welcome = QLabel(CONFIG['GUI_WELCOME_LABLE'], self)
-        #lbl_welcome.setFont(QFont('SansSerif', CONFIG['LARGE_FONT_SIZE']))
+        # lbl_welcome.setFont(QFont('SansSerif', CONFIG['LARGE_FONT_SIZE']))
         lbl_id = QLabel('Enter Student ID:', self)
         self.ent_id = QLineEdit(self)
         self.ent_id.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
@@ -97,7 +98,7 @@ class ChronophoreUI(QWidget):
         self._center()
         self.setWindowTitle('{} {}'.format(__title__, __version__))
         self._set_signed_in()
-        self.show()
+        self.ent_id.setFocus()
 
     def _center(self):
         # TODO(amin): remove this?
@@ -115,22 +116,6 @@ class ChronophoreUI(QWidget):
             for user in controller.signed_in_users()
         ]
         self.lbl_signedin_list.setText('\n'.join(sorted(names)))
-
-    def _show_user_type_dialog(self):
-        reply = QMessageBox.question(
-            self,
-            'Sign-in Options',
-            'Are you tutoring today?',
-            buttons=QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel,
-            defaultButton=QMessageBox.Yes,
-        )
-
-        if reply == QMessageBox.Yes:
-            return 'tutor'
-        elif reply == QMessageBox.No:
-            return 'student'
-        else:
-            return None
 
     def _show_feedback_label(self, message, seconds=None):
         """Display a message in lbl_feedback, which times out
@@ -185,9 +170,9 @@ class ChronophoreUI(QWidget):
         # User needs to select type
         except controller.AmbiguousUserType as e:
             logger.debug(e)
-            user_type = self._show_user_type_dialog()
-            if user_type:
-                status = controller.sign(user_id, user_type=user_type)
+            u = UserTypeSelectionDialog('Select User Type: ', self)
+            if u.exec_() == QDialog.Accepted:
+                status = controller.sign(user_id, user_type=u.user_type)
                 self._show_feedback_label(
                     'Signed {}: {} ({})'.format(
                         status.in_or_out, status.user_name, status.user_type
@@ -220,6 +205,52 @@ class ChronophoreUI(QWidget):
 
         finally:
             self._set_signed_in()
-            # TODO(amin): Clear entry and reset focus.
             self.ent_id.clear()
-            #self.ent_id.focus()
+            self.ent_id.setFocus()
+
+
+class UserTypeSelectionDialog(QDialog):
+
+    # TODO(amin): tab order
+    def __init__(self, message, parent=None):
+        super(UserTypeSelectionDialog, self).__init__(parent)
+
+        lbl_message = QLabel(message, self)
+
+        self.rb_tutor = QRadioButton('Tutor', self)
+        self.rb_tutor.setFocusPolicy(Qt.StrongFocus)
+        self.rb_student = QRadioButton('Student', self)
+        self.rb_student.setFocusPolicy(Qt.StrongFocus)
+
+        btn_sign_in = QPushButton('Sign In', self)
+        btn_sign_in.setFocusPolicy(Qt.NoFocus)
+        btn_cancel = QPushButton('Cancel', self)
+        btn_cancel.setFocusPolicy(Qt.NoFocus)
+
+        btn_sign_in.clicked.connect(self.update_user_type)
+        btn_cancel.clicked.connect(self.reject)
+
+        self.rb_tutor.setChecked(True)
+
+        hbox = QHBoxLayout()
+        hbox.addStretch(1)
+        hbox.addWidget(btn_sign_in)
+        hbox.addWidget(btn_cancel)
+
+        vbox = QVBoxLayout()
+        vbox.addWidget(lbl_message)
+        vbox.addWidget(self.rb_tutor)
+        vbox.addWidget(self.rb_student)
+        vbox.addStretch(1)
+        vbox.addLayout(hbox)
+
+        self.setLayout(vbox)
+        self.setTabOrder(self.rb_tutor, self.rb_student)
+        self.show()
+
+    def update_user_type(self):
+        if self.rb_tutor.isChecked():
+            self.user_type = 'tutor'
+        elif self.rb_student.isChecked():
+            self.user_type = 'student'
+        self.accept()

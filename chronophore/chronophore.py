@@ -115,7 +115,7 @@ def main():
     else:
         app = QApplication(sys.argv)
         chrono_ui = pyqt_view.ChronophoreUI()
-        # TODO(amin): Figure out how to properly handle exiting.
+        chrono_ui.show()
         sys.exit(app.exec_())
 
     logger.debug('{} stopping'.format(__title__))
