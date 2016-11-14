@@ -39,7 +39,7 @@ def get_args():
         '-V', '--version', action='store_true',
         help='print version info and exit'
     )
-    # TODO(amin): Remove this option.
+    # TODO(amin): Remove this option?
     parser.add_argument(
         '--tk', action='store_true',
         help='use old tk interface'

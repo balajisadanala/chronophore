@@ -5,8 +5,8 @@
 # - [x] display currently signed in
 # - [x] display feedback label
 # - [x] display confirmation windows
+# - [x] keybindings
 # - [ ] use fonts from config
-# - [ ] keybindings
 
 import logging
 from PyQt5.QtCore import Qt, QTimer
@@ -17,7 +17,9 @@ from PyQt5.QtWidgets import (
     QFrame,
     QHBoxLayout,
     QGridLayout,
+    QGroupBox,
     QLabel,
+    QLayout,
     QLineEdit,
     QMessageBox,
     QPushButton,
@@ -52,17 +54,17 @@ class ChronophoreUI(QWidget):
         # lbl_welcome.setFont(QFont('SansSerif', CONFIG['LARGE_FONT_SIZE']))
         lbl_id = QLabel('Enter Student ID:', self)
         self.ent_id = QLineEdit(self)
-        self.ent_id.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
         # TODO(amin): use an input mask or validator to constrain input:
         # http://doc.qt.io/qt-5/qlineedit.html#inputMask-prop
         # http://doc.qt.io/qt-5/qvalidator.html
         # TODO(amin): set cursor to 0 upon focus or use a validator instead
-        self.ent_id.setInputMask("999999999")
+        self.ent_id.setInputMask('999999999')
         self.lbl_feedback = QLabel(self)
         btn_sign = QPushButton('Sign In/Out', self)
         btn_sign.setToolTip('Sign in or out from the tutoring center')
         btn_sign.resize(btn_sign.sizeHint())
         btn_sign.clicked.connect(self._sign_button_press)
+        btn_sign.setAutoDefault(True)
 
         grid = QGridLayout()
         grid.setSpacing(10)
@@ -100,8 +102,13 @@ class ChronophoreUI(QWidget):
         self._set_signed_in()
         self.ent_id.setFocus()
 
+    def keyPressEvent(self, e):
+        if e.key() == Qt.Key_Escape:
+            self.close()
+        if e.key() == Qt.Key_Return or e.key() == Qt.Key_Enter:
+            self._sign_button_press()
+
     def _center(self):
-        # TODO(amin): remove this?
         qr = self.frameGeometry()
         cp = QDesktopWidget().availableGeometry().center()
         qr.moveCenter(cp)
@@ -126,16 +133,18 @@ class ChronophoreUI(QWidget):
 
         logger.debug('Label feedback: "{}"'.format(message))
 
-        # TODO(amin): Long strings stretch out the grid and it
-        # doesn't resize until the window it resized.
-        self.feedback_label_timer.timeout.connect(
-            lambda: self.lbl_feedback.setText('')
-        )
+        self.feedback_label_timer.timeout.connect(self._hide_feedback_label)
         self.lbl_feedback.setText(str(message))
         self.lbl_feedback.show()
         self.feedback_label_timer.start(1000 * seconds)
 
-    # TODO(amin): Remove feedback label in most cases
+    def _hide_feedback_label(self):
+        # TODO(amin): Figure out how to either limit the size of the label,
+        # to reset the layout to a normal size upon its disappearance, or
+        # both. The whole layout currently gets messed up if this label is
+        # assigned a long string.
+        self.lbl_feedback.setText('')
+
     def _sign_button_press(self):
         """Validate input from ent_id, then sign in to the Timesheet."""
         user_id = self.ent_id.text().strip()
@@ -146,7 +155,6 @@ class ChronophoreUI(QWidget):
         # ERROR: User type is unknown (!student and !tutor)
         except ValueError as e:
             logger.error(e, exc_info=True)
-            self._show_feedback_label(e)
             QMessageBox.critical(
                 self,
                 __title__ + ' Error',
@@ -158,7 +166,6 @@ class ChronophoreUI(QWidget):
         # ERROR: User is unregistered
         except controller.UnregisteredUser as e:
             logger.debug(e)
-            self._show_feedback_label(e)
             QMessageBox.warning(
                 self,
                 'Unregistered User',
@@ -181,12 +188,9 @@ class ChronophoreUI(QWidget):
 
         # User has signed in or out normally
         else:
-            # TODO(amin): bind KP_Enter here
-            # self.root.bind('<KP_Enter>', self._sign_in_button_press)
-            # http://effbot.org/tkinterbook/tkinter-events-and-bindings.htm
             sign_choice_confirmed = QMessageBox.question(
                 self,
-                'Confirm Sign-in/out',
+                'Confirm Sign-{}'.format(status.in_or_out),
                 'Sign {}: {}?'.format(status.in_or_out, status.user_name),
                 buttons=QMessageBox.Yes | QMessageBox.No,
                 defaultButton=QMessageBox.Yes,
@@ -211,21 +215,28 @@ class ChronophoreUI(QWidget):
 
 class UserTypeSelectionDialog(QDialog):
 
-    # TODO(amin): tab order
     def __init__(self, message, parent=None):
         super(UserTypeSelectionDialog, self).__init__(parent)
 
         lbl_message = QLabel(message, self)
 
         self.rb_tutor = QRadioButton('Tutor', self)
-        self.rb_tutor.setFocusPolicy(Qt.StrongFocus)
         self.rb_student = QRadioButton('Student', self)
+        self.rb_tutor.setFocusPolicy(Qt.StrongFocus)
         self.rb_student.setFocusPolicy(Qt.StrongFocus)
 
+        radio_vbox = QVBoxLayout()
+        radio_vbox.addWidget(self.rb_tutor)
+        radio_vbox.addWidget(self.rb_student)
+
+        radios = QGroupBox(self)
+        radios.setLayout(radio_vbox)
+
         btn_sign_in = QPushButton('Sign In', self)
-        btn_sign_in.setFocusPolicy(Qt.NoFocus)
+        btn_sign_in.setDefault(True)
+        btn_sign_in.setAutoDefault(True)
         btn_cancel = QPushButton('Cancel', self)
-        btn_cancel.setFocusPolicy(Qt.NoFocus)
+        btn_cancel.setAutoDefault(True)
 
         btn_sign_in.clicked.connect(self.update_user_type)
         btn_cancel.clicked.connect(self.reject)
@@ -239,13 +250,12 @@ class UserTypeSelectionDialog(QDialog):
 
         vbox = QVBoxLayout()
         vbox.addWidget(lbl_message)
-        vbox.addWidget(self.rb_tutor)
-        vbox.addWidget(self.rb_student)
+        vbox.addWidget(radios)
         vbox.addStretch(1)
         vbox.addLayout(hbox)
 
         self.setLayout(vbox)
-        self.setTabOrder(self.rb_tutor, self.rb_student)
+        self.setWindowTitle('User Type Selection')
         self.show()
 
     def update_user_type(self):
