@@ -4,6 +4,8 @@ import logging
 import os
 import pathlib
 import sys
+# TODO(amin): If import of pyqt fails, use tk,
+# Test on a computer without Qt5 installed.
 from PyQt5.QtWidgets import QApplication
 from sqlalchemy import create_engine
 

@@ -6,7 +6,7 @@
 # - [x] display feedback label
 # - [x] display confirmation windows
 # - [x] keybindings
-# - [ ] use fonts from config
+# - [x] use fonts from config
 
 import logging
 from PyQt5.QtCore import Qt, QTimer
@@ -37,26 +37,55 @@ logger = logging.getLogger(__name__)
 MAX_INPUT_LENGTH = 9
 
 class ChronophoreUI(QWidget):
+    """The Qt5 gui for chronophore.
+    Main Window:
+        - List of currently signed in users
+        - Entry for user id
+        - Feedback label that temporarily appears
+        - Sign in/out button
+    """
 
     def __init__(self):
         super().__init__()
+
+        # Variables
         self.signed_in = ''
         self.feedback_label_timer = QTimer()
 
-        QToolTip.setFont(QFont('SansSerif', 10))
+        # Fonts
+        large_font = QFont('SansSerif', CONFIG['LARGE_FONT_SIZE'])
+        medium_font = QFont('SansSerif', CONFIG['MEDIUM_FONT_SIZE'])
+        small_font = QFont('SansSerif', CONFIG['SMALL_FONT_SIZE'])
+        tiny_font = QFont('SansSerif', CONFIG['TINY_FONT_SIZE'])
+        large_header = QFont('SansSerif', CONFIG['LARGE_FONT_SIZE'], QFont.Bold)
+        tiny_header = QFont('SansSerif', CONFIG['TINY_FONT_SIZE'], QFont.Bold)
 
+        # Widgets
         lbl_signedin = QLabel('Currently Signed In:', self)
+        lbl_signedin.setFont(tiny_header)
+
         frm_signed_in = QFrame(self)
         frm_signed_in.setFrameShape(QFrame.StyledPanel)
+
         self.lbl_signedin_list = QLabel(self.signed_in, frm_signed_in)
+        self.lbl_signedin_list.setFont(tiny_font)
+        self.lbl_signedin_list.setContentsMargins(10, 10, 10, 10)
 
         lbl_welcome = QLabel(CONFIG['GUI_WELCOME_LABLE'], self)
-        # lbl_welcome.setFont(QFont('SansSerif', CONFIG['LARGE_FONT_SIZE']))
+        lbl_welcome.setFont(large_header)
+
         lbl_id = QLabel('Enter Student ID:', self)
+        lbl_id.setFont(small_font)
+
         self.ent_id = QLineEdit(self)
+        self.ent_id.setFont(small_font)
         self.ent_id.setMaxLength(MAX_INPUT_LENGTH)
+
         self.lbl_feedback = QLabel(self)
+        self.lbl_feedback.setFont(medium_font)
+
         btn_sign = QPushButton('Sign In/Out', self)
+        btn_sign.setFont(medium_font)
         btn_sign.setToolTip('Sign in or out from the tutoring center')
         btn_sign.resize(btn_sign.sizeHint())
         btn_sign.clicked.connect(self._sign_button_press)
@@ -65,8 +94,7 @@ class ChronophoreUI(QWidget):
         grid = QGridLayout()
         grid.setSpacing(10)
 
-        # assemble grid
-        # TODO(amin): Make everything bigger.
+        # Grid
         grid.addWidget(lbl_signedin, 0, 0, Qt.AlignTop)
         grid.addWidget(frm_signed_in, 1, 0, 6, 1)
         grid.addWidget(self.lbl_signedin_list, 1, 0, 6, 1, Qt.AlignTop)
@@ -77,7 +105,7 @@ class ChronophoreUI(QWidget):
         grid.addWidget(self.lbl_feedback, 4, 3, Qt.AlignTop | Qt.AlignCenter)
         grid.addWidget(btn_sign, 5, 3, Qt.AlignTop | Qt.AlignCenter)
 
-        # resize weights
+        # Stretch weights
         grid.setColumnStretch(0, 10)
         grid.setColumnStretch(1, 10)
         grid.setColumnStretch(2, 10)
@@ -85,16 +113,16 @@ class ChronophoreUI(QWidget):
         grid.setColumnStretch(4, 10)
         grid.setColumnStretch(5, 10)
         grid.setRowStretch(0, 0)
-        grid.setRowStretch(1, 1)
+        grid.setRowStretch(1, 2)
         grid.setRowStretch(2, 0)
         grid.setRowStretch(3, 0)
         grid.setRowStretch(4, 0)
         grid.setRowStretch(5, 1)
         grid.setRowStretch(6, 1)
 
+        self.setWindowTitle('{} {}'.format(__title__, __version__))
         self.setLayout(grid)
         self._center()
-        self.setWindowTitle('{} {}'.format(__title__, __version__))
         self._set_signed_in()
         self.ent_id.setFocus()
 
@@ -210,6 +238,9 @@ class ChronophoreUI(QWidget):
 
 
 class UserTypeSelectionDialog(QDialog):
+    """A modal dialog presenting the user with
+    options for what kind of user to sign in as.
+    """
 
     def __init__(self, message, parent=None):
         super(UserTypeSelectionDialog, self).__init__(parent)
@@ -255,6 +286,9 @@ class UserTypeSelectionDialog(QDialog):
         self.show()
 
     def update_user_type(self):
+        """Return either 'tutor' or 'student' based
+        on which radio button is selected.
+        """
         if self.rb_tutor.isChecked():
             self.user_type = 'tutor'
         elif self.rb_student.isChecked():
