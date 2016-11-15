@@ -1,13 +1,3 @@
-# TODO(amin):
-# - [x] display all widgets in main window
-# - [x] make a proper layout
-# - [x] enable sign in
-# - [x] display currently signed in
-# - [x] display feedback label
-# - [x] display confirmation windows
-# - [x] keybindings
-# - [x] use fonts from config
-
 import logging
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QFont
@@ -23,7 +13,6 @@ from PyQt5.QtWidgets import (
     QMessageBox,
     QPushButton,
     QRadioButton,
-    QToolTip,
     QVBoxLayout,
     QWidget,
 )
@@ -33,14 +22,12 @@ from chronophore.config import CONFIG
 
 logger = logging.getLogger(__name__)
 
-# TODO(amin): Make this a config option
-MAX_INPUT_LENGTH = 9
 
-class ChronophoreUI(QWidget):
+class QtChronophoreUI(QWidget):
     """The Qt5 gui for chronophore.
     Main Window:
         - List of currently signed in users
-        - Entry for user id
+        - Entry for user id input
         - Feedback label that temporarily appears
         - Sign in/out button
     """
@@ -53,7 +40,6 @@ class ChronophoreUI(QWidget):
         self.feedback_label_timer = QTimer()
 
         # Fonts
-        large_font = QFont('SansSerif', CONFIG['LARGE_FONT_SIZE'])
         medium_font = QFont('SansSerif', CONFIG['MEDIUM_FONT_SIZE'])
         small_font = QFont('SansSerif', CONFIG['SMALL_FONT_SIZE'])
         tiny_font = QFont('SansSerif', CONFIG['TINY_FONT_SIZE'])
@@ -79,7 +65,7 @@ class ChronophoreUI(QWidget):
 
         self.ent_id = QLineEdit(self)
         self.ent_id.setFont(small_font)
-        self.ent_id.setMaxLength(MAX_INPUT_LENGTH)
+        self.ent_id.setMaxLength(CONFIG['MAX_INPUT_LENGTH'])
 
         self.lbl_feedback = QLabel(self)
         self.lbl_feedback.setFont(medium_font)
@@ -201,7 +187,7 @@ class ChronophoreUI(QWidget):
         # User needs to select type
         except controller.AmbiguousUserType as e:
             logger.debug(e)
-            u = UserTypeSelectionDialog('Select User Type: ', self)
+            u = QtUserTypeSelectionDialog('Select User Type: ', self)
             if u.exec_() == QDialog.Accepted:
                 status = controller.sign(user_id, user_type=u.user_type)
                 self._show_feedback_label(
@@ -237,13 +223,13 @@ class ChronophoreUI(QWidget):
             self.ent_id.setFocus()
 
 
-class UserTypeSelectionDialog(QDialog):
+class QtUserTypeSelectionDialog(QDialog):
     """A modal dialog presenting the user with
     options for what kind of user to sign in as.
     """
 
     def __init__(self, message, parent=None):
-        super(UserTypeSelectionDialog, self).__init__(parent)
+        super(QtUserTypeSelectionDialog, self).__init__(parent)
 
         lbl_message = QLabel(message, self)
 

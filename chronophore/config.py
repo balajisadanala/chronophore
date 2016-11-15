@@ -49,6 +49,7 @@ def _load_options(parser):
         MEDIUM_FONT_SIZE=parser.getint('gui', 'medium_font_size'),
         SMALL_FONT_SIZE=parser.getint('gui', 'small_font_size'),
         TINY_FONT_SIZE=parser.getint('gui', 'tiny_font_size'),
+        MAX_INPUT_LENGTH=parser.getint('gui', 'max_input_length'),
     )
     return config
 
@@ -70,6 +71,7 @@ def _use_default(config_file):
                     ('medium_font_size', 18),
                     ('small_font_size', 15),
                     ('tiny_font_size', 10),
+                    ('max_input_length', 9),
                 )
             ),
         ),

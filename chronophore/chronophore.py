@@ -4,16 +4,12 @@ import logging
 import os
 import pathlib
 import sys
-# TODO(amin): If import of pyqt fails, use tk,
-# Test on a computer without Qt5 installed.
-from PyQt5.QtWidgets import QApplication
 from sqlalchemy import create_engine
 
 from chronophore import (
-    __description__, __title__, __version__, controller, Session, pyqt_view
+    __description__, __title__, __version__, controller, Session
 )
 from chronophore.models import Base, add_test_users
-from chronophore.view import ChronophoreUI
 
 
 def get_args():
@@ -41,7 +37,6 @@ def get_args():
         '-V', '--version', action='store_true',
         help='print version info and exit'
     )
-    # TODO(amin): Remove this option?
     parser.add_argument(
         '--tk', action='store_true',
         help='use old tk interface'
@@ -113,10 +108,14 @@ def main():
     controller.flag_forgotten_entries(session=Session())
 
     if args.tk:
-        ChronophoreUI()
+        from chronophore.tkview import TkChronophoreUI
+        TkChronophoreUI()
     else:
+        # TODO(amin): Display helpful error message if this fails
+        from PyQt5.QtWidgets import QApplication
+        from chronophore.qtview import QtChronophoreUI
         app = QApplication(sys.argv)
-        chrono_ui = pyqt_view.ChronophoreUI()
+        chrono_ui = QtChronophoreUI()
         chrono_ui.show()
         sys.exit(app.exec_())
 

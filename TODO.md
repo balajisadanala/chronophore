@@ -35,7 +35,7 @@ To Do
     - [x] Migrate json data to sqlite database
     - [x] Add cancel button in case of mistaken improper login
     - [x] Database migration script
-    - [ ] PyQt5 gui
+    - [x] PyQt5 gui
     - [ ] Switch to postgresql for concurrent access from multiple computers
     - [ ] Documentation
     - [ ] Encrypt/decrypt database
