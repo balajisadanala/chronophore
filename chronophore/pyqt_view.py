@@ -33,6 +33,8 @@ from chronophore.config import CONFIG
 
 logger = logging.getLogger(__name__)
 
+# TODO(amin): Make this a config option
+MAX_INPUT_LENGTH = 9
 
 class ChronophoreUI(QWidget):
 
@@ -51,7 +53,8 @@ class ChronophoreUI(QWidget):
         lbl_welcome = QLabel(CONFIG['GUI_WELCOME_LABLE'], self)
         # lbl_welcome.setFont(QFont('SansSerif', CONFIG['LARGE_FONT_SIZE']))
         lbl_id = QLabel('Enter Student ID:', self)
-        self.ent_id = IDLineEdit(self)
+        self.ent_id = QLineEdit(self)
+        self.ent_id.setMaxLength(MAX_INPUT_LENGTH)
         self.lbl_feedback = QLabel(self)
         btn_sign = QPushButton('Sign In/Out', self)
         btn_sign.setToolTip('Sign in or out from the tutoring center')
@@ -204,20 +207,6 @@ class ChronophoreUI(QWidget):
             self._set_signed_in()
             self.ent_id.clear()
             self.ent_id.setFocus()
-
-
-class IDLineEdit(QLineEdit):
-    """A QLineEdit widget with an input mask that
-    only allows up to 9 digits, and sets the
-    cursor position to 0 when clicked.
-    """
-
-    def __init__(self, parent):
-        QLineEdit.__init__(self, parent)
-        self.setInputMask('999999999')
-
-    def mousePressEvent(self, QMouseEvent):
-        self.setCursorPosition(0)
 
 
 class UserTypeSelectionDialog(QDialog):
