@@ -19,12 +19,10 @@ from PyQt5.QtWidgets import (
     QGridLayout,
     QGroupBox,
     QLabel,
-    QLayout,
     QLineEdit,
     QMessageBox,
     QPushButton,
     QRadioButton,
-    QSizePolicy,
     QToolTip,
     QVBoxLayout,
     QWidget,
@@ -53,12 +51,7 @@ class ChronophoreUI(QWidget):
         lbl_welcome = QLabel(CONFIG['GUI_WELCOME_LABLE'], self)
         # lbl_welcome.setFont(QFont('SansSerif', CONFIG['LARGE_FONT_SIZE']))
         lbl_id = QLabel('Enter Student ID:', self)
-        self.ent_id = QLineEdit(self)
-        # TODO(amin): use an input mask or validator to constrain input:
-        # http://doc.qt.io/qt-5/qlineedit.html#inputMask-prop
-        # http://doc.qt.io/qt-5/qvalidator.html
-        # TODO(amin): set cursor to 0 upon focus or use a validator instead
-        self.ent_id.setInputMask('999999999')
+        self.ent_id = IDLineEdit(self)
         self.lbl_feedback = QLabel(self)
         btn_sign = QPushButton('Sign In/Out', self)
         btn_sign.setToolTip('Sign in or out from the tutoring center')
@@ -211,6 +204,20 @@ class ChronophoreUI(QWidget):
             self._set_signed_in()
             self.ent_id.clear()
             self.ent_id.setFocus()
+
+
+class IDLineEdit(QLineEdit):
+    """A QLineEdit widget with an input mask that
+    only allows up to 9 digits, and sets the
+    cursor position to 0 when clicked.
+    """
+
+    def __init__(self, parent):
+        QLineEdit.__init__(self, parent)
+        self.setInputMask('999999999')
+
+    def mousePressEvent(self, QMouseEvent):
+        self.setCursorPosition(0)
 
 
 class UserTypeSelectionDialog(QDialog):
