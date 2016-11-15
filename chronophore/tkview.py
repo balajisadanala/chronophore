@@ -9,7 +9,7 @@ from chronophore.config import CONFIG
 logger = logging.getLogger(__name__)
 
 
-class ChronophoreUI:
+class TkChronophoreUI:
     """Simple Tkinter GUI for chronophore :
             - Entry for user id input
             - Button to sign in or out
@@ -161,6 +161,8 @@ class ChronophoreUI:
             default='yes',
             parent=self.root,
         )
+        # TODO(amin): Bind KP_Enter here
+        # self.root.bind('<KP_Enter>', self._sign_in_button_press)
         logger.debug('Sign in confirmed: {}'.format(yes_pressed))
         return yes_pressed
 
@@ -184,7 +186,7 @@ class ChronophoreUI:
         # User needs to select type
         except controller.AmbiguousUserType as e:
             logger.debug(e)
-            user_type = UserTypeSelectionDialog(self).show()
+            user_type = TkUserTypeSelectionDialog(self).show()
             if user_type:
                 status = controller.sign(user_id, user_type=user_type)
                 self._show_feedback_label(
@@ -214,7 +216,7 @@ class ChronophoreUI:
             self.ent_id.focus()
 
 
-class UserTypeSelectionDialog:
+class TkUserTypeSelectionDialog:
     """A dialog box that prompts the user to select
     which user type to sign in with. Their choice is
     returned through the show() method.

@@ -35,8 +35,7 @@ To Do
     - [x] Migrate json data to sqlite database
     - [x] Add cancel button in case of mistaken improper login
     - [x] Database migration script
+    - [x] PyQt5 gui
+    - [ ] Switch to postgresql for concurrent access from multiple computers
     - [ ] Documentation
-    - [ ] Access database over local wireless network
-    - [ ] Enable files to be safely accessed by multiple instances of Chronophore
-    - [ ] Admin UI
     - [ ] Encrypt/decrypt database

@@ -3,13 +3,13 @@ import argparse
 import logging
 import os
 import pathlib
+import sys
 from sqlalchemy import create_engine
 
 from chronophore import (
     __description__, __title__, __version__, controller, Session
 )
 from chronophore.models import Base, add_test_users
-from chronophore.view import ChronophoreUI
 
 
 def get_args():
@@ -30,8 +30,16 @@ def get_args():
         help='print debug log'
     )
     parser.add_argument(
+        '--log-sql', action='store_true',
+        help='log sql transactions'
+    )
+    parser.add_argument(
         '-V', '--version', action='store_true',
         help='print version info and exit'
+    )
+    parser.add_argument(
+        '--tk', action='store_true',
+        help='use old tk interface'
     )
     return parser.parse_args()
 
@@ -91,7 +99,7 @@ def main():
     Base.metadata.create_all(engine)
     Session.configure(bind=engine)
 
-    if args.debug:
+    if args.log_sql:
         logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
     if args.testdb:
@@ -99,6 +107,16 @@ def main():
 
     controller.flag_forgotten_entries(session=Session())
 
-    ChronophoreUI()
+    if args.tk:
+        from chronophore.tkview import TkChronophoreUI
+        TkChronophoreUI()
+    else:
+        # TODO(amin): Display helpful error message if this fails
+        from PyQt5.QtWidgets import QApplication
+        from chronophore.qtview import QtChronophoreUI
+        app = QApplication(sys.argv)
+        chrono_ui = QtChronophoreUI()
+        chrono_ui.show()
+        sys.exit(app.exec_())
 
     logger.debug('{} stopping'.format(__title__))
