@@ -87,10 +87,21 @@ setup(
         'scripts/chronophore_migrate.py',
     ],
 
-    install_requires=['appdirs>=1.4.0', 'openpyxl>=2.3.5', 'PyQt5>=5.7', 'SQLAlchemy>=1.1.2'],
+    install_requires=[
+        'appdirs>=1.4.0',
+        'openpyxl>=2.3.5',
+        # NOTE(amin): Using syntax introduced in PEP508,
+        # install PyQt5 only if using Python 3.5 or greater.
+        # 'PyQt5>=5;python_version>="3.5"' should be possible,
+        # but currently isn't, so PyQt5 is instead specified
+        # here as a reference to an optional dependency:
+        'chronophore[qt] ; python_version>="3.5"',
+        'SQLAlchemy>=1.1.2'
+    ],
 
     extras_require={
         'dev': ['flake8'],
         'test': ['pytest'],
+        'qt': ['PyQt5>=5.7'],
     },
 )

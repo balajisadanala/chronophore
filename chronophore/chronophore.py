@@ -111,12 +111,21 @@ def main():
         from chronophore.tkview import TkChronophoreUI
         TkChronophoreUI()
     else:
-        # TODO(amin): Display helpful error message if this fails
-        from PyQt5.QtWidgets import QApplication
-        from chronophore.qtview import QtChronophoreUI
-        app = QApplication(sys.argv)
-        chrono_ui = QtChronophoreUI()
-        chrono_ui.show()
-        sys.exit(app.exec_())
+        try:
+            from PyQt5.QtWidgets import QApplication
+        except ImportError:
+            print(
+                'Error: PyQt5, which chronophore uses for its'
+                + ' graphical interface, is not installed.'
+                + "\nInstall it with 'pip install PyQt5'"
+                + " or use the old Tk ui with 'chronophore --tk'."
+            )
+            raise SystemExit
+        else:
+            from chronophore.qtview import QtChronophoreUI
+            app = QApplication(sys.argv)
+            chrono_ui = QtChronophoreUI()
+            chrono_ui.show()
+            sys.exit(app.exec_())
 
     logger.debug('{} stopping'.format(__title__))
