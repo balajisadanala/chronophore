@@ -2,6 +2,7 @@ import contextlib
 import logging
 import tkinter
 from tkinter import font, messagebox, ttk, Toplevel, N, S, E, W
+from tkinter.simpledialog import Dialog
 
 from chronophore import __title__, __version__, controller
 from chronophore.config import CONFIG
@@ -162,7 +163,6 @@ class TkChronophoreUI:
             parent=self.root,
         )
         # TODO(amin): Bind KP_Enter in all dialogs
-        logger.debug('Sign in confirmed: {}'.format(yes_pressed))
         return yes_pressed
 
     def _sign_in_button_press(self, *args):
@@ -182,12 +182,21 @@ class TkChronophoreUI:
             logger.debug(e)
             messagebox.showwarning(message=e)
 
+        # TODO(amin): Fix rapid <return> bug
+        # NOTE(amin): BUG: If a user is signed in
+        # who is both a student and a tutor. Pressing
+        # <Return> rapidly will open up both the
+        # sign out confirmatio dialog and the user
+        # type seleaction dialog. This doesn't seem
+        # to happen on computers with faster processors
+
         # User needs to select type
         except controller.AmbiguousUserType as e:
             logger.debug(e)
-            u = TkUserTypeSelectionDialog(self.root)
-            if u.user_type:
-                status = controller.sign(user_id, user_type=u.user_type)
+            u = TkUserTypeSelectionDialog(self.root, 'User Type Selection')
+            if u.result:
+                logger.debug('User type selected: {}'.format(u.result))
+                status = controller.sign(user_id, user_type=u.result)
                 self._show_feedback_label(
                     'Signed {}: {} ({})'.format(
                         status.in_or_out, status.user_name, status.user_type
@@ -200,6 +209,10 @@ class TkChronophoreUI:
                 'Sign {}: {}?'.format(status.in_or_out, status.user_name),
                 'Confirm Sign-{}'.format(status.in_or_out)
             )
+
+            logger.debug('Sign {} confirmed: {}'.format(
+                status.in_or_out, sign_choice_confirmed
+            ))
 
             if not sign_choice_confirmed:
                 # Undo sign-in or sign-out
@@ -218,23 +231,23 @@ class TkChronophoreUI:
             self.ent_id.focus()
 
 
-class TkUserTypeSelectionDialog(Toplevel):
+class TkUserTypeSelectionDialog(Dialog):
     """A modal dialog presenting the user with
     options for what kind of user to sign in as.
     """
 
-    def __init__(self, parent):
-        Toplevel.__init__(self, parent)
-        self.transient(parent)
-        self.title('User Type Selection')
-        self.parent = parent
-
-        # variables
+    def __init__(self, parent, title=None):
         self.rb_choice = tkinter.StringVar()
-        self.user_type = None
+        tkinter.simpledialog.Dialog.__init__(self, parent, title)
 
-        # widgets
-        self.frame = ttk.Frame(self, padding=(5, 5, 10, 10))
+
+    def body(self, master):
+        """Create dialog body. Return widget that
+        should have initial focus.
+
+        Inherited from tkinter.simpledialog.Dialog
+        """
+        self.frame = ttk.Frame(master, padding=(5, 5, 10, 10))
 
         self.lbl_message = ttk.Label(
             self.frame,
@@ -254,15 +267,14 @@ class TkUserTypeSelectionDialog(Toplevel):
         )
         self.btn_ok = ttk.Button(
             self.frame,
-            text='Ok',
-            command=self._ok,
+            text='OK',
+            command=self.ok,
         )
         self.btn_cancel = ttk.Button(
             self.frame,
             text='Cancel',
-            command=self._cancel,
+            command=self.cancel,
         )
-
         # assemble grid
         self.frame.grid(column=0, row=0, sticky=(N, S, E, W))
         self.lbl_message.grid(column=0, row=0, columnspan=2, sticky=(W, E))
@@ -271,31 +283,44 @@ class TkUserTypeSelectionDialog(Toplevel):
         self.btn_ok.grid(column=0, row=3)
         self.btn_cancel.grid(column=1, row=3)
 
-        # 'Tutor' is selected by default
-        self.rb_tutor.invoke()
-        self.btn_ok.focus_set()
-        self.grab_set()
-
-        self.protocol('WM_DELETE_WINDOW', self._cancel)
-
         # key bindings
-        self.bind('<Return>', self._ok)
-        self.bind('<KP_Enter>', self._ok)
-        self.bind('<Escape>', self._cancel)
+        self.bind('<Return>', self.ok)
+        self.bind('<KP_Enter>', self.ok)
+        self.bind('<Escape>', self.cancel)
 
-        self.wait_window(self)
+        self.rb_tutor.invoke()
 
-    def _ok(self, event=None):
-        self._apply()
-        self._cancel()
+        return self.btn_ok
 
-    def _cancel(self, event=None):
-        self.parent.focus_set()
+    def buttonbox(self):
+        """Inherited from tkinter.simpledialog.Dialog"""
+        pass
+
+    def ok(self, event=None):
+        if not self.validate():
+            self.initial_focus.focus_set() # put focus back
+            return
+
+        # NOTE(amin): Using self.withdraw() here causes the
+        # ui to freeze until the window loses and regains
+        # focus. There must be some blocking operation going
+        # on, but after some digging, I haven't been able to
+        # get any leads.
+        self.update_idletasks()
+
+        try:
+            self.apply()
+        finally:
+            self.cancel()
+
+    def cancel(self, event=None):
+        # put focus back to the parent window
+        if self.parent is not None:
+            self.parent.focus_set()
         self.destroy()
 
-    def _apply(self):
+    def apply(self):
+        """Inherited from tkinter.simpledialog.Dialog"""
         user_type = self.rb_choice.get()
         if user_type == 'student' or user_type == 'tutor':
-            self.user_type = user_type
-
-        logger.debug('User type selected: {}'.format(self.user_type))
+            self.result = user_type
