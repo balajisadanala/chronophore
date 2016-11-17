@@ -1,7 +1,7 @@
 import contextlib
 import logging
 import tkinter
-from tkinter import font, messagebox, ttk, N, S, E, W
+from tkinter import font, messagebox, ttk, Toplevel, N, S, E, W
 
 from chronophore import __title__, __version__, controller
 from chronophore.config import CONFIG
@@ -152,17 +152,16 @@ class TkChronophoreUI:
             1000 * seconds, lambda: self.feedback.set("")
         )
 
-    def _show_confirm_window(self, message):
+    def _show_confirm_window(self, message, title):
         logger.debug('Window feedback: "{}"'.format(message))
         yes_pressed = messagebox.askyesno(
             message=message,
-            title='{} notification'.format(__title__),
+            title=title,
             icon='question',
             default='yes',
             parent=self.root,
         )
-        # TODO(amin): Bind KP_Enter here
-        # self.root.bind('<KP_Enter>', self._sign_in_button_press)
+        # TODO(amin): Bind KP_Enter in all dialogs
         logger.debug('Sign in confirmed: {}'.format(yes_pressed))
         return yes_pressed
 
@@ -173,7 +172,7 @@ class TkChronophoreUI:
         try:
             status = controller.sign(user_id)
 
-        # ERROR: User type is unknown
+        # ERROR: User type is unknown (!student and !tutor)
         except ValueError as e:
             logger.error(e, exc_info=True)
             messagebox.showerror(message=e)
@@ -181,25 +180,28 @@ class TkChronophoreUI:
         # ERROR: User is unregistered
         except controller.UnregisteredUser as e:
             logger.debug(e)
-            messagebox.showerror(message=e)
+            messagebox.showwarning(message=e)
 
         # User needs to select type
         except controller.AmbiguousUserType as e:
             logger.debug(e)
-            user_type = TkUserTypeSelectionDialog(self).show()
-            if user_type:
-                status = controller.sign(user_id, user_type=user_type)
+            u = TkUserTypeSelectionDialog(self.root)
+            if u.user_type:
+                status = controller.sign(user_id, user_type=u.user_type)
                 self._show_feedback_label(
-                    'Signed {}: {}'.format(status.in_or_out, status.user_name)
+                    'Signed {}: {} ({})'.format(
+                        status.in_or_out, status.user_name, status.user_type
+                    )
                 )
 
         # User has signed in or out normally
         else:
-            sign_choice_is_confirmed = self._show_confirm_window(
-                'Sign {}: {}?'.format(status.in_or_out, status.user_name)
+            sign_choice_confirmed = self._show_confirm_window(
+                'Sign {}: {}?'.format(status.in_or_out, status.user_name),
+                'Confirm Sign-{}'.format(status.in_or_out)
             )
 
-            if not sign_choice_is_confirmed:
+            if not sign_choice_confirmed:
                 # Undo sign-in or sign-out
                 if status.in_or_out == 'in':
                     controller.undo_sign_in(status.entry)
@@ -216,37 +218,38 @@ class TkChronophoreUI:
             self.ent_id.focus()
 
 
-class TkUserTypeSelectionDialog:
-    """A dialog box that prompts the user to select
-    which user type to sign in with. Their choice is
-    returned through the show() method.
+class TkUserTypeSelectionDialog(Toplevel):
+    """A modal dialog presenting the user with
+    options for what kind of user to sign in as.
     """
 
     def __init__(self, parent):
-        self.toplevel = tkinter.Toplevel(parent.root)
-        self.toplevel.transient(parent.root)
-        self.toplevel.title('User Type Selection')
+        Toplevel.__init__(self, parent)
+        self.transient(parent)
+        self.title('User Type Selection')
         self.parent = parent
-        self.frame = ttk.Frame(self.toplevel, padding=(5, 5, 10, 10))
 
         # variables
-        self.user_type = tkinter.StringVar()
+        self.rb_choice = tkinter.StringVar()
+        self.user_type = None
 
         # widgets
+        self.frame = ttk.Frame(self, padding=(5, 5, 10, 10))
+
         self.lbl_message = ttk.Label(
             self.frame,
-            text='Sign in as:',
+            text='Select User Type: ',
         )
         self.rb_student = ttk.Radiobutton(
             self.frame,
             text='Student',
-            variable=self.user_type,
+            variable=self.rb_choice,
             value='student',
         )
         self.rb_tutor = ttk.Radiobutton(
             self.frame,
             text='Tutor',
-            variable=self.user_type,
+            variable=self.rb_choice,
             value='tutor',
         )
         self.btn_ok = ttk.Button(
@@ -270,32 +273,29 @@ class TkUserTypeSelectionDialog:
 
         # 'Tutor' is selected by default
         self.rb_tutor.invoke()
+        self.btn_ok.focus_set()
+        self.grab_set()
 
-        self.toplevel.protocol('WM_DELETE_WINDOW', self._cancel)
+        self.protocol('WM_DELETE_WINDOW', self._cancel)
 
         # key bindings
-        self.toplevel.bind('<Return>', self._ok)
-        self.toplevel.bind('<KP_Enter>', self._ok)
-        self.toplevel.bind('<Escape>', self._cancel)
+        self.bind('<Return>', self._ok)
+        self.bind('<KP_Enter>', self._ok)
+        self.bind('<Escape>', self._cancel)
 
-    def _ok(self, *args):
-        self.toplevel.destroy()
+        self.wait_window(self)
 
-    def _cancel(self, *args):
-        self.user_type.set(None)
-        self.toplevel.destroy()
+    def _ok(self, event=None):
+        self._apply()
+        self._cancel()
 
-    def show(self):
-        """Claim application-wide focus. Return user type
-        based the currently selected radio button.
-        """
-        self.toplevel.grab_set()
-        self.toplevel.wait_window(self.toplevel)
+    def _cancel(self, event=None):
+        self.parent.focus_set()
+        self.destroy()
 
-        user_type = self.user_type.get()
-        logger.debug('User type selected: {}'.format(user_type))
-
+    def _apply(self):
+        user_type = self.rb_choice.get()
         if user_type == 'student' or user_type == 'tutor':
-            return user_type
-        else:
-            return None
+            self.user_type = user_type
+
+        logger.debug('User type selected: {}'.format(self.user_type))
