@@ -206,6 +206,10 @@ class QtChronophoreUI(QWidget):
                 defaultButton=QMessageBox.Yes,
             )
 
+            logger.debug('Sign {} confirmed: {}'.format(
+                status.in_or_out, sign_choice_confirmed
+            ))
+
             if sign_choice_confirmed == QMessageBox.No:
                 # Undo sign-in or sign-out
                 if status.in_or_out == 'in':
@@ -269,7 +273,6 @@ class QtUserTypeSelectionDialog(QDialog):
 
         self.setLayout(vbox)
         self.setWindowTitle('User Type Selection')
-        self.show()
 
     def update_user_type(self):
         """Return either 'tutor' or 'student' based
