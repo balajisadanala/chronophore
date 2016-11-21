@@ -182,19 +182,13 @@ class TkChronophoreUI:
             logger.debug(e)
             messagebox.showwarning(message=e)
 
-        # TODO(amin): Fix rapid <return> bug
-
-        # NOTE(amin): BUG If a user is signed in
-        # who is both a student and a tutor. Pressing
-        # <Return> rapidly will open up both the
-        # sign out confirmatio dialog and the user
-        # type seleaction dialog. This doesn't seem
-        # to happen on computers with faster processors
-
         # User needs to select type
         except controller.AmbiguousUserType as e:
             logger.debug(e)
-            u = TkUserTypeSelectionDialog(self.root, 'User Type Selection')
+            u = TkUserTypeSelectionDialog(
+                    parent=self.root,
+                    title='User Type Selection',
+                    entry_to_clear=self.ent_id)
             if u.result:
                 logger.debug('User type selected: {}'.format(u.result))
                 status = controller.sign(user_id, user_type=u.result)
@@ -237,8 +231,9 @@ class TkUserTypeSelectionDialog(Dialog):
     options for what kind of user to sign in as.
     """
 
-    def __init__(self, parent, title=None):
+    def __init__(self, parent, title=None, entry_to_clear=None):
         self.rb_choice = tkinter.StringVar()
+        self.entry_to_clear = entry_to_clear
         tkinter.simpledialog.Dialog.__init__(self, parent, title)
 
     def body(self, master):
@@ -310,6 +305,11 @@ class TkUserTypeSelectionDialog(Dialog):
         # focus. There must be some blocking operation going
         # on, but after some digging, I haven't been able to
         # get any leads.
+
+        # NOTE(amin): We must clear the main window's entry
+        # before returning focus to it. Otherwise, rapid
+        # pressing of the enter key will open multiple dialogs.
+        self.entry_to_clear.delete(0, 'end')
 
         self.update_idletasks()
 
