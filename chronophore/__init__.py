@@ -9,7 +9,7 @@ adaptable to other use cases.
 from sqlalchemy.orm import sessionmaker
 
 __title__ = 'chronophore'
-__version__ = '0.5.1'
+__version__ = '0.6.0'
 __license__ = 'MIT'
 __author__ = 'Amin Mesbah'
 __email__ = 'mesbahamin@gmail.com'

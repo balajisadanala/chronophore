@@ -72,7 +72,7 @@ setup(
         'Programming Language :: Python :: Implementation :: CPython',
     ],
 
-    keywords='database desktop education sqlite kiosk sign-in time',
+    keywords='database desktop education sqlite kiosk sign-in time qt',
 
     packages=['chronophore'],
     entry_points={
@@ -80,12 +80,6 @@ setup(
             'chronophore=chronophore.chronophore:main',
         ],
     },
-
-    # TODO(amin): Remove json_to_sqlite.py
-    scripts=[
-        'scripts/json_to_sqlite.py',
-        'scripts/chronophore_migrate.py',
-    ],
 
     install_requires=[
         'appdirs>=1.4.0',
