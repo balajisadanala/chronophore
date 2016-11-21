@@ -1,7 +1,7 @@
 import contextlib
 import logging
 import tkinter
-from tkinter import font, messagebox, ttk, Toplevel, N, S, E, W
+from tkinter import font, messagebox, ttk, N, S, E, W
 from tkinter.simpledialog import Dialog
 
 from chronophore import __title__, __version__, controller
@@ -85,7 +85,7 @@ class TkChronophoreUI:
         self.btn_sign = ttk.Button(
             self.content,
             text="Sign In/Out",
-            command=self._sign_in_button_press,
+            command=self._sign_button_press,
         )
 
         # assemble grid
@@ -115,8 +115,8 @@ class TkChronophoreUI:
         self.content.rowconfigure(4, weight=3)
 
         # key bindings
-        self.root.bind('<Return>', self._sign_in_button_press)
-        self.root.bind('<KP_Enter>', self._sign_in_button_press)
+        self.root.bind('<Return>', self._sign_button_press)
+        self.root.bind('<KP_Enter>', self._sign_button_press)
 
         self.ent_id.focus()
         self._set_signed_in()
@@ -165,7 +165,7 @@ class TkChronophoreUI:
         # TODO(amin): Bind KP_Enter in all dialogs
         return yes_pressed
 
-    def _sign_in_button_press(self, *args):
+    def _sign_button_press(self, *args):
         """Validate input from ent_id, then sign in to the Timesheet."""
         user_id = self.ent_id.get().strip()
 
@@ -183,7 +183,8 @@ class TkChronophoreUI:
             messagebox.showwarning(message=e)
 
         # TODO(amin): Fix rapid <return> bug
-        # NOTE(amin): BUG: If a user is signed in
+
+        # NOTE(amin): BUG If a user is signed in
         # who is both a student and a tutor. Pressing
         # <Return> rapidly will open up both the
         # sign out confirmatio dialog and the user
@@ -239,7 +240,6 @@ class TkUserTypeSelectionDialog(Dialog):
     def __init__(self, parent, title=None):
         self.rb_choice = tkinter.StringVar()
         tkinter.simpledialog.Dialog.__init__(self, parent, title)
-
 
     def body(self, master):
         """Create dialog body. Return widget that
@@ -297,27 +297,26 @@ class TkUserTypeSelectionDialog(Dialog):
         pass
 
     def ok(self, event=None):
+        """This method is identical to
+        tkinter.simpledialog.Dialog.ok(),
+        but with 'self.withdraw()' commented out.
+        """
         if not self.validate():
-            self.initial_focus.focus_set() # put focus back
+            self.initial_focus.focus_set()  # put focus back
             return
 
         # NOTE(amin): Using self.withdraw() here causes the
-        # ui to freeze until the window loses and regains
+        # ui to hang until the window loses and regains
         # focus. There must be some blocking operation going
         # on, but after some digging, I haven't been able to
         # get any leads.
+
         self.update_idletasks()
 
         try:
             self.apply()
         finally:
             self.cancel()
-
-    def cancel(self, event=None):
-        # put focus back to the parent window
-        if self.parent is not None:
-            self.parent.focus_set()
-        self.destroy()
 
     def apply(self):
         """Inherited from tkinter.simpledialog.Dialog"""
