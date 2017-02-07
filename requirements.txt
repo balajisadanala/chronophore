@@ -1,5 +1,4 @@
 appdirs==1.4.0
-chronophore==0.5rc1
 coverage==4.2
 et-xmlfile==1.0.1
 flake8==3.0.3
