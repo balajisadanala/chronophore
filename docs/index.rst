@@ -1,15 +1,18 @@
 Chronophore
 ===========
 
+User Guide
+----------
 .. toctree::
    :maxdepth: 3
    :caption: Contents:
 
    database
 
-Indices and tables
-==================
+API Reference
+-------------
+.. toctree::
+   :maxdepth: 3
+   :caption: Contents:
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   api

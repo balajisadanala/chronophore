@@ -26,6 +26,7 @@ logger = logging.getLogger(__name__)
 class QtChronophoreUI(QWidget):
     """The Qt5 gui for chronophore.
     Main Window:
+
         - List of currently signed in users
         - Entry for user id input
         - Feedback label that temporarily appears

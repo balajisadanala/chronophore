@@ -27,6 +27,9 @@ class UnregisteredUser(Exception):
         self.message = message
 
 
+# TODO(amin): Wrap this in a class with a docstring for use with sphinx autodoc:
+# http://stackoverflow.com/a/1606478/4721953
+
 # Status is used by the sign() function to
 # return relevant information to the gui.
 Status = collections.namedtuple(
@@ -197,8 +200,7 @@ def sign(user_id, user_type=None, today=None, session=None):
     depending on whether or not they are currently signed in.
 
     Return:
-        - status: A string reporting the result of the sign
-        attempt.
+        - status: A string reporting the result of the sign attempt.
     """
     if session is None:
         session = Session()
