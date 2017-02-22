@@ -25,7 +25,6 @@ logger = logging.getLogger(__name__)
 
 class QtChronophoreUI(QWidget):
     """The Qt5 gui for chronophore.
-    Main Window:
 
         - List of currently signed in users
         - Entry for user id input
@@ -126,8 +125,8 @@ class QtChronophoreUI(QWidget):
         self.move(qr.topLeft())
 
     def _set_signed_in(self):
-        """Populate the signed_in list with the names of
-        currently signed in users.
+        """Populate the signed_in list with the names of currently
+        signed in users.
         """
         names = [
             controller.get_user_name(user, full_name=CONFIG['FULL_USER_NAMES'])
@@ -136,8 +135,8 @@ class QtChronophoreUI(QWidget):
         self.lbl_signedin_list.setText('\n'.join(sorted(names)))
 
     def _show_feedback_label(self, message, seconds=None):
-        """Display a message in lbl_feedback, which times out
-        after some number of seconds.
+        """Display a message in lbl_feedback, which times out after some
+        number of seconds.
         """
         if seconds is None:
             seconds = CONFIG['MESSAGE_DURATION']
@@ -229,8 +228,8 @@ class QtChronophoreUI(QWidget):
 
 
 class QtUserTypeSelectionDialog(QDialog):
-    """A modal dialog presenting the user with
-    options for what kind of user to sign in as.
+    """A modal dialog presenting the user with options for what kind of
+    user to sign in as.
     """
 
     def __init__(self, message, parent=None):
@@ -276,8 +275,8 @@ class QtUserTypeSelectionDialog(QDialog):
         self.setWindowTitle('User Type Selection')
 
     def update_user_type(self):
-        """Return either 'tutor' or 'student' based
-        on which radio button is selected.
+        """Return either 'tutor' or 'student' based on which radio
+        button is selected.
         """
         if self.rb_tutor.isChecked():
             self.user_type = 'tutor'

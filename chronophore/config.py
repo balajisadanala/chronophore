@@ -11,8 +11,12 @@ logger = logging.getLogger(__name__)
 
 
 def _load_config(config_file):
-    """Load settings from config file and return them as
-    a dict.
+    """Load settings from config file and return them as a dict.  If the
+    config file is not found, or if it is invalid, create and use a
+    default config file.
+
+    :param config_file: `pathlib.Path` object. Path to config file.
+    :return: Dictionary of config options.
     """
     logger.debug('Config file: {}'.format(config_file))
 
@@ -41,6 +45,11 @@ def _load_config(config_file):
 
 
 def _load_options(parser):
+    """Load config options from parser and return them as a dict.
+
+    :param parser: `ConfigParser` object with the values loaded.
+    :return: Dictionary of config options.
+    """
     config = dict(
         MESSAGE_DURATION=parser.getint('gui', 'message_duration'),
         GUI_WELCOME_LABLE=parser.get('gui', 'gui_welcome_label'),
@@ -55,10 +64,12 @@ def _load_options(parser):
 
 
 def _use_default(config_file):
-    """Write default values to a config file. Return
-    a ConfigParser object with the values loaded.
-    """
+    """Write default values to a config file. If another config file
+    already exists, back it up before replacing it with the new file.
 
+    :param config_file: `pathlib.Path` object. Path to config file.
+    :return: `ConfigParser` object with the values loaded.
+    """
     default_config = OrderedDict((
         (
             'gui',

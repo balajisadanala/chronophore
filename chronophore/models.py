@@ -14,8 +14,8 @@ SQLite_Time = TIME(storage_format='%(hour)02d:%(minute)02d:%(second)02d')
 
 @event.listens_for(Engine, "connect")
 def set_sqlite_pragma(dbapi_connection, connection_record):
-    """Upon every db connection, issue a command
-    to ensure foreign key constraints are enforced.
+    """Upon every db connection, issue a command to ensure foreign key
+    constraints are enforced.
 
     This is a sqlite-specific issue:
     http://stackoverflow.com/questions/2614984/sqlite-sqlalchemy-how-to-enforce-foreign-keys
@@ -30,17 +30,37 @@ class User(Base):
     """Schema for the 'users' table."""
     __tablename__ = 'users'
 
+    #: The user's unique ID (*Primary Key*).
     user_id = Column(String, primary_key=True, unique=True)
 
+    #: The date on which the user was registered.
     date_joined = Column(Date)
+
+    #: The date on which the user was no longer registered.
     date_left = Column(Date, nullable=True)
+
+    #: `1` if the user has submitted an education plan, `0` otherwise.
     education_plan = Column(Boolean, default=False)
+
+    #: The user's school email.
     school_email = Column(String, nullable=True)
+
+    #: The user's personal email.
     personal_email = Column(String, nullable=True)
+
+    #: The user's first name.
     first_name = Column(String)
+
+    #: The user's last name.
     last_name = Column(String)
+
+    #: The user's declared major.
     major = Column(String, nullable=True)
+
+    #: `1` if the user is a student, `0` otherwise.
     is_student = Column(Boolean, default=True)
+
+    #: `1` if the user is a tutor, `0` otherwise.
     is_tutor = Column(Boolean, default=False)
 
     entries = relationship('Entry', back_populates='user', lazy='dynamic')
@@ -67,13 +87,25 @@ class Entry(Base):
     """Schema for the 'timesheet' table."""
     __tablename__ = 'timesheet'
 
+    #: A unique ID for each entry (*Primary Key*).
     uuid = Column(String, primary_key=True, unique=True)
 
+    #: The date the user signed in.
     date = Column(Date)
+
+    #: `1` if the user never signed out, `0` otherwise.
     forgot_sign_out = Column(Boolean, default=False)
+
+    #: Sign in time.
     time_in = Column(SQLite_Time)
+
+    #: Sign out time.
     time_out = Column(SQLite_Time)
+
+    #: The user's unique ID (*Foreign Key*).
     user_id = Column(String, ForeignKey('users.user_id'), nullable=False)
+
+    #: Whether the user signed in as a `student` or a `tutor`.
     user_type = Column(String, nullable=False)
 
     user = relationship('User', back_populates='entries')
@@ -93,10 +125,9 @@ class Entry(Base):
 
 
 def add_test_users(session):
-    """Add two hobbits and a wizard to the
-    users table for testing purposes. These
-    are not necessarily the same test users
-    as in the unit tests.
+    """Add two hobbits and a wizard to the users table for testing
+    purposes. These are not necessarily the same test users as in the
+    unit tests.
 
     This function is idempotent.
     """

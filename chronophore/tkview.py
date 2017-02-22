@@ -12,9 +12,10 @@ logger = logging.getLogger(__name__)
 
 class TkChronophoreUI:
     """Simple Tkinter GUI for chronophore :
-            - Entry for user id input
-            - Button to sign in or out
-            - List of currently signed in users
+
+        - Entry for user id input
+        - Button to sign in or out
+        - List of currently signed in users
     """
 
     def __init__(self):
@@ -123,8 +124,8 @@ class TkChronophoreUI:
         self.root.mainloop()
 
     def _set_signed_in(self):
-        """Populate the signed_in list with the names of
-        currently signed in users.
+        """Populate the signed_in list with the names of currently
+        signed in users.
         """
         names = [
             controller.get_user_name(user, full_name=CONFIG['FULL_USER_NAMES'])
@@ -133,9 +134,9 @@ class TkChronophoreUI:
         self.signed_in.set('\n'.join(sorted(names)))
 
     def _show_feedback_label(self, message, seconds=None):
-        """Display a message in lbl_feedback, which then times out
-        after some number of seconds. Use after() to schedule a callback
-        to hide the feedback message. This works better than using threads,
+        """Display a message in lbl_feedback, which then times out after
+        some number of seconds. Use after() to schedule a callback to
+        hide the feedback message. This works better than using threads,
         which can cause problems in Tk.
         """
         if seconds is None:
@@ -227,8 +228,8 @@ class TkChronophoreUI:
 
 
 class TkUserTypeSelectionDialog(Dialog):
-    """A modal dialog presenting the user with
-    options for what kind of user to sign in as.
+    """A modal dialog presenting the user with options for what kind of
+    user to sign in as.
     """
 
     def __init__(self, parent, title=None, entry_to_clear=None):
@@ -237,8 +238,8 @@ class TkUserTypeSelectionDialog(Dialog):
         tkinter.simpledialog.Dialog.__init__(self, parent, title)
 
     def body(self, master):
-        """Create dialog body. Return widget that
-        should have initial focus.
+        """Create dialog body. Return widget that should have initial
+        focus.
 
         Inherited from tkinter.simpledialog.Dialog
         """
@@ -292,8 +293,7 @@ class TkUserTypeSelectionDialog(Dialog):
         pass
 
     def ok(self, event=None):
-        """This method is identical to
-        tkinter.simpledialog.Dialog.ok(),
+        """This method is identical to tkinter.simpledialog.Dialog.ok(),
         but with 'self.withdraw()' commented out.
         """
         if not self.validate():

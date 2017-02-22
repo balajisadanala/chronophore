@@ -13,6 +13,7 @@ from chronophore.models import Base, add_test_users
 
 
 def get_args():
+    """Parse command line arguments."""
     parser = argparse.ArgumentParser(
         prog=__title__,
         description=__description__,
@@ -45,6 +46,7 @@ def get_args():
 
 
 def set_up_logging(log_file, console_log_level):
+    """Configure logging settings and return a logger object."""
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
     fh = logging.FileHandler(str(log_file))
@@ -63,6 +65,7 @@ def set_up_logging(log_file, console_log_level):
 
 
 def main():
+    """Run Chronophore based on the command line arguments."""
     args = get_args()
 
     # Make Chronophore's directories and files in $HOME

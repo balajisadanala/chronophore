@@ -10,8 +10,8 @@ logger = logging.getLogger(__name__)
 
 
 class AmbiguousUserType(Exception):
-    """This exception is raised when a user
-    with multiple user types tries to sign in.
+    """This exception is raised when a user with multiple user types
+    tries to sign in.
     """
     def __init__(self, message):
         super().__init__(message)
@@ -19,8 +19,8 @@ class AmbiguousUserType(Exception):
 
 
 class UnregisteredUser(Exception):
-    """This exception is raised when a user
-    id doesn't match any user in the database.
+    """This exception is raised when a user id doesn't match any user in
+    the database.
     """
     def __init__(self, message):
         super().__init__(message)
@@ -45,9 +45,12 @@ Status = collections.namedtuple(
 
 
 def flag_forgotten_entries(session, today=None):
-    """Flag any entries from previous days where
-    users forgot to sign out.
-    """
+    """Flag any entries from previous days where users forgot to sign
+    out.
+
+    :param session: SQLAlchemy session through which to access the database.
+    :param today: (optional) The current date as a `datetime.date` object. Used for testing.
+    """ # noqa
     today = date.today() if today is None else today
 
     forgotten = session.query(Entry).filter(
@@ -65,8 +68,12 @@ def flag_forgotten_entries(session, today=None):
 
 def signed_in_users(session=None, today=None, full_name=True):
     """Return list of names of currently signed in users.
-    Full names by default.
-    """
+
+    :param session: SQLAlchemy session through which to access the database.
+    :param today: (optional) The current date as a `datetime.date` object. Used for testing.
+    :param full_name: (optional) Whether to display full user names, or just first names.
+    :return: List of currently signed in users.
+    """ # noqa
     if session is None:
         session = Session()
     else:
@@ -88,8 +95,11 @@ def signed_in_users(session=None, today=None, full_name=True):
 
 def get_user_name(user, full_name=True):
     """Return the user's name as a string.
-    Full names by default.
-    """
+
+    :param user: `models.User` object. The user to get the name of.
+    :param full_name: (optional) Whether to return full user name, or just first name.
+    :return: The user's name.
+    """ # noqa
     try:
         if full_name:
             name = ' '.join([user.first_name, user.last_name])
@@ -102,7 +112,14 @@ def get_user_name(user, full_name=True):
 
 
 def sign_in(user, user_type=None, date=None, time_in=None):
-    """Add a new entry to the timesheet."""
+    """Add a new entry to the timesheet.
+
+    :param user: `models.User` object. The user to sign in.
+    :param user_type: (optional) Specify whether user is signing in as a `'student'` or `'tutor'`.
+    :param date: (optional) `datetime.date` object. Specify the entry date.
+    :param time_in: (optional) `datetime.time` object. Specify the sign in time.
+    :return: The new entry.
+    """ # noqa
     now = datetime.today()
     if date is None:
         date = now.date()
@@ -133,9 +150,14 @@ def sign_in(user, user_type=None, date=None, time_in=None):
 
 
 def sign_out(entry, time_out=None, forgot=False):
-    """Sign out of an existing entry in the timesheet.
-    If the user forgot to sign out, flag the entry.
-    """
+    """Sign out of an existing entry in the timesheet. If the user
+    forgot to sign out, flag the entry.
+
+    :param entry: `models.Entry` object. The entry to sign out.
+    :param time_out: (optional) `datetime.time` object. Specify the sign out time.
+    :param forgot: (optional) If true, user forgot to sign out. Entry will be flagged as forgotten.
+    :return: The signed out entry.
+    """ # noqa
     if time_out is None:
         time_out = datetime.today().time()
 
@@ -153,7 +175,11 @@ def sign_out(entry, time_out=None, forgot=False):
 
 
 def undo_sign_in(entry, session=None):
-    """Delete a signed in entry."""
+    """Delete a signed in entry.
+
+    :param entry: `models.Entry` object. The entry to delete.
+    :param session: (optional) SQLAlchemy session through which to access the database.
+    """ # noqa
     if session is None:
         session = Session()
     else:
@@ -174,7 +200,11 @@ def undo_sign_in(entry, session=None):
 
 
 def undo_sign_out(entry, session=None):
-    """Sign in a signed out entry."""
+    """Sign in a signed out entry.
+
+    :param entry: `models.Entry` object. The entry to sign back in.
+    :param session: (optional) SQLAlchemy session through which to access the database.
+    """ # noqa
     if session is None:
         session = Session()
     else:
@@ -196,12 +226,15 @@ def undo_sign_out(entry, session=None):
 
 
 def sign(user_id, user_type=None, today=None, session=None):
-    """Check user id for validity, then sign user in or out
-    depending on whether or not they are currently signed in.
+    """Check user id for validity, then sign user in if they are signed
+    out, or out if they are signed in.
 
-    Return:
-        - status: A string reporting the result of the sign attempt.
-    """
+    :param user_id: The ID of the user to sign in or out.
+    :param user_type: (optional) Specify whether user is signing in as a `'student'` or `'tutor'`.
+    :param today: (optional) The current date as a `datetime.date` object. Used for testing.
+    :param session: (optional) SQLAlchemy session through which to access the database.
+    :return: `Status` named tuple object. Information about the sign attempt.
+    """ # noqa
     if session is None:
         session = Session()
     else:
