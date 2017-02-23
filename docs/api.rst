@@ -45,11 +45,13 @@ models
    :members:
    :private-members:
    :special-members:
+   :member-order: bysource
 
 .. autoclass:: chronophore.models.Entry
    :members:
    :private-members:
    :special-members:
+   :member-order: bysource
 
 .. autofunction:: chronophore.models.set_sqlite_pragma
 .. autofunction:: chronophore.models.add_test_users
@@ -61,11 +63,13 @@ qtview
 .. autoclass:: chronophore.qtview.QtChronophoreUI
    :members:
    :special-members:
+   :member-order: bysource
 
 .. autoclass:: chronophore.qtview.QtUserTypeSelectionDialog
    :members:
    :private-members:
    :special-members:
+   :member-order: bysource
 
 
 tkview
@@ -75,8 +79,10 @@ tkview
    :members:
    :private-members:
    :special-members:
+   :member-order: bysource
 
 .. autoclass:: chronophore.tkview.TkUserTypeSelectionDialog
    :members:
    :private-members:
    :special-members:
+   :member-order: bysource
