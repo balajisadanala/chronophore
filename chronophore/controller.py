@@ -27,11 +27,29 @@ class UnregisteredUser(Exception):
         self.message = message
 
 
-# TODO(amin): Wrap this in a class with a docstring for use with sphinx autodoc:
-# http://stackoverflow.com/a/1606478/4721953
-
-# Status is used by the sign() function to
-# return relevant information to the gui.
+#: Status is a namedtuple used by the `sign()` function to return relevant
+#: information to the gui about a sign-in or sign-out attempt.
+#:
+#: .. attribute:: valid
+#:
+#:    Whether or not the user was valid.
+#:
+#: .. attribute:: in_or_out
+#:
+#:    Whether the user was signing in or out.
+#:
+#: .. attribute:: user_name
+#:
+#:    The name of the user.
+#:
+#: .. attribute:: user_type
+#:
+#:    Whether the user was a student or a tutor.
+#:
+#: .. attribute:: entry
+#:
+#:    The `chronophore.models.Entry` object signed into or out of.
+#:
 Status = collections.namedtuple(
     'Status',
     [

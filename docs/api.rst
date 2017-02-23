@@ -26,7 +26,7 @@ controller
 .. autoexception:: chronophore.controller.AmbiguousUserType
 .. autoexception:: chronophore.controller.UnregisteredUser
 
-.. TODO(amin): document Status namedtuple
+.. autoclass:: chronophore.controller.Status
 
 .. autofunction:: chronophore.controller.flag_forgotten_entries
 .. autofunction:: chronophore.controller.signed_in_users
