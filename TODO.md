@@ -36,6 +36,6 @@ To Do
     - [x] Add cancel button in case of mistaken improper login
     - [x] Database migration script
     - [x] PyQt5 gui
+    - [x] Documentation
     - [ ] Switch to postgresql for concurrent access from multiple computers
-    - [ ] Documentation
     - [ ] Encrypt/decrypt database

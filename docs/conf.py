@@ -52,7 +52,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'chronophore'
+project = 'Chronophore'
 copyright = '2017, Amin Mesbah'
 author = 'Amin Mesbah'
 

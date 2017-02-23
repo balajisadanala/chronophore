@@ -1,16 +1,10 @@
 Chronophore
 ===========
 
-User Guide
-----------
+.. include:: ../README.rst
+
 .. toctree::
    :maxdepth: 3
 
    database
-
-Developer Reference
--------------------
-.. toctree::
-   :maxdepth: 3
-
    api
