@@ -46,9 +46,11 @@ def test_sign_starting(db_session, test_users):
     assert status.user_name == 'Frodo Baggins'
     assert status.user_type == 'student'
     assert (
-        db_session.query(Entry).filter(
-                Entry.user_id == test_users['frodo'].user_id).filter(
-                Entry.time_out.is_(None)).one()
+        db_session
+        .query(Entry)
+        .filter(Entry.user_id == test_users['frodo'].user_id)
+        .filter(Entry.time_out.is_(None))
+        .one()
     )
 
 
@@ -63,9 +65,11 @@ def test_sign_finishing(db_session, test_users):
     assert status.user_name == 'Merry Brandybuck'
     assert status.user_type == 'tutor'
     assert (
-        db_session.query(Entry).filter(
-                Entry.user_id == merry_id).filter(
-                Entry.time_out.is_(None)).one_or_none()
+        db_session
+        .query(Entry)
+        .filter(Entry.user_id == merry_id)
+        .filter(Entry.time_out.is_(None))
+        .one_or_none()
     ) is None
 
 
@@ -78,8 +82,10 @@ def test_sign_not_registered(db_session, test_users):
         controller.sign(UNREGISTERED_ID, session=db_session)
 
     assert (
-        db_session.query(Entry).filter(
-                Entry.user_id == UNREGISTERED_ID).one_or_none()
+        db_session
+        .query(Entry)
+        .filter(Entry.user_id == UNREGISTERED_ID)
+        .one_or_none()
     ) is None
 
 
@@ -120,9 +126,11 @@ def test_sign_duplicates(db_session, test_users):
     assert status.user_name == 'Sam Gamgee'
     assert status.user_type == 'student'
     assert (
-        db_session.query(Entry).filter(
-                Entry.user_id == sam_id).filter(
-                Entry.time_out.is_(None)).one_or_none()
+        db_session
+        .query(Entry)
+        .filter(Entry.user_id == sam_id)
+        .filter(Entry.time_out.is_(None))
+        .one_or_none()
     ) is None
 
 
@@ -152,10 +160,12 @@ def test_sign_in_previously_forgot_sign_out(db_session, test_users):
     assert status.user_name == 'Gandalf the Grey'
     assert status.user_type == 'tutor'
     assert (
-        db_session.query(Entry).filter(
-                Entry.forgot_sign_out.is_(False)).filter(
-                Entry.user_id == test_users['gandalf'].user_id).filter(
-                Entry.time_out.is_(None)).one()
+        db_session
+        .query(Entry)
+        .filter(Entry.forgot_sign_out.is_(False))
+        .filter(Entry.user_id == test_users['gandalf'].user_id)
+        .filter(Entry.time_out.is_(None))
+        .one()
     )
 
 
@@ -234,8 +244,12 @@ def test_undo_sign_in(test_users, db_session):
 
     controller.undo_sign_in(signed_in_entry, db_session)
 
-    deleted = db_session.query(Entry).filter(
-            Entry.uuid == signed_in_entry.uuid).one_or_none()
+    deleted = (
+        db_session
+        .query(Entry)
+        .filter(Entry.uuid == signed_in_entry.uuid)
+        .one_or_none()
+    )
 
     assert deleted is None
 
@@ -257,8 +271,12 @@ def test_undo_sign_out(test_users, db_session):
     db_session.add(signed_out_entry)
     controller.undo_sign_out(signed_out_entry, db_session)
 
-    signed_back_in = db_session.query(Entry).filter(
-            Entry.uuid == signed_out_entry.uuid).one()
+    signed_back_in = (
+        db_session
+        .query(Entry)
+        .filter(Entry.uuid == signed_out_entry.uuid)
+        .one()
+    )
 
     assert signed_back_in.time_out is None
 

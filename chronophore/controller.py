@@ -71,10 +71,13 @@ def flag_forgotten_entries(session, today=None):
     """ # noqa
     today = date.today() if today is None else today
 
-    forgotten = session.query(Entry).filter(
-            Entry.time_out.is_(None)).filter(
-            Entry.forgot_sign_out.is_(False)).filter(
-            Entry.date < today)
+    forgotten = (
+        session
+        .query(Entry)
+        .filter(Entry.time_out.is_(None))
+        .filter(Entry.forgot_sign_out.is_(False))
+        .filter(Entry.date < today)
+    )
 
     for entry in forgotten:
         e = sign_out(entry, forgot=True)
@@ -102,10 +105,14 @@ def signed_in_users(session=None, today=None, full_name=True):
     else:
         today = today
 
-    signed_in_users = session.query(User).filter(
-            Entry.date == today).filter(
-            Entry.time_out.is_(None)).filter(
-            User.user_id == Entry.user_id).all()
+    signed_in_users = (
+        session
+        .query(User)
+        .filter(Entry.date == today)
+        .filter(Entry.time_out.is_(None))
+        .filter(User.user_id == Entry.user_id)
+        .all()
+    )
 
     session.close()
     return signed_in_users
@@ -203,8 +210,12 @@ def undo_sign_in(entry, session=None):
     else:
         session = session
 
-    entry_to_delete = session.query(Entry).filter(
-            Entry.uuid == entry.uuid).one_or_none()
+    entry_to_delete = (
+        session
+        .query(Entry)
+        .filter(Entry.uuid == entry.uuid)
+        .one_or_none()
+    )
 
     if entry_to_delete:
         logger.info('Undo sign in: {}'.format(entry_to_delete.user_id))
@@ -228,8 +239,12 @@ def undo_sign_out(entry, session=None):
     else:
         session = session
 
-    entry_to_sign_in = session.query(Entry).filter(
-            Entry.uuid == entry.uuid).one_or_none()
+    entry_to_sign_in = (
+        session
+        .query(Entry)
+        .filter(Entry.uuid == entry.uuid)
+        .one_or_none()
+    )
 
     if entry_to_sign_in:
         logger.info('Undo sign out: {}'.format(entry_to_sign_in.user_id))
@@ -263,12 +278,21 @@ def sign(user_id, user_type=None, today=None, session=None):
     else:
         today = today
 
-    user = session.query(User).filter(User.user_id == user_id).one_or_none()
+    user = (
+        session
+        .query(User)
+        .filter(User.user_id == user_id)
+        .one_or_none()
+    )
 
     if user:
-        signed_in_entries = user.entries.filter(
-                Entry.date == today).filter(
-                Entry.time_out.is_(None)).all()
+        signed_in_entries = (
+            user
+            .entries
+            .filter(Entry.date == today)
+            .filter(Entry.time_out.is_(None))
+            .all()
+        )
 
         if not signed_in_entries:
             new_entry = sign_in(user, user_type=user_type)
