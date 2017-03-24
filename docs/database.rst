@@ -122,7 +122,7 @@ able to sign in unless they have a record in this table. Chronophore itself
 doesn't ever write to this database. It must be edited with another application
 such as `DB Browser for SQLite`_.
 
-It has the contains the following fields:
+It contains the following fields:
 
 ================ ===============================================================
 Field Name       Significance
