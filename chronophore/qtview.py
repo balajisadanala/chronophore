@@ -154,6 +154,7 @@ class QtChronophoreUI(QWidget):
         # both. The whole layout currently gets messed up if this label is
         # assigned a long string.
         self.lbl_feedback.setText('')
+        logger.debug('Feedback label hidden')
 
     def _sign_button_press(self):
         """Validate input from ent_id, then sign in to the Timesheet."""
